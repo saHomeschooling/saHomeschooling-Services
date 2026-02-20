@@ -44,7 +44,7 @@
     .container { max-width: 1280px; margin: 0 auto; padding: 0 32px; }
 
     /* ══════════════════════════════════
-       HEADER — solid dark crimson-pink
+       HEADER
     ══════════════════════════════════ */
     header {
       position: sticky; top: 0; z-index: 1000;
@@ -89,7 +89,7 @@
     .btn-solid-nav:hover { background: var(--accent-light); }
 
     /* ══════════════════════════════════
-       HERO — editorial photo style
+       HERO
     ══════════════════════════════════ */
     .hero {
       position: relative;
@@ -136,7 +136,6 @@
       line-height: 1.7; font-weight: 400;
     }
 
-    /* Search inside hero */
     .hero-search {
       display: flex; align-items: stretch;
       background: #fff; border-radius: var(--radius);
@@ -171,7 +170,6 @@
     }
     .hs-btn:hover { background: var(--accent-dark); }
 
-    /* Stats under search */
     .hero-stats { display: flex; gap: 28px; margin-top: 28px; align-items: center; }
     .hstat-val {
       font-family: 'Playfair Display', serif;
@@ -227,14 +225,12 @@
     .sec-right { font-size: 0.84rem; color: var(--muted); }
     .sec-right a { color: var(--accent); font-weight: 600; }
 
-    /* ── 4 cards in exactly one row ── */
     .provider-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 18px;
     }
 
-    /* ── Card ── */
     .provider-card {
       background: var(--white);
       border-radius: var(--radius-lg);
@@ -379,7 +375,6 @@
     .trust-band { background: var(--accent); padding: 52px 0; }
     .trust-grid {
       display: grid; grid-template-columns: repeat(4,1fr);
-      divide: 1px;
     }
     .trust-cell {
       text-align: center; padding: 28px 16px;
@@ -437,41 +432,99 @@
     .plan-price small { font-size: 0.68rem; color: var(--muted); font-weight: 400; display: block; }
 
     /* ══════════════════════════════════
-       FOOTER
+       FOOTER (from footer.css)
     ══════════════════════════════════ */
-    footer { background: #0e0e0e; color: rgba(255,255,255,0.55); padding: 56px 0 32px; }
-    .footer-grid {
-      display: grid; grid-template-columns: 2fr 1fr 1fr 1fr;
-      gap: 44px; margin-bottom: 44px;
+    .sah-footer {
+      background: #0e0e0e;
+      color: rgba(255,255,255,0.55);
+      padding: 60px 0 32px;
+      font-family: 'DM Sans', system-ui, sans-serif;
+      font-size: 0.875rem;
+      line-height: 1.6;
     }
-    .footer-logo {
-      font-family: 'Playfair Display', serif;
-      font-size: 1.05rem; font-weight: 800;
-      color: #fff; margin-bottom: 12px;
+    .sah-footer .container { max-width: 1280px; margin: 0 auto; padding: 0 32px; }
+    .sah-footer-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 48px;
+      margin-bottom: 44px;
     }
-    .footer-brand p { font-size: 0.85rem; line-height: 1.75; max-width: 250px; }
-    .footer-col h4 {
+    .sah-footer-logo {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.05rem; font-weight: 800; color: #fff;
+      display: block; margin-bottom: 12px;
+    }
+    .sah-footer-brand p {
+      font-size: 0.85rem; line-height: 1.75;
+      max-width: 260px; color: rgba(255,255,255,0.55);
+    }
+    .sah-footer-newsletter {
+      display: flex; margin-top: 20px;
+      border-radius: 6px; overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.1);
+      max-width: 280px;
+    }
+    .sah-footer-newsletter input {
+      flex: 1; padding: 10px 13px;
+      background: rgba(255,255,255,0.06);
+      border: none; color: #fff;
+      font-family: inherit; font-size: 0.82rem; outline: none;
+    }
+    .sah-footer-newsletter input::placeholder { color: rgba(255,255,255,0.35); }
+    .sah-footer-newsletter button {
+      padding: 10px 14px;
+      background: var(--accent, #c0234a);
+      color: #fff; border: none;
+      font-family: inherit; font-weight: 700;
+      font-size: 0.8rem; cursor: pointer;
+      transition: background 0.15s; white-space: nowrap;
+    }
+    .sah-footer-newsletter button:hover { background: var(--accent-dark, #96183a); }
+    .sah-footer-col h4 {
       font-size: 0.68rem; font-weight: 700;
       text-transform: uppercase; letter-spacing: 2px;
-      color: rgba(255,255,255,0.42); margin-bottom: 14px;
+      color: rgba(255,255,255,0.4); margin-bottom: 14px;
     }
-    .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
-    .footer-col ul li a { font-size: 0.85rem; transition: color 0.15s; }
-    .footer-col ul li a:hover { color: #fff; }
-    .footer-bottom {
-      border-top: 1px solid rgba(255,255,255,0.06);
-      padding-top: 22px;
-      display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
+    .sah-footer-col ul {
+      list-style: none; display: flex;
+      flex-direction: column; gap: 9px; padding: 0; margin: 0;
     }
-    .footer-bottom p { font-size: 0.8rem; }
-    .socials { display: flex; gap: 7px; }
-    .soc {
-      width: 32px; height: 32px; border-radius: 4px;
-      background: rgba(255,255,255,0.06);
+    .sah-footer-col ul li a {
+      color: rgba(255,255,255,0.55); text-decoration: none;
+      font-size: 0.875rem; transition: color 0.15s;
+    }
+    .sah-footer-col ul li a:hover { color: #fff; }
+    .sah-footer-trust {
+      display: flex; gap: 16px; align-items: center;
+      padding: 16px 0; margin-bottom: 20px;
+      border-top: 1px solid rgba(255,255,255,0.07); flex-wrap: wrap;
+    }
+    .sah-footer-trust-item {
+      display: flex; align-items: center;
+      gap: 7px; font-size: 0.78rem; color: rgba(255,255,255,0.45);
+    }
+    .sah-footer-trust-item i { color: var(--accent, #c0234a); font-size: 0.82rem; }
+    .sah-footer-bottom {
+      border-top: 1px solid rgba(255,255,255,0.07);
+      padding-top: 22px; display: flex;
+      justify-content: space-between; align-items: center;
+      gap: 16px; flex-wrap: wrap;
+    }
+    .sah-footer-bottom p { font-size: 0.8rem; color: rgba(255,255,255,0.35); }
+    .sah-footer-bottom-links { display: flex; gap: 20px; font-size: 0.8rem; }
+    .sah-footer-bottom-links a {
+      color: rgba(255,255,255,0.4); text-decoration: none; transition: color 0.15s;
+    }
+    .sah-footer-bottom-links a:hover { color: #fff; }
+    .sah-footer-socials { display: flex; gap: 8px; }
+    .sah-footer-soc {
+      width: 34px; height: 34px; border-radius: 5px;
+      background: rgba(255,255,255,0.07);
       display: flex; align-items: center; justify-content: center;
-      color: rgba(255,255,255,0.45); font-size: 0.82rem; transition: all 0.15s;
+      color: rgba(255,255,255,0.45); font-size: 0.84rem;
+      text-decoration: none; transition: all 0.15s;
     }
-    .soc:hover { background: var(--accent); color: #fff; }
+    .sah-footer-soc:hover { background: var(--accent, #c0234a); color: #fff; }
 
     /* ══════════════════════════════════
        MODALS
@@ -539,7 +592,7 @@
     .modal-switch { text-align: center; margin-top: 12px; font-size: 0.85rem; color: var(--muted); }
     .modal-switch a { color: var(--accent); font-weight: 600; }
 
-    /* ── Toast ── */
+    /* Toast */
     .toast {
       position: fixed; bottom: 22px; right: 22px;
       background: var(--dark); color: #fff;
@@ -553,7 +606,9 @@
     .toast.show { transform: translateY(0); opacity: 1; }
     .toast i { color: #22c55e; }
 
-    /* ── Responsive ── */
+    /* ══════════════════════════════════
+       RESPONSIVE
+    ══════════════════════════════════ */
     @media (max-width: 1100px) {
       .provider-grid { grid-template-columns: repeat(2,1fr); }
       .steps-grid { grid-template-columns: repeat(2,1fr); }
@@ -563,7 +618,7 @@
       .trust-cell:nth-child(2) { border-right: none; }
       .trust-cell:nth-child(1), .trust-cell:nth-child(2) { border-bottom: 1px solid rgba(255,255,255,0.18); }
       .cta-box { grid-template-columns: 1fr; gap: 28px; padding: 36px 32px; }
-      .footer-grid { grid-template-columns: 1fr 1fr; gap: 32px; }
+      .sah-footer-grid { grid-template-columns: 1fr 1fr; gap: 32px; }
     }
     @media (max-width: 768px) {
       .nav-links { display: none; }
@@ -574,7 +629,13 @@
       .steps-grid { grid-template-columns: 1fr; }
       .step { border-right: none !important; border-bottom: 1px solid var(--border); }
       .step:last-child { border-bottom: none; }
-      .footer-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 640px) {
+      .sah-footer { padding: 44px 0 24px; }
+      .sah-footer .container { padding: 0 20px; }
+      .sah-footer-grid { grid-template-columns: 1fr; gap: 28px; }
+      .sah-footer-bottom { flex-direction: column; align-items: flex-start; gap: 12px; }
+      .sah-footer-bottom-links { flex-wrap: wrap; gap: 12px; }
     }
     @media (max-width: 480px) {
       .provider-grid { grid-template-columns: 1fr; }
@@ -688,7 +749,7 @@
     <div class="container">
       <div class="how-header">
         <span class="sec-eyebrow">How It Works</span>
-        <h2 class="how-header" style="font-family:'Playfair Display',serif; font-size:clamp(1.5rem,3vw,2rem); font-weight:800; color:var(--dark);">Get Listed in Four Simple Steps</h2>
+        <h2 style="font-family:'Playfair Display',serif; font-size:clamp(1.5rem,3vw,2rem); font-weight:800; color:var(--dark);">Get Listed in Four Simple Steps</h2>
       </div>
       <div class="steps-grid">
         <div class="step">
@@ -777,51 +838,95 @@
     </div>
   </section>
 
-  <!-- ═══ FOOTER ═══ -->
-  <footer>
+  <!-- ═══ FOOTER (inlined from shared/footer.html) ═══ -->
+  <footer class="sah-footer">
     <div class="container">
-      <div class="footer-grid">
-        <div class="footer-brand">
-          <div class="footer-logo">SA Homeschooling Directory</div>
-          <p>Connecting South African homeschooling families with trusted tutors, therapists, curriculum providers and educational services.</p>
+
+      <div class="sah-footer-grid">
+        <!-- Brand + newsletter -->
+        <div class="sah-footer-brand">
+          <span class="sah-footer-logo">SA Homeschooling Directory</span>
+          <p>
+            Connecting South African homeschooling families with verified tutors,
+            therapists, curriculum providers and education specialists nationwide.
+          </p>
+          <div class="sah-footer-newsletter">
+            <input type="email" placeholder="Subscribe to newsletter…" aria-label="Email address">
+            <button type="button">Subscribe</button>
+          </div>
         </div>
-        <div class="footer-col">
+
+        <!-- For families -->
+        <div class="sah-footer-col">
           <h4>For Families</h4>
           <ul>
-            <li><a href="#">Find a Tutor</a></li>
-            <li><a href="#">Browse Curriculum</a></li>
-            <li><a href="#">Therapists</a></li>
-            <li><a href="#">Online Schools</a></li>
+            <li><a href="#providers">Find a Tutor</a></li>
+            <li><a href="#providers">Browse Curriculum</a></li>
+            <li><a href="#providers">Therapists</a></li>
+            <li><a href="#providers">Online Schools</a></li>
+            <li><a href="#providers">Consultants</a></li>
+            <li><a href="#providers">Enrichment</a></li>
           </ul>
         </div>
-        <div class="footer-col">
+
+        <!-- For providers -->
+        <div class="sah-footer-col">
           <h4>For Providers</h4>
           <ul>
-            <li><a href="#" onclick="openModal('registerModal');return false;">List a Service</a></li>
-            <li><a href="#">Pricing Plans</a></li>
+            <li><a href="#list">List a Service</a></li>
+            <li><a href="#list">Pricing Plans</a></li>
             <li><a href="#" onclick="openModal('loginModal');return false;">Provider Login</a></li>
-            <li><a href="#">Verification</a></li>
+            <li><a href="#how">Verification Process</a></li>
+            <li><a href="#">Provider Resources</a></li>
           </ul>
         </div>
-        <div class="footer-col">
+
+        <!-- Magazine + legal -->
+        <div class="sah-footer-col">
           <h4>SA Homeschooling</h4>
           <ul>
-            <li><a href="https://sahomeschooling.com" target="_blank">Magazine</a></li>
-            <li><a href="#">About Us</a></li>
-            <li><a href="#">Contact</a></li>
+            <li><a href="https://sahomeschooling.com" target="_blank" rel="noopener">Magazine</a></li>
+            <li><a href="#">About the Directory</a></li>
+            <li><a href="#">Contact Us</a></li>
             <li><a href="#">Privacy Policy</a></li>
+            <li><a href="#">Terms of Service</a></li>
           </ul>
         </div>
       </div>
-      <div class="footer-bottom">
-        <p>© 2025 SA Homeschooling Directory. All rights reserved.</p>
-        <div class="socials">
-          <a href="#" class="soc"><i class="fab fa-facebook-f"></i></a>
-          <a href="#" class="soc"><i class="fab fa-instagram"></i></a>
-          <a href="#" class="soc"><i class="fab fa-pinterest-p"></i></a>
-          <a href="#" class="soc"><i class="fab fa-youtube"></i></a>
+
+      <!-- Trust strip -->
+      <div class="sah-footer-trust">
+        <div class="sah-footer-trust-item">
+          <i class="fas fa-shield-alt"></i> All providers manually verified
+        </div>
+        <div class="sah-footer-trust-item">
+          <i class="fas fa-lock"></i> Secure &amp; private enquiries
+        </div>
+        <div class="sah-footer-trust-item">
+          <i class="fas fa-star"></i> 4.9 average provider rating
+        </div>
+        <div class="sah-footer-trust-item">
+          <i class="fas fa-map-marker-alt"></i> All 9 provinces covered
         </div>
       </div>
+
+      <!-- Bottom bar -->
+      <div class="sah-footer-bottom">
+        <p>© 2025 SA Homeschooling Directory. A publication of SA Homeschooling Magazine. All rights reserved.</p>
+        <div class="sah-footer-bottom-links">
+          <a href="#">Privacy</a>
+          <a href="#">Terms</a>
+          <a href="#">Cookies</a>
+          <a href="#">Sitemap</a>
+        </div>
+        <div class="sah-footer-socials">
+          <a href="#" class="sah-footer-soc" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+          <a href="#" class="sah-footer-soc" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+          <a href="#" class="sah-footer-soc" aria-label="Pinterest"><i class="fab fa-pinterest-p"></i></a>
+          <a href="#" class="sah-footer-soc" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+        </div>
+      </div>
+
     </div>
   </footer>
 
