@@ -7,7 +7,7 @@
     <!-- Font Awesome 6 (free) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <!-- shared dashboard CSS with custom palette -->
-    <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="../../css/dashboard.css">
     <style>
         /* additional inline styles */
         .editable-field {
@@ -25,13 +25,6 @@
         }
         .hidden-file-input {
             display: none;
-        }
-        .photo-round img {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            object-fit: cover;
-            display: block;
         }
         .edit-mode select.profile-value,
         .edit-mode input.profile-value {
@@ -113,11 +106,6 @@
         }
         input:checked + .toggle-slider:before {
             left: 22px;
-        }
-        .social-links-preview {
-            background: #f1f5f9;
-            padding: 0.5rem 1rem;
-            border-radius: 30px;
         }
         /* Tags styling */
         .tags-container {
@@ -226,6 +214,7 @@
     </style>
 </head>
 <body>
+    <!-- Header styled like homepage -->
     <header class="top-header">
         <div class="logo-area">
             <div class="logo-short">SAH</div>
@@ -235,12 +224,12 @@
             </div>
         </div>
         <div class="nav-links">
-            <a href="#">Home</a>
-            <a href="#">Find Providers</a>
-            <a href="#">List Services</a>
+            <a href="../homePage.html">Home</a>
+            <a href="../homePage.html#providers">Find Providers</a>
+            <a href="../homePage.html#list">List Services</a>
             <a href="#">Join Directory</a>
             <a href="#">About</a>
-            <a href="#" class="cta-nav">List Your Service</a>
+            <a href="../homePage.html#list" class="cta-nav">List Your Service</a>
         </div>
     </header>
 
@@ -248,6 +237,10 @@
         <div class="page-headline">
             <h1>My Provider Dashboard</h1>
             <p>Welcome back, Bright Minds Tutoring · <a href="#">switch to public view</a></p>
+            <div style="margin-top: 0.5rem; padding: 0.5rem 1rem; background: #fff3e0; border-radius: 30px; display: inline-block;">
+                <i class="fas fa-clock"></i> <strong>Status:</strong> <span class="pending-badge">Pending Approval</span> 
+                <span style="font-size: 0.85rem; margin-left: 0.5rem;">Your profile is awaiting admin verification</span>
+            </div>
         </div>
 
         <!-- main client dashboard card -->
@@ -255,16 +248,16 @@
             <div class="card-header">
                 <i class="fas fa-user-circle"></i>
                 <h2>Profile information</h2>
-                <span class="badge" id="editModeBadge" style="cursor:pointer;" onclick="toggleEditMode()">
+                <span class="badge" id="editModeBadge" onclick="toggleEditMode()">
                     <i class="far fa-edit"></i>  activate edit mode
                 </span>
             </div>
 
             <!-- photo row -->
             <div class="photo-placeholder">
-                <div class="photo-round" onclick="document.getElementById('photoUpload').click();" style="cursor:pointer; overflow:hidden;">
+                <div class="photo-round" onclick="document.getElementById('photoUpload').click();">
                     <i class="fas fa-camera" id="photoIcon"></i>
-                    <img id="photoImg" src="#" alt="" style="display:none; width:100%; height:100%; object-fit:cover;">
+                    <img id="photoImg" src="#" alt="" style="display:none;">
                 </div>
                 <div>
                     <button class="btn-edit" type="button" onclick="document.getElementById('photoUpload').click();"><i class="fas fa-pencil-alt"></i>  change photo / logo</button>
@@ -292,7 +285,7 @@
                     </div>
                 </div>
 
-                <!-- Languages spoken - now a multi-select with all 12 official languages -->
+                <!-- Languages spoken - multi-select with all 12 official languages -->
                 <div class="profile-field"><label>Languages spoken *</label>
                     <select id="fieldLanguages" class="language-select" multiple size="4" disabled>
                         <option value="Afrikaans" selected>Afrikaans</option>
@@ -400,7 +393,6 @@
                         <input type="number" id="fieldRadius" class="radius-input" value="30" min="1" max="200" disabled> <span>km</span>
                     </span>
                 </div>
-                <div class="profile-value" id="fieldServiceAreaDisplay" style="margin-top:0.3rem; display:none;"></div>
             </div>
 
             <!-- Pricing model -->
@@ -481,312 +473,23 @@
         </div>
 
         <div class="signup-mini">
-            <p><i class="fas fa-database"></i> <strong>Updated:</strong> Languages spoken now uses a multi-select with all 12 official South African languages.</p>
+            <p><i class="fas fa-database"></i> <strong>Your profile is currently pending approval.</strong> Once verified by an admin, your listing will appear in search results.</p>
         </div>
     </div>
 
-    <div class="footer-note">SA Homeschooling Directory · fully editable dashboard</div>
+    <!-- Footer from shared component -->
+    <div id="footer-placeholder"></div>
 
+    <!-- Load footer -->
     <script>
-        // State
-        let editModeActive = false;
-        let originalValues = {};
-
-        // Tags array
-        let tags = ['mathematics', 'tutoring', 'grade 8-12']; // default tags
-
-        // Text fields (contenteditable)
-        const textFields = [
-            'fieldBusiness','fieldEmail','fieldAccountType','fieldCategory',
-            'fieldBio','fieldServiceTitle','fieldStartingPrice','fieldAvailabilityNotes',
-            'fieldContactName','fieldPhone','fieldContactEmail','fieldSocial','fieldCity',
-            'fieldCertifications','fieldDegrees','fieldMemberships','fieldReview1','fieldReview2','fieldReview3'
-        ];
-
-        // Select elements (including multi-select language)
-        const selectIds = ['fieldYears','fieldAgeGroup','fieldMode','fieldProvince','fieldPricingModel','fieldServiceAreaType'];
-        // Language multi-select is handled separately
-        const languageSelect = document.getElementById('fieldLanguages');
-        
-        // Checkboxes (days)
-        const dayCheckboxes = document.querySelectorAll('#fieldAvailabilityDays input[type=checkbox]');
-        // Public toggle
-        const publicToggle = document.getElementById('publicToggle');
-        const socialPreview = document.getElementById('socialPreview');
-        // Radius input
-        const radiusInput = document.getElementById('fieldRadius');
-        const serviceAreaType = document.getElementById('fieldServiceAreaType');
-
-        // Tags elements
-        const tagsContainer = document.getElementById('tagsContainer');
-        const newTagInput = document.getElementById('newTagInput');
-        const addTagBtn = document.getElementById('addTagBtn');
-
-        // Render tags
-        function renderTags() {
-            tagsContainer.innerHTML = '';
-            tags.forEach((tag, index) => {
-                const tagEl = document.createElement('span');
-                tagEl.className = 'tag-item';
-                tagEl.innerHTML = `${tag} <i class="fas fa-times" onclick="removeTag(${index})" style="cursor:pointer;"></i>`;
-                tagsContainer.appendChild(tagEl);
+        fetch('../shared/footer.html')
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('footer-placeholder').innerHTML = data;
             });
-        }
-
-        // Add new tag
-        function addNewTag() {
-            if (!editModeActive) return;
-            const input = document.getElementById('newTagInput');
-            const newTag = input.value.trim();
-            if (newTag && !tags.includes(newTag)) {
-                tags.push(newTag);
-                renderTags();
-                input.value = '';
-            }
-        }
-
-        // Remove tag
-        function removeTag(index) {
-            if (!editModeActive) return;
-            tags.splice(index, 1);
-            renderTags();
-        }
-
-        // Helper to get selected languages as comma string
-        function getSelectedLanguages() {
-            const selected = [];
-            for (let option of languageSelect.options) {
-                if (option.selected) selected.push(option.value);
-            }
-            return selected.join(', ');
-        }
-
-        // Helper to set selected languages from comma string
-        function setSelectedLanguages(langString) {
-            const langArray = langString.split(',').map(s => s.trim());
-            for (let option of languageSelect.options) {
-                option.selected = langArray.includes(option.value);
-            }
-        }
-
-        // Show/hide radius based on service area type
-        function updateRadiusVisibility() {
-            const radiusContainer = document.getElementById('radiusContainer');
-            if (serviceAreaType.value === 'local') {
-                radiusContainer.style.display = 'inline-flex';
-            } else {
-                radiusContainer.style.display = 'none';
-            }
-        }
-        serviceAreaType.addEventListener('change', updateRadiusVisibility);
-
-        // Toggle social preview based on public toggle
-        function updateSocialVisibility() {
-            if (publicToggle.checked) {
-                socialPreview.style.display = 'block';
-            } else {
-                socialPreview.style.display = 'none';
-            }
-        }
-        publicToggle.addEventListener('change', updateSocialVisibility);
-
-        function toggleEditMode() {
-            const badge = document.getElementById('editModeBadge');
-            const editControls = document.getElementById('editControls');
-            const editHint = document.getElementById('editModeHint');
-            const dashboard = document.getElementById('clientDashboard');
-
-            if (!editModeActive) {
-                // store original values
-                textFields.forEach(id => {
-                    const el = document.getElementById(id);
-                    if (el) originalValues[id] = el.innerText;
-                });
-                selectIds.forEach(id => {
-                    const sel = document.getElementById(id);
-                    if (sel) originalValues[id] = sel.value;
-                });
-                // Store language selections
-                originalValues.languages = getSelectedLanguages();
-                
-                originalValues.days = [];
-                dayCheckboxes.forEach(cb => {
-                    originalValues.days.push({ value: cb.value, checked: cb.checked });
-                });
-                originalValues.publicToggle = publicToggle.checked;
-                originalValues.radius = radiusInput.value;
-                originalValues.tags = [...tags];
-
-                // enable editing
-                textFields.forEach(id => {
-                    document.getElementById(id).setAttribute('contenteditable', 'true');
-                });
-                selectIds.forEach(id => {
-                    document.getElementById(id).disabled = false;
-                });
-                languageSelect.disabled = false;
-                dayCheckboxes.forEach(cb => cb.disabled = false);
-                publicToggle.disabled = false;
-                radiusInput.disabled = false;
-                newTagInput.disabled = false;
-                addTagBtn.disabled = false;
-
-                dashboard.classList.add('edit-mode');
-                badge.innerHTML = '<i class="fas fa-pencil-alt"></i>  edit mode active';
-                editControls.style.display = 'flex';
-                editHint.style.display = 'none';
-                editModeActive = true;
-                updateRadiusVisibility();
-                renderTags();
-            } else {
-                cancelEdit();
-            }
-        }
-
-        function cancelEdit() {
-            const dashboard = document.getElementById('clientDashboard');
-            const badge = document.getElementById('editModeBadge');
-            const editControls = document.getElementById('editControls');
-            const editHint = document.getElementById('editModeHint');
-
-            // revert text fields
-            textFields.forEach(id => {
-                const el = document.getElementById(id);
-                if (el && originalValues[id] !== undefined) {
-                    el.innerText = originalValues[id];
-                }
-                el.setAttribute('contenteditable', 'false');
-            });
-
-            selectIds.forEach(id => {
-                const sel = document.getElementById(id);
-                if (sel && originalValues[id] !== undefined) {
-                    sel.value = originalValues[id];
-                }
-                sel.disabled = true;
-            });
-
-            // revert language select
-            if (originalValues.languages) {
-                setSelectedLanguages(originalValues.languages);
-            }
-            languageSelect.disabled = true;
-
-            dayCheckboxes.forEach(cb => {
-                const orig = originalValues.days?.find(d => d.value === cb.value);
-                if (orig) cb.checked = orig.checked;
-                cb.disabled = true;
-            });
-
-            if (originalValues.publicToggle !== undefined) publicToggle.checked = originalValues.publicToggle;
-            publicToggle.disabled = true;
-
-            if (originalValues.radius !== undefined) radiusInput.value = originalValues.radius;
-            radiusInput.disabled = true;
-
-            // revert tags
-            tags = originalValues.tags ? [...originalValues.tags] : [];
-            renderTags();
-            newTagInput.disabled = true;
-            addTagBtn.disabled = true;
-
-            dashboard.classList.remove('edit-mode');
-            badge.innerHTML = '<i class="far fa-edit"></i>  activate edit mode';
-            editControls.style.display = 'none';
-            editHint.style.display = 'inline';
-            editModeActive = false;
-
-            updateSocialVisibility();
-            updateRadiusVisibility();
-        }
-
-        function saveChanges() {
-            // update original values
-            textFields.forEach(id => {
-                originalValues[id] = document.getElementById(id).innerText;
-            });
-            selectIds.forEach(id => {
-                originalValues[id] = document.getElementById(id).value;
-            });
-            originalValues.languages = getSelectedLanguages();
-            
-            originalValues.days = [];
-            dayCheckboxes.forEach(cb => {
-                originalValues.days.push({ value: cb.value, checked: cb.checked });
-            });
-            originalValues.publicToggle = publicToggle.checked;
-            originalValues.radius = radiusInput.value;
-            originalValues.tags = [...tags];
-
-            // exit edit mode (disable all)
-            const dashboard = document.getElementById('clientDashboard');
-            const badge = document.getElementById('editModeBadge');
-            const editControls = document.getElementById('editControls');
-            const editHint = document.getElementById('editModeHint');
-
-            textFields.forEach(id => {
-                document.getElementById(id).setAttribute('contenteditable', 'false');
-            });
-            selectIds.forEach(id => {
-                document.getElementById(id).disabled = true;
-            });
-            languageSelect.disabled = true;
-            dayCheckboxes.forEach(cb => cb.disabled = true);
-            publicToggle.disabled = true;
-            radiusInput.disabled = true;
-            newTagInput.disabled = true;
-            addTagBtn.disabled = true;
-
-            dashboard.classList.remove('edit-mode');
-            badge.innerHTML = '<i class="far fa-edit"></i>  activate edit mode';
-            editControls.style.display = 'none';
-            editHint.style.display = 'inline';
-            editModeActive = false;
-
-            updateSocialVisibility();
-            updateRadiusVisibility();
-
-            alert('Changes saved (demo).');
-        }
-
-        function handlePhotoUpload(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const img = document.getElementById('photoImg');
-                    const icon = document.getElementById('photoIcon');
-                    img.src = e.target.result;
-                    img.style.display = 'block';
-                    icon.style.display = 'none';
-                }
-                reader.readAsDataURL(file);
-            }
-        }
-
-        window.onload = function() {
-            textFields.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) originalValues[id] = el.innerText;
-            });
-            selectIds.forEach(id => {
-                const sel = document.getElementById(id);
-                if (sel) originalValues[id] = sel.value;
-            });
-            originalValues.languages = getSelectedLanguages();
-            
-            originalValues.days = [];
-            dayCheckboxes.forEach(cb => {
-                originalValues.days.push({ value: cb.value, checked: cb.checked });
-            });
-            originalValues.publicToggle = publicToggle.checked;
-            originalValues.radius = radiusInput.value;
-            originalValues.tags = [...tags];
-
-            renderTags();
-            updateSocialVisibility();
-            updateRadiusVisibility();
-        };
     </script>
+
+    <!-- Load shared dashboard JavaScript -->
+    <script src="../../js/dashboards.js"></script>
 </body>
 </html>
