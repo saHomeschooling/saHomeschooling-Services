@@ -31,6 +31,7 @@
       --radius-card: 32px;
       --radius-field: 16px;
       --shadow-elevation: 0 20px 50px -12px rgba(0, 0, 0, 0.15);
+      --toast-z: 9999;
     }
 
     body {
@@ -70,31 +71,53 @@
       font-size: 1.2rem;
     }
 
-    /* ===== ALERTS ===== */
-    .alert {
-      display: none;
-      padding: 1.2rem 2rem;
+    /* ===== TOAST MESSAGE (replaces old alert) ===== */
+    .toast {
+      visibility: hidden;
+      min-width: 320px;
+      background: var(--card);
+      color: var(--text);
+      text-align: center;
       border-radius: 60px;
+      padding: 1rem 2rem;
+      position: sticky;
+      top: 1.5rem;
+      z-index: var(--toast-z);
+      margin: 0 auto 1.5rem auto;
+      box-shadow: 0 20px 40px -12px rgba(0,0,0,0.25), 0 0 0 1px rgba(0,0,0,0.02);
       font-weight: 600;
       font-size: 1rem;
-      margin: 2rem auto 1.5rem;
-      max-width: 900px;
-      text-align: center;
-      border: 1px solid transparent;
-      backdrop-filter: blur(2px);
+      border-left: 6px solid transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      width: fit-content;
+      max-width: 800px;
+      backdrop-filter: blur(4px);
+      transition: visibility 0.2s, opacity 0.2s;
+      opacity: 0;
     }
 
-    .alert.error {
-      background: var(--danger-bg);
-      color: #a00c2c;
-      border-color: #f5b3b3;
-      box-shadow: 0 4px 12px rgba(220, 38, 38, 0.12);
+    .toast.show {
+      visibility: visible;
+      opacity: 1;
     }
 
-    .alert.success {
+    .toast.success {
       background: var(--success-bg);
-      color: var(--success);
-      border-color: #a3e0b5;
+      color: #0a5430;
+      border-left-color: var(--success);
+    }
+
+    .toast.error {
+      background: var(--danger-bg);
+      color: #8f1e1e;
+      border-left-color: var(--danger);
+    }
+
+    .toast i {
+      font-size: 1.2rem;
     }
 
     /* ===== MAIN CARD ===== */
@@ -103,7 +126,7 @@
       border-radius: var(--radius-card);
       padding: 3rem 2.5rem;
       box-shadow: var(--shadow-elevation);
-      margin-top: 2.5rem;
+      margin-top: 0.5rem;
       transition: box-shadow 0.2s;
     }
 
@@ -122,7 +145,7 @@
 
     @media (max-width: 700px) {
       .panel {
-        padding: 3rem 1rem;
+        padding: 2rem 1rem;
       }
       .onboarding-box {
         padding: 2rem 1.5rem;
@@ -130,6 +153,11 @@
       .form-grid {
         grid-template-columns: 1fr;
         gap: 1.8rem;
+      }
+      .toast {
+        min-width: 260px;
+        font-size: 0.9rem;
+        padding: 0.8rem 1.5rem;
       }
     }
 
@@ -185,10 +213,20 @@
       color: #1e2b3c;
     }
 
-    label span {
+    label .required-star {
       color: var(--primary);
       font-weight: 700;
-      font-size: 1.1rem;
+      font-size: 1.2rem;
+      line-height: 1;
+      margin-left: 0.15rem;
+    }
+
+    /* required note styling */
+    .field-note {
+      font-size: 0.8rem;
+      color: var(--muted);
+      font-weight: 400;
+      margin-left: 0.25rem;
     }
 
     input, select, textarea {
@@ -264,7 +302,7 @@
       gap: 1rem;
     }
 
-    /* ===== NEW: Qualification fields (exactly as PDF snippet, integrated seamlessly) ===== */
+    /* ===== Qualification fields (exactly as PDF snippet) ===== */
     .qualification-item {
       border: 1px solid var(--border);
       border-radius: 18px;
@@ -386,135 +424,133 @@
       Complete the form below to list your services — trusted by 1,200+ educators
     </p>
 
-    <div id="alertBox" class="alert" role="alert"></div>
+    <!-- TOAST MESSAGE (replaces alertBox) -->
+    <div id="toastMessage" class="toast" role="alert"></div>
 
     <form id="onboardingForm" class="onboarding-box" novalidate>
 
       <div class="form-grid">
 
-        <!-- STEP 1  Account Setup (unchanged) -->
+        <!-- STEP 1  Account Setup (required fields exactly as PDF: name, email, password, account type) -->
         <div class="form-section">
           <h3><i class="fa-regular fa-user"></i> 1. Account Setup</h3>
           <div class="form-group" data-field="fullName">
-            <label>Full Name / Business Name <span>*</span></label>
+            <label>Full Name / Business Name <span class="required-star">*</span></label>
             <input id="fullName" required>
           </div>
           <div class="form-group" data-field="email">
-            <label>Email Address <span>*</span></label>
+            <label>Email Address <span class="required-star">*</span></label>
             <input type="email" id="email" required>
           </div>
           <div class="form-group" data-field="password">
-            <label>Password <span>*</span></label>
+            <label>Password <span class="required-star">*</span></label>
             <input type="password" id="password" required minlength="8">
           </div>
           <div class="form-group" data-field="accountType">
-            <label>Account Type <span>*</span></label>
+            <label>Account Type <span class="required-star">*</span></label>
+            <!-- DROPDOWN FIXED: default option with "Please select" and value="" ensures it starts closed and shows placeholder -->
             <select id="accountType" required>
-              <option value="">Select</option>
+              <option value="" disabled selected>Please select</option>
               <option>Individual Provider</option>
-              <option>Organisation / Company</option>   <!-- aligned with PDF spelling -->
+              <option>Organisation / Company</option>
             </select>
           </div>
         </div>
 
-        <!-- STEP 2 Provider Identity & Trust (PDF enriched) -->
+        <!-- STEP 2 Provider Identity & Trust (required: bio, experience, languages. others optional) -->
         <div class="form-section">
           <h3><i class="fa-regular fa-id-card"></i> 2. Provider Identity & Trust</h3>
           <div class="form-group">
-            <label>Profile Photo / Logo</label>
+            <label>Profile Photo / Logo <span class="field-note">(optional)</span></label>
             <input type="file" accept="image/*">
           </div>
           <div class="form-group" data-field="bio">
-            <label>Short Bio / About <span>*</span> <small>(150-250 words)</small></label>
+            <label>Short Bio / About <span class="required-star">*</span> <span class="field-note">(150-250 words)</span></label>
             <textarea rows="4" id="bio" required placeholder="Tell families about your approach..."></textarea>
           </div>
           <div class="form-group" data-field="experience">
-            <label>Years of Experience <span>*</span></label>
+            <label>Years of Experience <span class="required-star">*</span></label>
+            <!-- DROPDOWN FIXED: "Please select" as default -->
             <select id="experience" required>
-              <option value="">Select</option>
+              <option value="" disabled selected>Please select</option>
               <option>0-1</option><option>1-3</option><option>3-5</option>
               <option>5-10</option><option>10+</option>
             </select>
           </div>
 
-          <!-- === NEW: Qualifications / Certifications (file upload or text) from PDF === -->
+          <!-- Qualifications (optional) -->
           <div class="form-group">
-            <label>Qualifications / Certifications</label>
-            <input type="file" accept=".pdf,.doc,.docx,.jpg,.png" placeholder="Upload certificate (optional)">
-            <span class="field-error-message" style="display: none; position: static;"></span>
+            <label>Qualifications / Certifications <span class="field-note">(optional)</span></label>
+            <input type="file" accept=".pdf,.doc,.docx,.jpg,.png">
             <small style="color: var(--muted); display: block; margin-top: 0.2rem;">Or type below</small>
-            <textarea rows="2" placeholder="e.g. PGCE, TEFL, BEd, Certified Tutor ..."></textarea>
+            <textarea rows="2" placeholder="e.g. PGCE, TEFL, BEd ..."></textarea>
           </div>
 
-          <!-- Police Clearance / Background check (optional but encouraged) -->
+          <!-- Police Clearance (optional) -->
           <div class="form-group">
-            <label>Police Clearance / Background check <small style="font-weight:normal;">(optional, builds trust)</small></label>
+            <label>Police Clearance / Background check <span class="field-note">(optional, builds trust)</span></label>
             <input type="file" accept=".pdf,.jpg,.png">
           </div>
 
-          <!-- Languages spoken (multi-select) already existed, keep -->
+          <!-- Languages spoken (required) -->
           <div class="form-group" data-field="languages">
-            <label>Languages Spoken <span>*</span></label>
+            <label>Languages Spoken <span class="required-star">*</span></label>
+            <!-- MULTI-SELECT: we keep as is, it opens on click, but no placeholder needed for multi -->
             <select id="languages" multiple required size="4">
               <option>English</option><option>Afrikaans</option><option>Zulu</option>
               <option>Xhosa</option><option>Sotho</option><option>Tswana</option>
             </select>
           </div>
 
-          <!-- ===== NEW: Exactly the "Qualifications & Experience" block as per PDF snippet, integrated ===== -->
-          <div class="profile-field"><label style="font-size:1rem; margin-top:0.5rem;">Qualifications & Experience (preview / example)</label>
+          <!-- Preview block (no validation) -->
+          <div class="profile-field"><label style="font-size:1rem; margin-top:0.5rem;">Qualifications & Experience (preview)</label>
             <div class="qualification-item">
               <div class="inline-group" style="margin-bottom:0.5rem;">
-                <div class="profile-field"><label>Certifications</label><div class="profile-value" id="fieldCertifications" contenteditable="false">PGCE, TEFL, Maths Specialist</div></div>
-                <div class="profile-field"><label>Degrees</label><div class="profile-value" id="fieldDegrees" contenteditable="false">BSc Mathematics, MEd (Educational Psychology)</div></div>
+                <div class="profile-field"><label>Certifications</label><div class="profile-value">PGCE, TEFL, Maths Specialist</div></div>
+                <div class="profile-field"><label>Degrees</label><div class="profile-value">BSc Mathematics, MEd (Educational Psychology)</div></div>
               </div>
               <div class="inline-group">
-                <div class="profile-field"><label>Professional memberships</label><div class="profile-value" id="fieldMemberships" contenteditable="false">SACE, SAALT, IEB Affiliate</div></div>
-                <div class="profile-field"><label>Background clearance</label>
-                  <div id="fieldClearanceContainer">
-                    <span class="badge-clearance" id="clearanceBadge"><i class="fas fa-check-circle"></i> Verified (2025)</span>
-                  </div>
-                </div>
+                <div class="profile-field"><label>Professional memberships</label><div class="profile-value">SACE, SAALT, IEB Affiliate</div></div>
+                <div class="profile-field"><label>Background clearance</label><span class="badge-clearance"><i class="fas fa-check-circle"></i> Verified (2025)</span></div>
               </div>
             </div>
-            <small style="color: var(--muted);">This preview shows how your qualifications will appear — complete fields above</small>
           </div>
         </div>
 
-        <!-- STEP 3 Services Offered (minor update to match PDF: Secondary categories, Subjects/Specialisations) -->
+        <!-- STEP 3 Services Offered (required: primary category, service title, description, age groups, delivery) -->
         <div class="form-section">
           <h3><i class="fa-regular fa-hand-peace"></i> 3. Services Offered</h3>
           <div class="form-group" data-field="primaryCategory">
-            <label>Primary Category <span>*</span></label>
+            <label>Primary Category <span class="required-star">*</span></label>
+            <!-- DROPDOWN FIXED -->
             <select id="primaryCategory" required>
-              <option value="">Select</option>
+              <option value="" disabled selected>Please select</option>
               <option>Tutor</option><option>Therapist</option><option>Curriculum Provider</option>
               <option>Extracurricular</option><option>Consultant</option><option>School</option>
             </select>
           </div>
-          <!-- Secondary categories (multi-select) from PDF -->
           <div class="form-group">
-            <label>Secondary Categories (multi-select)</label>
+            <label>Secondary Categories <span class="field-note">(optional)</span></label>
+            <!-- multi keeps natural behavior -->
             <select multiple size="3">
               <option>Remedial support</option><option>Exam prep</option><option>Arts & crafts</option>
               <option>Sport coaching</option><option>Music</option><option>STEM</option>
             </select>
           </div>
           <div class="form-group" data-field="serviceTitle">
-            <label>Service Title <span>*</span></label>
+            <label>Service Title <span class="required-star">*</span></label>
             <input id="serviceTitle" required>
           </div>
           <div class="form-group" data-field="serviceDescription">
-            <label>Service Description <span>*</span></label>
+            <label>Service Description <span class="required-star">*</span></label>
             <textarea id="serviceDescription" required></textarea>
           </div>
-          <!-- Subjects / Specialisations (PDF) -->
           <div class="form-group">
-            <label>Subjects / Specialisations</label>
-            <input placeholder="e.g. Mathematics, Phonics, Occupational Therapy">
+            <label>Subjects / Specialisations <span class="field-note">(optional)</span></label>
+            <input placeholder="e.g. Mathematics, Phonics">
           </div>
           <div class="form-group">
-            <label>Age Groups Served *</label>
+            <label>Age Groups Served <span class="required-star">*</span></label>
             <div class="checkbox-group" data-required-group="ageGroup">
               <label><input type="checkbox" name="age" value="5-7">5-7</label>
               <label><input type="checkbox" name="age" value="8-10">8-10</label>
@@ -523,7 +559,7 @@
             </div>
           </div>
           <div class="form-group">
-            <label>Delivery Mode *</label>
+            <label>Delivery Mode <span class="required-star">*</span></label>
             <div class="checkbox-group" data-required-group="deliveryMode">
               <label><input type="checkbox" name="delivery" value="Online">Online</label>
               <label><input type="checkbox" name="delivery" value="In-person">In-person</label>
@@ -532,41 +568,42 @@
           </div>
         </div>
 
-        <!-- STEP 4 Location & Reach (PDF style) -->
+        <!-- STEP 4 Location & Reach (required: city, province, service area) -->
         <div class="form-section">
           <h3><i class="fa-regular fa-map"></i> 4. Location & Reach</h3>
           <div class="form-group" data-field="city">
-            <label>City <span>*</span></label>
+            <label>City <span class="required-star">*</span></label>
             <input id="city" required>
           </div>
           <div class="form-group" data-field="province">
-            <label>Province <span>*</span></label>
+            <label>Province <span class="required-star">*</span></label>
+            <!-- DROPDOWN FIXED -->
             <select id="province" required>
-              <option value="">Select</option>
+              <option value="" disabled selected>Please select</option>
               <option>Gauteng</option><option>Western Cape</option><option>KwaZulu-Natal</option>
               <option>Eastern Cape</option><option>Free State</option><option>Limpopo</option>
               <option>Mpumalanga</option><option>North West</option><option>Northern Cape</option>
             </select>
           </div>
           <div class="form-group">
-            <label>Service Area *</label>
-            <div class="checkbox-group">
+            <label>Service Area <span class="required-star">*</span></label>
+            <div class="checkbox-group" data-required-group="area">
               <label><input type="radio" name="area" value="Local" required>Local (X km)</label>
               <label><input type="radio" name="area" value="National">National</label>
               <label><input type="radio" name="area" value="Online only">Online only</label>
             </div>
           </div>
           <div class="form-group">
-            <label>Local Radius (km)</label>
+            <label>Local Radius (km) <span class="field-note">(optional)</span></label>
             <input type="number" min="1" placeholder="e.g. 30">
           </div>
         </div>
 
-        <!-- STEP 5 Pricing & Availability (PDF: added Per package, Custom quote, Time slots) -->
+        <!-- STEP 5 Pricing & Availability (required: pricing model at least one) -->
         <div class="form-section">
           <h3><i class="fa-regular fa-clock"></i> 5. Pricing & Availability</h3>
           <div class="form-group">
-            <label>Pricing Model *</label>
+            <label>Pricing Model <span class="required-star">*</span></label>
             <div class="checkbox-group" data-required-group="pricing">
               <label><input type="checkbox" name="pricing" value="Hourly">Hourly</label>
               <label><input type="checkbox" name="pricing" value="Per package">Per package</label>
@@ -575,11 +612,11 @@
             </div>
           </div>
           <div class="form-group">
-            <label>Starting Price (optional)</label>
+            <label>Starting Price <span class="field-note">(optional)</span></label>
             <input placeholder="R250/hr">
           </div>
           <div class="form-group">
-            <label>Days available</label>
+            <label>Days available <span class="field-note">(optional)</span></label>
             <div class="checkbox-group">
               <label><input type="checkbox" value="Mon">Mon</label><label><input type="checkbox" value="Tue">Tue</label>
               <label><input type="checkbox" value="Wed">Wed</label><label><input type="checkbox" value="Thu">Thu</label>
@@ -588,26 +625,26 @@
             </div>
           </div>
           <div class="form-group">
-            <label>Time slots / notes</label>
+            <label>Time slots / notes <span class="field-note">(optional)</span></label>
             <textarea placeholder="e.g. afternoons, weekends"></textarea>
           </div>
         </div>
 
-        <!-- STEP 6 Contact & Online Presence (PDF: WhatsApp, social links etc) -->
+        <!-- STEP 6 Contact & Online Presence (all optional per PDF) -->
         <div class="form-section">
           <h3><i class="fa-regular fa-address-book"></i> 6. Contact & Online Presence</h3>
-          <div class="form-group"><label>Phone Number</label><input type="tel" placeholder="+27"></div>
-          <div class="form-group"><label>WhatsApp Number</label><input type="tel" placeholder="+27"></div>
-          <div class="form-group"><label>Email for inquiries</label><input type="email" placeholder="contact@example.com"></div>
-          <div class="form-group"><label>Website</label><input type="url" placeholder="https://"></div>
-          <div class="form-group"><label>Social media links</label><input placeholder="Instagram, LinkedIn, Facebook (comma separated)"></div>
+          <div class="form-group"><label>Phone Number <span class="field-note">(optional)</span></label><input type="tel" placeholder="+27"></div>
+          <div class="form-group"><label>WhatsApp Number <span class="field-note">(optional)</span></label><input type="tel" placeholder="+27"></div>
+          <div class="form-group"><label>Email for inquiries <span class="field-note">(optional)</span></label><input type="email" placeholder="contact@example.com"></div>
+          <div class="form-group"><label>Website <span class="field-note">(optional)</span></label><input type="url" placeholder="https://"></div>
+          <div class="form-group"><label>Social media links <span class="field-note">(optional)</span></label><input placeholder="Instagram, LinkedIn, Facebook"></div>
           <div class="form-group"><label><input type="checkbox" checked> Display contact details publicly</label></div>
         </div>
 
-        <!-- STEP 7 Choose Your Listing Plan (exact PDF naming: Community Member, Trusted Provider, SAH Featured Partner) -->
+        <!-- STEP 7 Choose Your Listing Plan (required: plan radio) -->
         <div class="form-section">
           <h3><i class="fa-regular fa-gem"></i> 7. Choose Your Listing Plan</h3>
-          <div class="checkbox-group" style="flex-direction: column; gap:0.8rem;">
+          <div class="checkbox-group" style="flex-direction: column; gap:0.8rem;" data-required-group="plan">
             <label><input type="radio" name="plan" value="Community Member" required> <strong>Community Member</strong> (free)</label>
             <label><input type="radio" name="plan" value="Trusted Provider"> <strong>Trusted Provider</strong> – paid</label>
             <label><input type="radio" name="plan" value="SAH Featured Partner"> <strong>SAH Featured Partner</strong> – featured</label>
@@ -627,116 +664,161 @@
 <script>
   (function() {
     const form = document.getElementById("onboardingForm");
-    const alertBox = document.getElementById("alertBox");
+    const toast = document.getElementById("toastMessage");
 
+    // helper to show toast with message and type, then scroll to it smoothly
+    function showToast(message, type = 'error') {
+      toast.className = `toast ${type} show`;
+      toast.innerHTML = `<i class="fa-${type === 'success' ? 'regular fa-circle-check' : 'solid fa-circle-exclamation'}"></i> ${message}`;
+      
+      // scroll to toast (smooth)
+      setTimeout(() => {
+        toast.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 50);
+    }
+
+    function hideToast() {
+      toast.classList.remove('show', 'error', 'success');
+    }
+
+    // field error helpers
     function clearAllFieldErrors() {
-      document.querySelectorAll('.field-error-message').forEach(el => el.style.display = 'none');
+      document.querySelectorAll('.field-error-message').forEach(el => el.remove());
       form.querySelectorAll('.input-error').forEach(el => el.classList.remove('input-error'));
+      
+      // also reset any group borders
+      document.querySelectorAll('[data-required-group]').forEach(g => {
+        g.style.borderLeft = 'none';
+      });
     }
 
     function showFieldError(inputEl, message) {
       const wrapper = inputEl.closest('.form-group') || inputEl.parentElement;
       if (!wrapper) return;
-      let msgDiv = wrapper.querySelector('.field-error-message');
-      if (!msgDiv) {
-        msgDiv = document.createElement('div');
-        msgDiv.className = 'field-error-message';
-        wrapper.appendChild(msgDiv);
-      }
+      // remove existing if any
+      const existing = wrapper.querySelector('.field-error-message');
+      if (existing) existing.remove();
+
+      const msgDiv = document.createElement('div');
+      msgDiv.className = 'field-error-message';
       msgDiv.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> ${message}`;
-      msgDiv.style.display = 'flex';
+      wrapper.appendChild(msgDiv);
       inputEl.classList.add('input-error');
     }
 
+    // validate required fields and groups
     function validateForm() {
       let isValid = true;
       clearAllFieldErrors();
 
+      // 1) all [required] inputs (except hidden ones inside groups, but we handle groups separately)
       form.querySelectorAll("[required]").forEach(field => {
+        // skip radios inside groups – we validate group separately with data-required-group
+        if (field.type === 'radio') return; 
+
         if (!field.value || field.value.trim() === "") {
           isValid = false;
           showFieldError(field, "This field is required");
-        } else if (field.type === 'email' && field.value && !/^\S+@\S+\.\S+$/.test(field.value)) {
+        } else if (field.type === 'email' && !/^\S+@\S+\.\S+$/.test(field.value)) {
           isValid = false;
-          showFieldError(field, "Valid email required");
+          showFieldError(field, "Valid email required (e.g., name@domain.com)");
         } else if (field.id === 'password' && field.value.length < 8) {
           isValid = false;
-          showFieldError(field, "Min 8 characters");
+          showFieldError(field, "Password must be at least 8 characters");
         }
       });
 
+      // 2) Check groups with data-required-group (checkboxes / radios)
       document.querySelectorAll("[data-required-group]").forEach(group => {
-        const checkboxes = group.querySelectorAll("input[type=checkbox]");
-        if (!Array.from(checkboxes).some(cb => cb.checked)) {
+        const inputs = group.querySelectorAll("input[type=checkbox], input[type=radio]");
+        const checked = Array.from(inputs).some(inp => inp.checked);
+        if (!checked) {
           isValid = false;
-          group.style.borderLeft = "3px solid var(--danger)";
+          group.style.borderLeft = "4px solid var(--danger)";
+          group.style.paddingLeft = "12px";
+          
+          // show hint inside group
           let hint = group.parentElement.querySelector('.group-error-inline');
           if (!hint) {
             hint = document.createElement('div');
-            hint.className = 'field-error-message';
+            hint.className = 'field-error-message group-error-inline';
             group.parentElement.appendChild(hint);
           }
-          hint.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> Select at least one';
+          hint.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> Select at least one option';
         } else {
           group.style.borderLeft = "none";
+          const oldHint = group.parentElement.querySelector('.group-error-inline');
+          if (oldHint) oldHint.remove();
         }
       });
-
-      const radioGroups = {};
-      form.querySelectorAll('input[type="radio"][required]').forEach(radio => {
-        if (!radioGroups[radio.name]) radioGroups[radio.name] = false;
-        if (radio.checked) radioGroups[radio.name] = true;
-      });
-      for (let [name, isChecked] of Object.entries(radioGroups)) {
-        if (!isChecked) {
-          isValid = false;
-          const firstRadio = form.querySelector(`input[name="${name}"]`);
-          const wrapper = firstRadio.closest('.form-group') || firstRadio.parentElement;
-          let msg = wrapper.querySelector('.field-error-message');
-          if (!msg) {
-            msg = document.createElement('div');
-            msg.className = 'field-error-message';
-            wrapper.appendChild(msg);
-          }
-          msg.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> Select one option`;
-        }
-      }
 
       return isValid;
     }
 
+    // realtime clear errors
     form.addEventListener('input', (e) => {
-      if (e.target.hasAttribute('required') && e.target.value.trim() !== '') {
-        e.target.classList.remove('input-error');
-        const wrapper = e.target.closest('.form-group');
+      const target = e.target;
+      if (target.hasAttribute('required') && target.value.trim() !== '') {
+        target.classList.remove('input-error');
+        const wrapper = target.closest('.form-group');
         if (wrapper) {
           const msg = wrapper.querySelector('.field-error-message');
-          if (msg) msg.style.display = 'none';
+          if (msg) msg.remove();
+        }
+      }
+    });
+
+    // also listen to change for checkboxes/radios to clear group error
+    form.addEventListener('change', (e) => {
+      const target = e.target;
+      if (target.type === 'checkbox' || target.type === 'radio') {
+        const group = target.closest('[data-required-group]');
+        if (group) {
+          const anyChecked = Array.from(group.querySelectorAll('input[type=checkbox], input[type=radio]')).some(inp => inp.checked);
+          if (anyChecked) {
+            group.style.borderLeft = 'none';
+            const hint = group.parentElement.querySelector('.group-error-inline');
+            if (hint) hint.remove();
+          }
         }
       }
     });
 
     form.addEventListener("submit", (e) => {
       e.preventDefault();
-      alertBox.style.display = "none";
-      alertBox.classList.remove("error", "success");
+      hideToast();
 
       if (!validateForm()) {
-        alertBox.className = "alert error";
-        alertBox.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> Please complete all required fields.';
-        alertBox.style.display = "block";
-        const firstError = document.querySelector('.input-error');
-        if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        showToast('Please complete all required fields.', 'error');
+        // scroll to first error field
+        const firstError = document.querySelector('.input-error, [style*="border-left: 4px"]');
+        if (firstError) {
+          firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+          // fallback to toast
+          toast.scrollIntoView({ behavior: 'smooth' });
+        }
         return;
       }
 
-      alertBox.className = "alert success";
-      alertBox.innerHTML = '<i class="fa-regular fa-circle-check"></i> 🎉 Profile created! Redirecting…';
-      alertBox.style.display = "block";
-      setTimeout(() => window.location.href = "Login.html", 2200);
+      // success case
+      showToast('🎉 Profile created successfully! Redirecting...', 'success');
+
+      // optional: scroll to toast after success
+      setTimeout(() => {
+        toast.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 100);
+
+      // redirect after 2.2s
+      setTimeout(() => {
+        window.location.href = "Login.html";
+      }, 2200);
     });
 
-    window.addEventListener('load', () => alertBox.style.display = "none");
+    // hide toast initially
+    window.addEventListener('load', () => {
+      hideToast();
+    });
   })();
 </script>
 </body>
