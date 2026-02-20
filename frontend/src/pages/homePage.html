@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SA Homeschooling Directory — Trusted Education Services</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+  <style>
+    :root {
+      --accent:        #c0234a;
+      --accent-dark:   #96183a;
+      --accent-light:  #f5d0d8;
+      --dark:          #111111;
+      --mid:           #3a1a22;
+      --muted:         #6b6b6b;
+      --light-bg:      #f8f4f5;
+      --white:         #ffffff;
+      --border:        rgba(0,0,0,0.09);
+      --shadow-sm:     0 1px 4px rgba(0,0,0,0.07);
+      --shadow-md:     0 4px 20px rgba(0,0,0,0.10);
+      --shadow-lg:     0 12px 48px rgba(0,0,0,0.14);
+      --radius:        8px;
+      --radius-lg:     12px;
+      --header-h:      68px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--white);
+      color: var(--dark);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    a { color: inherit; text-decoration: none; }
+    button { cursor: pointer; font-family: inherit; }
+    img { display: block; max-width: 100%; }
+    .hidden { display: none !important; }
+    .container { max-width: 1280px; margin: 0 auto; padding: 0 32px; }
+
+    /* ══════════════════════════════════
+       HEADER — solid dark crimson-pink
+    ══════════════════════════════════ */
+    header {
+      position: sticky; top: 0; z-index: 1000;
+      height: var(--header-h);
+      background: var(--accent);
+    }
+    .nav-inner {
+      height: 100%;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-divider { width: 2px; height: 30px; background: rgba(255,255,255,0.5); border-radius: 1px; }
+    .brand-text { display: flex; flex-direction: column; line-height: 1.15; }
+    .brand-name {
+      font-family: 'Playfair Display', serif;
+      font-weight: 800; font-size: 1rem; color: #fff; letter-spacing: 0.2px;
+    }
+    .brand-tag { font-size: 0.66rem; color: rgba(255,255,255,0.65); font-weight: 500; letter-spacing: 0.5px; }
+
+    .nav-links { display: flex; align-items: center; gap: 2px; }
+    .nav-links a {
+      padding: 8px 14px; border-radius: 5px;
+      font-weight: 600; font-size: 0.85rem;
+      color: rgba(255,255,255,0.85); transition: all 0.15s;
+    }
+    .nav-links a:hover { color: #fff; background: rgba(255,255,255,0.1); }
+
+    .nav-ctas { display: flex; align-items: center; gap: 8px; }
+    .btn-ghost-nav {
+      padding: 7px 16px; border-radius: 5px;
+      border: 1.5px solid rgba(255,255,255,0.45);
+      background: transparent; color: #fff;
+      font-weight: 600; font-size: 0.85rem; transition: all 0.15s;
+    }
+    .btn-ghost-nav:hover { border-color: #fff; background: rgba(255,255,255,0.1); }
+    .btn-solid-nav {
+      padding: 7px 18px; border-radius: 5px;
+      background: #fff; color: var(--accent);
+      font-weight: 700; font-size: 0.85rem;
+      border: none; transition: all 0.15s;
+    }
+    .btn-solid-nav:hover { background: var(--accent-light); }
+
+    /* ══════════════════════════════════
+       HERO — editorial photo style
+    ══════════════════════════════════ */
+    .hero {
+      position: relative;
+      min-height: 78vh; display: flex; align-items: center;
+      overflow: hidden; background: #1a0610;
+    }
+    .hero-bg {
+      position: absolute; inset: 0; z-index: 0;
+      background-image: url('https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=1600&auto=format&fit=crop&q=80');
+      background-size: cover; background-position: center 30%;
+    }
+    .hero-bg::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(100deg,
+        rgba(130,12,38,0.90) 0%,
+        rgba(100,8,28,0.75) 42%,
+        rgba(30,4,12,0.50) 100%);
+    }
+    .hero-inner {
+      position: relative; z-index: 2;
+      padding: 84px 0 76px; max-width: 660px;
+    }
+    .hero-kicker {
+      display: inline-block;
+      font-size: 0.7rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 3.5px;
+      color: rgba(255,255,255,0.7);
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.22);
+    }
+    .hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.3rem, 5.2vw, 4.2rem);
+      font-weight: 900; line-height: 1.07;
+      color: #fff; margin-bottom: 22px;
+      letter-spacing: -0.3px;
+    }
+    .hero h1 em { font-style: italic; color: rgba(255,255,255,0.9); }
+    .hero-sub {
+      font-size: 1.05rem; color: rgba(255,255,255,0.78);
+      max-width: 520px; margin-bottom: 40px;
+      line-height: 1.7; font-weight: 400;
+    }
+
+    /* Search inside hero */
+    .hero-search {
+      display: flex; align-items: stretch;
+      background: #fff; border-radius: var(--radius);
+      overflow: hidden; max-width: 620px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.3);
+    }
+    .hs-icon {
+      display: flex; align-items: center;
+      padding: 0 14px; color: #aaa; font-size: 0.9rem; flex-shrink: 0;
+    }
+    .hero-search input {
+      flex: 1; border: none; outline: none;
+      padding: 16px 6px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem; color: var(--dark); background: transparent;
+    }
+    .hero-search input::placeholder { color: #bbb; }
+    .hs-sep { width: 1px; background: var(--border); margin: 10px 0; flex-shrink: 0; }
+    .hero-search select {
+      border: none; outline: none;
+      padding: 0 14px; background: transparent;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.88rem; color: var(--muted);
+      cursor: pointer; min-width: 150px;
+    }
+    .hs-btn {
+      background: var(--accent); color: #fff;
+      border: none; padding: 0 26px;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 700; font-size: 0.92rem;
+      white-space: nowrap; transition: background 0.15s;
+    }
+    .hs-btn:hover { background: var(--accent-dark); }
+
+    /* Stats under search */
+    .hero-stats { display: flex; gap: 28px; margin-top: 28px; align-items: center; }
+    .hstat-val {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem; font-weight: 800; color: #fff; display: block;
+    }
+    .hstat-lbl { font-size: 0.72rem; color: rgba(255,255,255,0.58); font-weight: 500; letter-spacing: 0.3px; }
+    .hstat-div { width: 1px; height: 32px; background: rgba(255,255,255,0.18); }
+
+    /* ══════════════════════════════════
+       FILTER BAR
+    ══════════════════════════════════ */
+    .filter-bar { background: var(--white); border-bottom: 1px solid var(--border); }
+    .filter-bar-row {
+      display: flex; align-items: center; gap: 4px;
+      padding: 14px 0; overflow-x: auto;
+    }
+    .filter-bar-row::-webkit-scrollbar { display: none; }
+    .filter-label {
+      font-size: 0.72rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 1.5px;
+      color: var(--muted); white-space: nowrap; margin-right: 6px; flex-shrink: 0;
+    }
+    .fpill {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 6px 14px; border-radius: 4px;
+      border: 1px solid var(--border);
+      background: var(--white); color: var(--muted);
+      font-size: 0.82rem; font-weight: 600;
+      transition: all 0.15s; cursor: pointer; white-space: nowrap; flex-shrink: 0;
+    }
+    .fpill:hover { border-color: var(--accent); color: var(--accent); }
+    .fpill.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .fpill i { font-size: 0.74rem; }
+
+    /* ══════════════════════════════════
+       PROVIDERS SECTION
+    ══════════════════════════════════ */
+    .providers-section { padding: 60px 0 76px; background: var(--light-bg); }
+    .sec-header {
+      display: flex; justify-content: space-between; align-items: flex-end;
+      margin-bottom: 32px;
+    }
+    .sec-eyebrow {
+      display: block; font-size: 0.7rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 2.5px;
+      color: var(--accent); margin-bottom: 5px;
+    }
+    .sec-header h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      font-weight: 800; color: var(--dark); line-height: 1.15;
+    }
+    .sec-right { font-size: 0.84rem; color: var(--muted); }
+    .sec-right a { color: var(--accent); font-weight: 600; }
+
+    /* ── 4 cards in exactly one row ── */
+    .provider-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+    }
+
+    /* ── Card ── */
+    .provider-card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+      transition: box-shadow 0.2s, transform 0.2s;
+      display: flex; flex-direction: column;
+    }
+    .provider-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+
+    .card-thumb {
+      position: relative; height: 165px;
+      overflow: hidden; background: var(--accent-light); flex-shrink: 0;
+    }
+    .card-thumb img {
+      width: 100%; height: 100%; object-fit: cover;
+      transition: transform 0.35s;
+    }
+    .provider-card:hover .card-thumb img { transform: scale(1.04); }
+    .card-thumb-fallback {
+      width: 100%; height: 100%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2.8rem; color: var(--accent);
+      background: linear-gradient(135deg, #f5d0d8, #fce4ec);
+    }
+    .card-badges {
+      position: absolute; top: 9px; left: 9px; display: flex; gap: 4px;
+    }
+    .cbadge {
+      padding: 3px 9px; border-radius: 3px;
+      font-size: 0.67rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.3px;
+    }
+    .cbadge-featured { background: var(--accent); color: #fff; }
+    .cbadge-new      { background: #0d7d6c; color: #fff; }
+    .cbadge-verified { background: #5b21b6; color: #fff; }
+    .card-save {
+      position: absolute; top: 9px; right: 9px;
+      width: 28px; height: 28px; border-radius: 4px;
+      background: rgba(255,255,255,0.9);
+      border: none; display: flex; align-items: center;
+      justify-content: center; color: var(--muted);
+      font-size: 0.8rem; transition: color 0.15s;
+    }
+    .card-save:hover { color: var(--accent); }
+
+    .card-provider-row {
+      display: flex; align-items: center; gap: 8px;
+      padding: 11px 13px 0;
+    }
+    .pav {
+      width: 30px; height: 30px; border-radius: 50%;
+      background: var(--accent-light);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--accent); font-size: 0.8rem; flex-shrink: 0;
+    }
+    .pav-name { font-weight: 700; font-size: 0.77rem; color: var(--dark); line-height: 1.2; }
+    .pav-tier { font-size: 0.68rem; color: var(--muted); }
+
+    .card-body { padding: 9px 13px 14px; flex: 1; display: flex; flex-direction: column; }
+    .card-title {
+      font-weight: 700; font-size: 0.87rem;
+      color: var(--dark); margin-bottom: 7px; line-height: 1.35;
+    }
+    .card-meta {
+      display: flex; flex-direction: column; gap: 3px;
+      font-size: 0.74rem; color: var(--muted); margin-bottom: 8px;
+    }
+    .card-meta span { display: flex; align-items: center; gap: 4px; }
+    .card-meta i { color: var(--accent); font-size: 0.68rem; width: 12px; }
+    .card-rating {
+      display: flex; align-items: center; gap: 5px;
+      font-size: 0.76rem; margin-bottom: 10px;
+    }
+    .stars { color: #c97c10; font-size: 0.76rem; letter-spacing: -0.5px; }
+    .rnum { font-weight: 700; color: var(--dark); }
+    .rcnt { color: var(--muted); }
+    .card-foot {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      margin-top: auto; padding-top: 10px;
+      border-top: 1px solid var(--border);
+    }
+    .from-label { font-size: 0.65rem; color: var(--muted); line-height: 1; }
+    .card-price {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.08rem; font-weight: 800; color: var(--accent);
+    }
+    .card-cta {
+      padding: 6px 13px;
+      background: var(--accent); color: #fff;
+      border: none; border-radius: 5px;
+      font-size: 0.77rem; font-weight: 700;
+      transition: background 0.15s;
+    }
+    .card-cta:hover { background: var(--accent-dark); }
+
+    .grid-empty {
+      grid-column: 1/-1; text-align: center;
+      padding: 70px 20px; color: var(--muted);
+    }
+    .grid-empty i { font-size: 2.2rem; margin-bottom: 12px; opacity: 0.3; display: block; }
+    .grid-empty h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.25rem; color: var(--dark); margin-bottom: 7px;
+    }
+
+    /* ══════════════════════════════════
+       HOW IT WORKS
+    ══════════════════════════════════ */
+    .how-section { padding: 76px 0; background: var(--white); }
+    .how-header { margin-bottom: 44px; }
+    .how-header .sec-eyebrow { display: inline-block; }
+    .how-header h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.6rem, 3vw, 2.1rem);
+      font-weight: 800; color: var(--dark);
+    }
+    .steps-grid {
+      display: grid; grid-template-columns: repeat(4,1fr);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg); overflow: hidden;
+    }
+    .step {
+      padding: 38px 28px;
+      border-right: 1px solid var(--border);
+    }
+    .step:last-child { border-right: none; }
+    .step-num {
+      font-family: 'Playfair Display', serif;
+      font-size: 3rem; font-weight: 900;
+      color: var(--accent-light); display: block;
+      line-height: 1; margin-bottom: 14px;
+    }
+    .step h3 { font-weight: 700; font-size: 0.97rem; color: var(--dark); margin-bottom: 9px; }
+    .step p { font-size: 0.85rem; color: var(--muted); line-height: 1.65; }
+
+    /* ══════════════════════════════════
+       TRUST BAND
+    ══════════════════════════════════ */
+    .trust-band { background: var(--accent); padding: 52px 0; }
+    .trust-grid {
+      display: grid; grid-template-columns: repeat(4,1fr);
+      divide: 1px;
+    }
+    .trust-cell {
+      text-align: center; padding: 28px 16px;
+      border-right: 1px solid rgba(255,255,255,0.18);
+    }
+    .trust-cell:last-child { border-right: none; }
+    .trust-val {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.4rem; font-weight: 900; color: #fff;
+      display: block; margin-bottom: 4px;
+    }
+    .trust-lbl { font-size: 0.82rem; color: rgba(255,255,255,0.72); font-weight: 500; }
+
+    /* ══════════════════════════════════
+       CTA SECTION
+    ══════════════════════════════════ */
+    .cta-section { padding: 76px 0; background: var(--light-bg); }
+    .cta-box {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 48px; align-items: center;
+      padding: 52px 56px;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+    }
+    .cta-left h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem; font-weight: 800;
+      color: var(--dark); line-height: 1.2; margin-bottom: 12px;
+    }
+    .cta-left p { font-size: 0.95rem; color: var(--muted); margin-bottom: 26px; }
+    .cta-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 13px 26px; background: var(--accent);
+      color: #fff; border: none; border-radius: var(--radius);
+      font-weight: 700; font-size: 0.95rem; transition: background 0.15s;
+    }
+    .cta-btn:hover { background: var(--accent-dark); }
+    .plans-list { display: flex; flex-direction: column; gap: 10px; }
+    .plan-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 15px 18px; border: 1px solid var(--border);
+      border-radius: var(--radius); background: var(--white); transition: border-color 0.15s;
+    }
+    .plan-item:hover { border-color: rgba(192,35,74,0.3); }
+    .plan-item.highlight { border-color: var(--accent); background: #fff8f9; }
+    .plan-name { font-weight: 700; font-size: 0.9rem; color: var(--dark); }
+    .plan-desc { font-size: 0.76rem; color: var(--muted); margin-top: 2px; }
+    .plan-price {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.2rem; font-weight: 800; color: var(--accent);
+      text-align: right;
+    }
+    .plan-price small { font-size: 0.68rem; color: var(--muted); font-weight: 400; display: block; }
+
+    /* ══════════════════════════════════
+       FOOTER
+    ══════════════════════════════════ */
+    footer { background: #0e0e0e; color: rgba(255,255,255,0.55); padding: 56px 0 32px; }
+    .footer-grid {
+      display: grid; grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 44px; margin-bottom: 44px;
+    }
+    .footer-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.05rem; font-weight: 800;
+      color: #fff; margin-bottom: 12px;
+    }
+    .footer-brand p { font-size: 0.85rem; line-height: 1.75; max-width: 250px; }
+    .footer-col h4 {
+      font-size: 0.68rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 2px;
+      color: rgba(255,255,255,0.42); margin-bottom: 14px;
+    }
+    .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .footer-col ul li a { font-size: 0.85rem; transition: color 0.15s; }
+    .footer-col ul li a:hover { color: #fff; }
+    .footer-bottom {
+      border-top: 1px solid rgba(255,255,255,0.06);
+      padding-top: 22px;
+      display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
+    }
+    .footer-bottom p { font-size: 0.8rem; }
+    .socials { display: flex; gap: 7px; }
+    .soc {
+      width: 32px; height: 32px; border-radius: 4px;
+      background: rgba(255,255,255,0.06);
+      display: flex; align-items: center; justify-content: center;
+      color: rgba(255,255,255,0.45); font-size: 0.82rem; transition: all 0.15s;
+    }
+    .soc:hover { background: var(--accent); color: #fff; }
+
+    /* ══════════════════════════════════
+       MODALS
+    ══════════════════════════════════ */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 9000;
+      background: rgba(8,0,4,0.75);
+      display: flex; align-items: center; justify-content: center;
+      backdrop-filter: blur(4px);
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.22s;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal-box {
+      background: var(--white); width: 460px; max-width: 93vw;
+      border-radius: var(--radius-lg);
+      box-shadow: 0 28px 72px rgba(0,0,0,0.28);
+      overflow: hidden;
+      transform: translateY(14px); transition: transform 0.22s ease;
+    }
+    .modal-overlay.open .modal-box { transform: translateY(0); }
+    .modal-head {
+      background: var(--accent); padding: 26px 28px 20px; position: relative;
+    }
+    .modal-head h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem; font-weight: 800; color: #fff;
+    }
+    .modal-head p { font-size: 0.86rem; color: rgba(255,255,255,0.75); margin-top: 3px; }
+    .modal-close {
+      position: absolute; top: 14px; right: 14px;
+      width: 28px; height: 28px; border-radius: 4px;
+      background: rgba(255,255,255,0.15);
+      border: none; color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.88rem; transition: background 0.15s;
+    }
+    .modal-close:hover { background: rgba(255,255,255,0.25); }
+    .modal-body { padding: 24px 28px 28px; }
+    .fld { margin-bottom: 14px; }
+    .fld label {
+      display: block; margin-bottom: 4px;
+      font-weight: 600; font-size: 0.78rem;
+      color: var(--mid); text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .fld input, .fld select {
+      width: 100%; padding: 11px 13px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.93rem; color: var(--dark); outline: none;
+      transition: border-color 0.15s;
+    }
+    .fld input:focus, .fld select:focus { border-color: var(--accent); }
+    .fld-row { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; }
+    .modal-btn {
+      width: 100%; padding: 13px;
+      background: var(--accent); color: #fff;
+      border: none; border-radius: var(--radius);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem; font-weight: 700;
+      margin-top: 5px; transition: background 0.15s;
+    }
+    .modal-btn:hover { background: var(--accent-dark); }
+    .modal-switch { text-align: center; margin-top: 12px; font-size: 0.85rem; color: var(--muted); }
+    .modal-switch a { color: var(--accent); font-weight: 600; }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed; bottom: 22px; right: 22px;
+      background: var(--dark); color: #fff;
+      padding: 11px 18px; border-radius: var(--radius);
+      font-size: 0.88rem; font-weight: 600;
+      box-shadow: var(--shadow-lg);
+      transform: translateY(60px); opacity: 0;
+      transition: all 0.26s; z-index: 9999;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast i { color: #22c55e; }
+
+    /* ── Responsive ── */
+    @media (max-width: 1100px) {
+      .provider-grid { grid-template-columns: repeat(2,1fr); }
+      .steps-grid { grid-template-columns: repeat(2,1fr); }
+      .step:nth-child(2) { border-right: none; }
+      .step:nth-child(1), .step:nth-child(2) { border-bottom: 1px solid var(--border); }
+      .trust-grid { grid-template-columns: repeat(2,1fr); }
+      .trust-cell:nth-child(2) { border-right: none; }
+      .trust-cell:nth-child(1), .trust-cell:nth-child(2) { border-bottom: 1px solid rgba(255,255,255,0.18); }
+      .cta-box { grid-template-columns: 1fr; gap: 28px; padding: 36px 32px; }
+      .footer-grid { grid-template-columns: 1fr 1fr; gap: 32px; }
+    }
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .provider-grid { grid-template-columns: repeat(2,1fr); }
+      .hero-search { flex-direction: column; }
+      .hs-sep { width: 100%; height: 1px; margin: 0; }
+      .hs-btn { padding: 14px; text-align: center; }
+      .steps-grid { grid-template-columns: 1fr; }
+      .step { border-right: none !important; border-bottom: 1px solid var(--border); }
+      .step:last-child { border-bottom: none; }
+      .footer-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 480px) {
+      .provider-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ═══ HEADER ═══ -->
+  <header>
+    <div class="container nav-inner">
+      <a href="#" class="brand">
+        <div class="brand-divider"></div>
+        <div class="brand-text">
+          <span class="brand-name">SA Homeschooling</span>
+          <span class="brand-tag">Education Services Directory</span>
+        </div>
+      </a>
+
+      <nav class="nav-links">
+        <a href="#providers">Find Services</a>
+        <a href="#how">How It Works</a>
+        <a href="#list">List a Service</a>
+        <a href="https://sahomeschooling.com" target="_blank">Magazine <i class="fas fa-arrow-up-right-from-square" style="font-size:0.65rem;"></i></a>
+      </nav>
+
+      <div class="nav-ctas">
+        <button class="btn-ghost-nav" onclick="openModal('loginModal')">Log In</button>
+        <button class="btn-solid-nav" onclick="openModal('registerModal')">Register Free</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ═══ HERO ═══ -->
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="container">
+      <div class="hero-inner">
+        <span class="hero-kicker">South Africa's Trusted Homeschooling Directory</span>
+        <h1>Find the Right <em>Support</em><br>for Your Child's Education</h1>
+        <p class="hero-sub">Connect with verified tutors, therapists, curriculum providers, online schools and education specialists across South Africa.</p>
+
+        <div class="hero-search">
+          <div class="hs-icon"><i class="fas fa-search"></i></div>
+          <input type="text" id="heroSearch" placeholder="Search subjects, services or provider names...">
+          <div class="hs-sep"></div>
+          <select id="heroCategory">
+            <option value="">All Categories</option>
+            <option value="tutor">Tutors</option>
+            <option value="therapist">Therapists</option>
+            <option value="curriculum">Curriculum</option>
+            <option value="school">Online Schools</option>
+            <option value="consultant">Consultants</option>
+            <option value="extracurricular">Enrichment</option>
+          </select>
+          <button class="hs-btn" onclick="handleSearch()">Search</button>
+        </div>
+
+        <div class="hero-stats">
+          <div>
+            <span class="hstat-val">500+</span>
+            <span class="hstat-lbl">Verified Providers</span>
+          </div>
+          <div class="hstat-div"></div>
+          <div>
+            <span class="hstat-val">9</span>
+            <span class="hstat-lbl">Provinces Covered</span>
+          </div>
+          <div class="hstat-div"></div>
+          <div>
+            <span class="hstat-val">4.9 ★</span>
+            <span class="hstat-lbl">Average Rating</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ FILTER BAR ═══ -->
+  <div class="filter-bar">
+    <div class="container">
+      <div class="filter-bar-row">
+        <span class="filter-label">Browse:</span>
+        <button class="fpill active" data-cat="all" onclick="filterCat('all',this)">All Services</button>
+        <button class="fpill" data-cat="tutor" onclick="filterCat('tutor',this)"><i class="fas fa-chalkboard-teacher"></i> Tutors</button>
+        <button class="fpill" data-cat="therapist" onclick="filterCat('therapist',this)"><i class="fas fa-heart"></i> Therapists</button>
+        <button class="fpill" data-cat="curriculum" onclick="filterCat('curriculum',this)"><i class="fas fa-book-open"></i> Curriculum</button>
+        <button class="fpill" data-cat="school" onclick="filterCat('school',this)"><i class="fas fa-school"></i> Online Schools</button>
+        <button class="fpill" data-cat="consultant" onclick="filterCat('consultant',this)"><i class="fas fa-user-tie"></i> Consultants</button>
+        <button class="fpill" data-cat="extracurricular" onclick="filterCat('extracurricular',this)"><i class="fas fa-palette"></i> Enrichment</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PROVIDERS ═══ -->
+  <section class="providers-section" id="providers">
+    <div class="container">
+      <div class="sec-header">
+        <div>
+          <span class="sec-eyebrow">Service Providers</span>
+          <h2 id="gridHeading">Recently Added Providers</h2>
+        </div>
+        <div class="sec-right" id="gridCount"></div>
+      </div>
+      <div class="provider-grid" id="providerGrid"></div>
+    </div>
+  </section>
+
+  <!-- ═══ HOW IT WORKS ═══ -->
+  <section class="how-section" id="how">
+    <div class="container">
+      <div class="how-header">
+        <span class="sec-eyebrow">How It Works</span>
+        <h2 class="how-header" style="font-family:'Playfair Display',serif; font-size:clamp(1.5rem,3vw,2rem); font-weight:800; color:var(--dark);">Get Listed in Four Simple Steps</h2>
+      </div>
+      <div class="steps-grid">
+        <div class="step">
+          <span class="step-num">01</span>
+          <h3>Create Your Profile</h3>
+          <p>Complete our 7-step registration: your details, services, location, qualifications, pricing and availability.</p>
+        </div>
+        <div class="step">
+          <span class="step-num">02</span>
+          <h3>Get Verified</h3>
+          <p>Our team reviews your credentials to ensure quality and trust for all homeschooling families on the platform.</p>
+        </div>
+        <div class="step">
+          <span class="step-num">03</span>
+          <h3>Appear in Search</h3>
+          <p>Your listing goes live. Families searching your area and subject will find and contact you directly.</p>
+        </div>
+        <div class="step">
+          <span class="step-num">04</span>
+          <h3>Grow Your Reach</h3>
+          <p>Upgrade to Featured Partner for homepage placement, analytics dashboard and newsletter exposure.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ TRUST BAND ═══ -->
+  <section class="trust-band">
+    <div class="container">
+      <div class="trust-grid">
+        <div class="trust-cell">
+          <span class="trust-val">2,400+</span>
+          <span class="trust-lbl">Homeschooling Families</span>
+        </div>
+        <div class="trust-cell">
+          <span class="trust-val">500+</span>
+          <span class="trust-lbl">Verified Providers</span>
+        </div>
+        <div class="trust-cell">
+          <span class="trust-val">9</span>
+          <span class="trust-lbl">Provinces Covered</span>
+        </div>
+        <div class="trust-cell">
+          <span class="trust-val">4.9 ★</span>
+          <span class="trust-lbl">Average Provider Rating</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ LIST YOUR SERVICE ═══ -->
+  <section class="cta-section" id="list">
+    <div class="container">
+      <div class="cta-box">
+        <div class="cta-left">
+          <h2>Start Reaching Homeschooling Families Today</h2>
+          <p>List your educational services on South Africa's dedicated homeschooling directory. Free to start — with paid plans for greater visibility and lead generation.</p>
+          <button class="cta-btn" onclick="openModal('registerModal')">
+            <i class="fas fa-plus"></i> Create Free Listing
+          </button>
+        </div>
+        <div class="plans-list">
+          <div class="plan-item">
+            <div>
+              <div class="plan-name">Community Member</div>
+              <div class="plan-desc">Basic profile — always free</div>
+            </div>
+            <div class="plan-price">R0 <small>/ month</small></div>
+          </div>
+          <div class="plan-item highlight">
+            <div>
+              <div class="plan-name">Trusted Provider</div>
+              <div class="plan-desc">Full profile + direct contact details</div>
+            </div>
+            <div class="plan-price">R149 <small>/ month</small></div>
+          </div>
+          <div class="plan-item">
+            <div>
+              <div class="plan-name">Featured Partner</div>
+              <div class="plan-desc">Homepage placement + analytics</div>
+            </div>
+            <div class="plan-price">R399 <small>/ month</small></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ FOOTER ═══ -->
+  <footer>
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="footer-logo">SA Homeschooling Directory</div>
+          <p>Connecting South African homeschooling families with trusted tutors, therapists, curriculum providers and educational services.</p>
+        </div>
+        <div class="footer-col">
+          <h4>For Families</h4>
+          <ul>
+            <li><a href="#">Find a Tutor</a></li>
+            <li><a href="#">Browse Curriculum</a></li>
+            <li><a href="#">Therapists</a></li>
+            <li><a href="#">Online Schools</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>For Providers</h4>
+          <ul>
+            <li><a href="#" onclick="openModal('registerModal');return false;">List a Service</a></li>
+            <li><a href="#">Pricing Plans</a></li>
+            <li><a href="#" onclick="openModal('loginModal');return false;">Provider Login</a></li>
+            <li><a href="#">Verification</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>SA Homeschooling</h4>
+          <ul>
+            <li><a href="https://sahomeschooling.com" target="_blank">Magazine</a></li>
+            <li><a href="#">About Us</a></li>
+            <li><a href="#">Contact</a></li>
+            <li><a href="#">Privacy Policy</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2025 SA Homeschooling Directory. All rights reserved.</p>
+        <div class="socials">
+          <a href="#" class="soc"><i class="fab fa-facebook-f"></i></a>
+          <a href="#" class="soc"><i class="fab fa-instagram"></i></a>
+          <a href="#" class="soc"><i class="fab fa-pinterest-p"></i></a>
+          <a href="#" class="soc"><i class="fab fa-youtube"></i></a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ═══ MODALS ═══ -->
+  <div class="modal-overlay" id="loginModal" onclick="overlayClose(event,'loginModal')">
+    <div class="modal-box">
+      <div class="modal-head">
+        <h2>Log In</h2>
+        <p>Access your provider dashboard</p>
+        <button class="modal-close" onclick="closeModal('loginModal')"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="fld"><label>Email Address</label><input type="email" id="loginEmail" placeholder="you@example.co.za"></div>
+        <div class="fld"><label>Password</label><input type="password" id="loginPass" placeholder="Your password"></div>
+        <div style="text-align:right;margin-bottom:6px;"><a href="#" style="font-size:0.8rem;color:var(--accent);font-weight:600;">Forgot password?</a></div>
+        <button class="modal-btn" onclick="handleLogin()">Log In</button>
+        <div class="modal-switch">New here? <a href="#" onclick="switchModal('loginModal','registerModal');return false;">Create a free account</a></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="registerModal" onclick="overlayClose(event,'registerModal')">
+    <div class="modal-box">
+      <div class="modal-head">
+        <h2>Create a Free Listing</h2>
+        <p>Join SA's homeschooling directory — free to start</p>
+        <button class="modal-close" onclick="closeModal('registerModal')"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="fld-row">
+          <div class="fld"><label>Full Name / Business</label><input type="text" id="regName" placeholder="Your name or business"></div>
+          <div class="fld"><label>Account Type</label>
+            <select id="regType">
+              <option value="">Select type</option>
+              <option value="individual">Individual Provider</option>
+              <option value="organization">Organisation / Company</option>
+            </select>
+          </div>
+        </div>
+        <div class="fld"><label>Email Address</label><input type="email" id="regEmail" placeholder="you@example.co.za"></div>
+        <div class="fld"><label>Password</label><input type="password" id="regPass" placeholder="Minimum 8 characters"></div>
+        <div class="fld"><label>Primary Service Category</label>
+          <select id="regCat">
+            <option value="">Select a category</option>
+            <option value="tutor">Tutor</option>
+            <option value="therapist">Therapist</option>
+            <option value="curriculum">Curriculum Provider</option>
+            <option value="school">Online / Hybrid School</option>
+            <option value="consultant">Educational Consultant</option>
+            <option value="extracurricular">Extracurricular / Enrichment</option>
+          </select>
+        </div>
+        <button class="modal-btn" onclick="handleRegister()">Create Free Account</button>
+        <div class="modal-switch">Already registered? <a href="#" onclick="switchModal('registerModal','loginModal');return false;">Log in</a></div>
+        <p style="text-align:center;font-size:0.73rem;color:var(--muted);margin-top:10px;">By registering you agree to our <a href="#" style="color:var(--accent);">Terms</a> and <a href="#" style="color:var(--accent);">Community Guidelines</a>.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">
+    <i class="fas fa-check-circle"></i>
+    <span id="toastMsg"></span>
+  </div>
+
+  <!-- ═══ JS ═══ -->
+  <script>
+    const SEED = [
+      { id:'s1', name:'STEM Mastery Tutors', category:'tutor',
+        location:'Johannesburg, Gauteng', delivery:'Online & In-person',
+        image:'https://images.unsplash.com/photo-1522202176988-66273c2b033f?w=600&auto=format&fit=crop&q=75',
+        priceFrom:'R280/hr', badge:'featured', rating:4.9, reviewCount:62, tier:'featured', registered:'2025-01-10T08:00:00Z' },
+      { id:'s2', name:'Creative Minds Curriculum', category:'curriculum',
+        location:'Cape Town, Western Cape', delivery:'Online',
+        image:'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=600&auto=format&fit=crop&q=75',
+        priceFrom:'R4 200/term', badge:'verified', rating:5.0, reviewCount:34, tier:'pro', registered:'2025-01-12T09:00:00Z' },
+      { id:'s3', name:'EduTherapy SA', category:'therapist',
+        location:'Durban, KwaZulu-Natal', delivery:'Hybrid',
+        image:'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=600&auto=format&fit=crop&q=75',
+        priceFrom:'R650/session', badge:'featured', rating:4.8, reviewCount:47, tier:'featured', registered:'2025-01-14T10:00:00Z' },
+      { id:'s4', name:'Future Leaders Academy', category:'school',
+        location:'Online — National', delivery:'Online',
+        image:'https://images.unsplash.com/photo-1529390079861-591de3547d13?w=600&auto=format&fit=crop&q=75',
+        priceFrom:'Custom quote', badge:'new', rating:4.7, reviewCount:18, tier:'pro', registered:'2025-01-16T11:00:00Z' }
+    ];
+
+    const CAT_ICON = { tutor:'fa-chalkboard-teacher', therapist:'fa-heart', curriculum:'fa-book-open', school:'fa-school', consultant:'fa-user-tie', extracurricular:'fa-palette' };
+    const TIER_LBL = { featured:'Featured Partner', pro:'Trusted Provider', free:'Community Member' };
+    const BADGE    = { featured:'<span class="cbadge cbadge-featured">Featured</span>', new:'<span class="cbadge cbadge-new">New</span>', verified:'<span class="cbadge cbadge-verified">Verified</span>' };
+
+    function getAll() {
+      const stored = JSON.parse(localStorage.getItem('sah_providers')||'[]');
+      return [...stored,...SEED].sort((a,b)=>{
+        const o={featured:0,pro:1,free:2};
+        const d=(o[a.tier]??2)-(o[b.tier]??2);
+        if(d)return d;
+        return new Date(b.registered)-new Date(a.registered);
+      });
+    }
+
+    function stars(r){ return '★'.repeat(Math.floor(r))+(r%1>=0.5?'½':''); }
+
+    function cardHTML(p){
+      const icon = CAT_ICON[p.category]||'fa-star';
+      const thumb = p.image
+        ? `<img src="${p.image}" alt="${p.name}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+           <div class="card-thumb-fallback" style="display:none"><i class="fas ${icon}"></i></div>`
+        : `<div class="card-thumb-fallback"><i class="fas ${icon}"></i></div>`;
+      return `
+      <article class="provider-card" data-cat="${p.category}">
+        <div class="card-thumb">
+          ${thumb}
+          <div class="card-badges">${BADGE[p.badge]||''}</div>
+          <button class="card-save"><i class="far fa-heart"></i></button>
+        </div>
+        <div class="card-provider-row">
+          <div class="pav"><i class="fas ${icon}"></i></div>
+          <div>
+            <div class="pav-name">${p.name}</div>
+            <div class="pav-tier">${TIER_LBL[p.tier]||'Community Member'}</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="card-title">${p.name}</div>
+          <div class="card-meta">
+            <span><i class="fas fa-map-marker-alt"></i>${p.location}</span>
+            <span><i class="fas fa-laptop"></i>${p.delivery}</span>
+          </div>
+          ${p.rating?`<div class="card-rating"><span class="stars">${stars(p.rating)}</span><span class="rnum">${p.rating.toFixed(1)}</span><span class="rcnt">(${p.reviewCount})</span></div>`:''}
+          <div class="card-foot">
+            <div><div class="from-label">Starting from</div><div class="card-price">${p.priceFrom||'Contact'}</div></div>
+            <button class="card-cta" onclick="viewProfile('${p.id}')">View Profile</button>
+          </div>
+        </div>
+      </article>`;
+    }
+
+    let activeCat='all';
+    function renderGrid(cat){
+      activeCat=cat;
+      const grid=document.getElementById('providerGrid');
+      const head=document.getElementById('gridHeading');
+      const cnt =document.getElementById('gridCount');
+      let list=getAll();
+      if(cat&&cat!=='all') list=list.filter(p=>p.category===cat);
+      const hasUser=JSON.parse(localStorage.getItem('sah_providers')||'[]').length>0;
+      head.textContent=hasUser?'Recently Added Providers':'Featured Providers';
+      if(!list.length){
+        grid.innerHTML=`<div class="grid-empty"><i class="fas fa-search"></i><h3>No providers found in this category</h3><p>Be the first to list — it's free to get started.</p><br><button class="cta-btn" style="font-size:0.88rem;" onclick="openModal('registerModal')"><i class="fas fa-plus"></i> Add Your Listing</button></div>`;
+        cnt.textContent=''; return;
+      }
+      cnt.innerHTML=`<a href="#">View all ${list.length} providers &rarr;</a>`;
+      grid.innerHTML=list.slice(0,4).map(cardHTML).join('');
+    }
+
+    function filterCat(cat,btn){
+      document.querySelectorAll('.fpill').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      renderGrid(cat);
+    }
+
+    function handleSearch(){
+      const term=document.getElementById('heroSearch').value.trim().toLowerCase();
+      const cat =document.getElementById('heroCategory').value;
+      let list=getAll();
+      if(cat) list=list.filter(p=>p.category===cat);
+      if(term) list=list.filter(p=>p.name.toLowerCase().includes(term)||(p.location||'').toLowerCase().includes(term));
+      const grid=document.getElementById('providerGrid');
+      grid.innerHTML=list.length ? list.slice(0,4).map(cardHTML).join('') :
+        `<div class="grid-empty"><i class="fas fa-search"></i><h3>No results found</h3><p>Try a different keyword or browse all categories.</p></div>`;
+      document.getElementById('providers').scrollIntoView({behavior:'smooth'});
+    }
+
+    function viewProfile(id){ showToast('Opening profile... (links to profile.html?id='+id+')'); }
+
+    function handleLogin(){
+      if(!document.getElementById('loginEmail').value){showToast('Please enter your email.',true);return;}
+      closeModal('loginModal'); showToast('Welcome back!');
+    }
+
+    function handleRegister(){
+      const n=document.getElementById('regName').value.trim();
+      const e=document.getElementById('regEmail').value.trim();
+      const p=document.getElementById('regPass').value;
+      const c=document.getElementById('regCat').value;
+      const t=document.getElementById('regType').value;
+      if(!n||!e||!p||!c||!t){showToast('Please fill in all fields.',true);return;}
+      const provider={id:'usr-'+Date.now(),name:n,category:c,location:'South Africa',delivery:'Online',
+        image:null,priceFrom:'Contact',badge:'new',rating:null,reviewCount:0,tier:'free',registered:new Date().toISOString()};
+      const stored=JSON.parse(localStorage.getItem('sah_providers')||'[]');
+      stored.unshift(provider);
+      localStorage.setItem('sah_providers',JSON.stringify(stored));
+      closeModal('registerModal'); showToast('Account created! Your listing is now live.');
+      document.querySelectorAll('.fpill').forEach(b=>b.classList.remove('active'));
+      document.querySelector('[data-cat="all"]').classList.add('active');
+      renderGrid('all');
+    }
+
+    function openModal(id){ document.getElementById(id).classList.add('open'); document.body.style.overflow='hidden'; }
+    function closeModal(id){ document.getElementById(id).classList.remove('open'); document.body.style.overflow=''; }
+    function overlayClose(e,id){ if(e.target===document.getElementById(id)) closeModal(id); }
+    function switchModal(a,b){ closeModal(a); setTimeout(()=>openModal(b),200); }
+    document.addEventListener('keydown',e=>{ if(e.key==='Escape') document.querySelectorAll('.modal-overlay.open').forEach(m=>closeModal(m.id)); });
+
+    function showToast(msg,err){
+      const t=document.getElementById('toast');
+      document.getElementById('toastMsg').textContent=msg;
+      t.style.background=err?'#b91c1c':'#111';
+      t.classList.add('show');
+      setTimeout(()=>t.classList.remove('show'),3500);
+    }
+
+    document.addEventListener('DOMContentLoaded',()=>renderGrid('all'));
+  </script>
+</body>
+</html>
