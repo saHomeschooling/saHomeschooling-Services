@@ -7,7 +7,7 @@
 
   <!-- Font Awesome 6 (free) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-a
+
   <style>
     /* === exact same design system as register page (enterprise theme) === */
     * {
@@ -17,7 +17,7 @@ a
     }
 
     :root {
-      --primary: #e11d48;
+      --primary: #e02b58;
       --primary-light: #fbe9f0;
       --primary-dark: #b01034;
       --bg: #f5f7fa;
@@ -25,11 +25,11 @@ a
       --text: #0b1e33;
       --muted: #52637a;
       --border: #dee4ed;
-      --success: #0f7b3a;
+      --success: #10b981;
       --success-bg: #e6f7ec;
-      --danger: #b91c1c;
+      --danger: #ef4444;
       --danger-bg: #fee9e9;
-      --focus-ring: rgba(225, 29, 72, 0.25);
+      --focus-ring: rgba(224, 43, 88, 0.25);
       --radius-card: 32px;
       --radius-field: 16px;
       --shadow-elevation: 0 20px 50px -12px rgba(0, 0, 0, 0.15);
@@ -111,7 +111,7 @@ a
     .login-box {
       background: var(--card);
       border-radius: var(--radius-card);
-      padding: 2rem 2.5rem 2.2rem;  /* fine-tuned to remove any desktop scroll */
+      padding: 2rem 2.5rem 2.2rem;
       box-shadow: var(--shadow-elevation);
       margin-top: 0.5rem;
       transition: box-shadow 0.2s;
@@ -121,7 +121,7 @@ a
     .login-section {
       border: 1px solid var(--border);
       border-radius: 24px;
-      padding: 1.6rem 2rem 1.4rem;  /* optimized for no-scroll */
+      padding: 1.6rem 2rem 1.4rem;
       background: rgba(255, 255, 255, 0.6);
       transition: border-color 0.2s, box-shadow 0.2s;
     }
@@ -156,7 +156,7 @@ a
 
     /* form elements identical to register */
     .form-group {
-      margin-bottom: 1.3rem;  /* reduced slightly to fit perfectly */
+      margin-bottom: 1.3rem;
     }
 
     label {
@@ -177,7 +177,7 @@ a
 
     input {
       width: 100%;
-      padding: 0.8rem 1.2rem;  /* exactly matching register input padding */
+      padding: 0.8rem 1.2rem;
       border-radius: var(--radius-field);
       border: 1.5px solid var(--border);
       background: #ffffff;
@@ -273,7 +273,7 @@ a
       font-weight: 700;
       letter-spacing: 0.3px;
       cursor: pointer;
-      box-shadow: 0 12px 28px -10px rgba(225, 29, 72, 0.5);
+      box-shadow: 0 12px 28px -10px rgba(224, 43, 88, 0.5);
       transition: all 0.2s;
       display: inline-flex;
       align-items: center;
@@ -286,8 +286,8 @@ a
 
     .submit-btn:hover {
       transform: translateY(-4px);
-      background: #c41a45;
-      box-shadow: 0 24px 40px -8px rgba(225, 29, 72, 0.6);
+      background: var(--primary-dark);
+      box-shadow: 0 24px 40px -8px rgba(224, 43, 88, 0.6);
     }
 
     .submit-btn:active {
@@ -324,7 +324,7 @@ a
     /* ===== NO SCROLL ON DESKTOP — ALL FITS IN 1 VIEW ===== */
     @media (min-width: 1024px) and (min-height: 700px) {
       body {
-        overflow: hidden;  /* prevents any page scroll on big screens */
+        overflow: hidden;
       }
       .panel {
         max-width: 580px;
@@ -334,7 +334,7 @@ a
     /* responsive for tablets & mobile — scroll allowed ONLY on small devices */
     @media (max-width: 800px) {
       body {
-        overflow-y: auto;  /* scroll allowed on mobile/tablet */
+        overflow-y: auto;
         align-items: flex-start;
         padding: 1rem;
       }
@@ -384,7 +384,7 @@ a
     /* very small height screens: allow natural scroll (already auto) */
     @media (max-height: 650px) and (min-width: 801px) {
       body {
-        overflow-y: auto;  /* if height too small, user can scroll */
+        overflow-y: auto;
         align-items: flex-start;
       }
     }
@@ -442,7 +442,7 @@ a
 
       <!-- sign-up link exactly like register page prompt -->
       <p class="text-center signup-prompt muted">
-        New to the community? <a href="Join.html">Create an account</a> — it's free
+        New to the community? <a href="registration.html">Create an account</a> — it's free
       </p>
     </form>
   </div>
@@ -452,6 +452,12 @@ a
   (function() {
     const loginForm = document.getElementById('loginForm');
     const alertBox = document.getElementById('loginAlert');
+
+    // Pre-fill with client test email that matches the name on client dashboard
+    const emailInput = document.getElementById('loginEmail');
+    if (emailInput) {
+      emailInput.value = 'contact@khanacademy.org.za';
+    }
 
     function clearAllFieldErrors() {
       document.querySelectorAll('.field-error-message').forEach(el => el.remove());
@@ -526,13 +532,33 @@ a
         return;
       }
 
-      alertBox.className = 'alert success';
-      alertBox.innerHTML = '<i class="fa-regular fa-circle-check"></i> Login successful! Redirecting to dashboard...';
-      alertBox.style.display = 'block';
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
 
-      setTimeout(() => {
-        window.location.href = 'Dashboard.html';
-      }, 1800);
+      // Mock data for admin login
+      if (email === 'admin@sahomeschooling.co.za' && password === 'admin123') {
+        alertBox.className = 'alert success';
+        alertBox.innerHTML = '<i class="fa-regular fa-circle-check"></i> Admin login successful! Redirecting to admin dashboard...';
+        alertBox.style.display = 'block';
+
+        setTimeout(() => {
+          window.location.href = 'dashboards/admin-dashboard.html';
+        }, 1500);
+      } 
+      // Mock data for client login - specific test email that matches the name on client dashboard
+      else if (email === 'contact@khanacademy.org.za' || (email && password.length >= 8)) {
+        alertBox.className = 'alert success';
+        alertBox.innerHTML = '<i class="fa-regular fa-circle-check"></i> Client login successful! Redirecting to your dashboard...';
+        alertBox.style.display = 'block';
+
+        setTimeout(() => {
+          window.location.href = 'dashboards/client-dashboard.html';
+        }, 1500);
+      } else {
+        alertBox.className = 'alert error';
+        alertBox.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> Invalid credentials. Please try again.';
+        alertBox.style.display = 'block';
+      }
     });
 
     window.addEventListener('load', () => {
@@ -547,7 +573,12 @@ a
   - ONE PAGE on desktop (no scroll) — tested for 1080p, 768p heights.
   - Scroll only allowed on mobile devices (max-width:800px) and rare very small height screens.
   - All colors, input sizes, button match the register theme exactly.
-  - "Create an account" link points to Join.html (aligns with onboarding).
+  - "Create an account" link points to registration.html
+  - Redirects to correct dashboard paths: 
+      admin → dashboards/admin-dashboard.html
+      client → dashboards/client-dashboard.html
+  - Pre-filled with client test email: contact@khanacademy.org.za (matches the name on client dashboard)
+  - Test credentials section removed from UI
 -->
 </body>
 </html>

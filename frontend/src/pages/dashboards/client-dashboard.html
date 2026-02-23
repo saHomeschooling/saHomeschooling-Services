@@ -26,6 +26,13 @@
         .hidden-file-input {
             display: none;
         }
+        .photo-round img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            display: block;
+        }
         .edit-mode select.profile-value,
         .edit-mode input.profile-value {
             appearance: none;
@@ -195,7 +202,7 @@
             font-size: 0.8rem;
             display: inline-block;
         }
-        /* Language multi-select styling */
+        /* Language display - comma separated in view mode */
         .language-select {
             width: 100%;
             min-height: 100px;
@@ -211,14 +218,51 @@
         .language-select option {
             padding: 0.3rem;
         }
+        .language-display {
+            background: var(--glass);
+            padding: 0.7rem 1rem;
+            border-radius: 16px;
+            font-weight: 500;
+            color: #153753;
+            border: 1px solid rgba(15, 23, 42, 0.03);
+            word-break: break-word;
+        }
+        .edit-mode .language-display {
+            display: none;
+        }
+        .edit-mode .language-select-container {
+            display: block;
+        }
+        .language-select-container {
+            display: none;
+        }
+        .edit-mode .language-select {
+            display: block;
+        }
+        /* Profile preview badge */
+        .profile-preview-badge {
+            background: #f1f5f9;
+            border-radius: 30px;
+            padding: 0.3rem 1rem;
+            font-size: 0.8rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            color: #4b5563;
+            text-decoration: none;
+            transition: all 0.15s;
+        }
+        .profile-preview-badge:hover {
+            background: var(--accent);
+            color: white;
+        }
     </style>
 </head>
 <body>
-    <!-- Header styled like homepage -->
+    <!-- Header styled like homepage - removed SAH logo -->
     <header class="top-header">
         <div class="logo-area">
-            <div class="logo-short">SAH</div>
-            <div class="trusted-text">
+            <div class="trusted-text" style="border-left: none; padding-left: 0;">
                 Trusted Homeschooling Directory
                 <span>SA Homeschooling</span>
             </div>
@@ -236,7 +280,11 @@
     <div class="dash-wrapper">
         <div class="page-headline">
             <h1>My Provider Dashboard</h1>
-            <p>Welcome back, Bright Minds Tutoring · <a href="#">switch to public view</a></p>
+            <p>Welcome back, <span id="welcomeName">Khan Academy SA</span> · 
+                <a href="#" id="publicViewLink" class="profile-preview-badge">
+                    <i class="fas fa-eye"></i> switch to public view
+                </a>
+            </p>
             <div style="margin-top: 0.5rem; padding: 0.5rem 1rem; background: #fff3e0; border-radius: 30px; display: inline-block;">
                 <i class="fas fa-clock"></i> <strong>Status:</strong> <span class="pending-badge">Pending Approval</span> 
                 <span style="font-size: 0.85rem; margin-left: 0.5rem;">Your profile is awaiting admin verification</span>
@@ -244,7 +292,7 @@
         </div>
 
         <!-- main client dashboard card -->
-        <div class="card client-dash" id="clientDashboard">
+        <div class="card client-dash" id="clientDashboard" data-user-email="contact@khanacademy.org.za" data-user-name="Khan Academy SA">
             <div class="card-header">
                 <i class="fas fa-user-circle"></i>
                 <h2>Profile information</h2>
@@ -257,7 +305,7 @@
             <div class="photo-placeholder">
                 <div class="photo-round" onclick="document.getElementById('photoUpload').click();">
                     <i class="fas fa-camera" id="photoIcon"></i>
-                    <img id="photoImg" src="#" alt="" style="display:none;">
+                    <img id="photoImg" src="https://images.unsplash.com/photo-1560264280-88b68371db39?w=300&auto=format&fit=crop" alt="" style="display:block; width:100%; height:100%; object-fit:cover;">
                 </div>
                 <div>
                     <button class="btn-edit" type="button" onclick="document.getElementById('photoUpload').click();"><i class="fas fa-pencil-alt"></i>  change photo / logo</button>
@@ -268,8 +316,8 @@
 
             <!-- two column fields -->
             <div class="two-col">
-                <div class="profile-field"><label>Full name / Business *</label><div class="profile-value" id="fieldBusiness">Bright Minds Tutoring</div></div>
-                <div class="profile-field"><label>Email address *</label><div class="profile-value" id="fieldEmail">hello@brightminds.co.za</div></div>
+                <div class="profile-field"><label>Full name / Business *</label><div class="profile-value" id="fieldBusiness">Khan Academy SA</div></div>
+                <div class="profile-field"><label>Email address *</label><div class="profile-value" id="fieldEmail">contact@khanacademy.org.za</div></div>
                 <div class="profile-field"><label>Account type *</label><div class="profile-value" id="fieldAccountType">Organization/Company</div></div>
                 
                 <!-- Years of Experience -->
@@ -285,24 +333,30 @@
                     </div>
                 </div>
 
-                <!-- Languages spoken - multi-select with all 12 official languages -->
+                <!-- Languages spoken - comma separated in view mode, multi-select in edit mode -->
                 <div class="profile-field"><label>Languages spoken *</label>
-                    <select id="fieldLanguages" class="language-select" multiple size="4" disabled>
-                        <option value="Afrikaans" selected>Afrikaans</option>
-                        <option value="English" selected>English</option>
-                        <option value="isiNdebele">isiNdebele</option>
-                        <option value="isiXhosa" selected>isiXhosa</option>
-                        <option value="isiZulu">isiZulu</option>
-                        <option value="Sesotho">Sesotho</option>
-                        <option value="Sesotho sa Leboa">Sesotho sa Leboa (Northern Sotho)</option>
-                        <option value="Setswana">Setswana</option>
-                        <option value="siSwati">siSwati</option>
-                        <option value="Tshivenda">Tshivenda</option>
-                        <option value="Xitsonga">Xitsonga</option>
-                    </select>
+                    <!-- Display mode: comma separated list -->
+                    <div class="language-display" id="languagesDisplay">Afrikaans, English, isiXhosa, isiZulu</div>
+                    
+                    <!-- Edit mode: multi-select dropdown -->
+                    <div class="language-select-container">
+                        <select id="fieldLanguages" class="language-select" multiple size="4" disabled>
+                            <option value="Afrikaans" selected>Afrikaans</option>
+                            <option value="English" selected>English</option>
+                            <option value="isiNdebele">isiNdebele</option>
+                            <option value="isiXhosa" selected>isiXhosa</option>
+                            <option value="isiZulu" selected>isiZulu</option>
+                            <option value="Sesotho">Sesotho</option>
+                            <option value="Sesotho sa Leboa">Sesotho sa Leboa (Northern Sotho)</option>
+                            <option value="Setswana">Setswana</option>
+                            <option value="siSwati">siSwati</option>
+                            <option value="Tshivenda">Tshivenda</option>
+                            <option value="Xitsonga">Xitsonga</option>
+                        </select>
+                    </div>
                 </div>
 
-                <div class="profile-field"><label>Primary category *</label><div class="profile-value" id="fieldCategory">Tutor (Math & Science)</div></div>
+                <div class="profile-field"><label>Primary category *</label><div class="profile-value" id="fieldCategory">Curriculum Provider</div></div>
             </div>
 
             <!-- TAGS SECTION -->
@@ -317,17 +371,17 @@
             </div>
 
             <!-- short bio -->
-            <div class="profile-field"><label>Short bio *</label><div class="profile-value" id="fieldBio">We offer specialised Maths & Science tutoring for grades 8–12 with a creative curriculum approach. Small groups & individual support. Based in Johannesburg but available nationwide online. Certified educators with 10+ years experience.</div></div>
+            <div class="profile-field"><label>Short bio *</label><div class="profile-value" id="fieldBio">Free world-class education for anyone anywhere. Our curriculum covers mathematics, science, computing, humanities and more. We provide video lessons, practice exercises, and personalized learning dashboards for homeschoolers across South Africa. Completely free, forever.</div></div>
 
             <!-- QUALIFICATIONS & EXPERIENCE SECTION -->
             <div class="profile-field"><label style="font-size:1rem; margin-top:1rem;">Qualifications & Experience</label>
                 <div class="qualification-item">
                     <div class="inline-group" style="margin-bottom:0.5rem;">
-                        <div class="profile-field"><label>Certifications</label><div class="profile-value" id="fieldCertifications" contenteditable="false">PGCE, TEFL, Maths Specialist</div></div>
-                        <div class="profile-field"><label>Degrees</label><div class="profile-value" id="fieldDegrees" contenteditable="false">BSc Mathematics, MEd (Educational Psychology)</div></div>
+                        <div class="profile-field"><label>Certifications</label><div class="profile-value" id="fieldCertifications" contenteditable="false">Khan Academy Certified Content Provider, Google for Education Partner</div></div>
+                        <div class="profile-field"><label>Degrees</label><div class="profile-value" id="fieldDegrees" contenteditable="false">BSc Computer Science (Stanford), MEd (Harvard)</div></div>
                     </div>
                     <div class="inline-group">
-                        <div class="profile-field"><label>Professional memberships</label><div class="profile-value" id="fieldMemberships" contenteditable="false">SACE, SAALT, IEB Affiliate</div></div>
+                        <div class="profile-field"><label>Professional memberships</label><div class="profile-value" id="fieldMemberships" contenteditable="false">SA Curriculum Association, Digital Learning Collective</div></div>
                         <div class="profile-field"><label>Background clearance</label>
                             <div id="fieldClearanceContainer">
                                 <span class="badge-clearance" id="clearanceBadge"><i class="fas fa-check-circle"></i> Verified (2025)</span>
@@ -339,14 +393,14 @@
 
             <!-- service details -->
             <div class="inline-group">
-                <div class="profile-field"><label>Service title *</label><div class="profile-value" id="fieldServiceTitle">Math & Science Mentor (Gr 8-12)</div></div>
+                <div class="profile-field"><label>Service title *</label><div class="profile-value" id="fieldServiceTitle">Math & Science Curriculum (Gr R-12)</div></div>
                 
                 <!-- Age group -->
                 <div class="profile-field"><label>Age group served</label>
                     <select id="fieldAgeGroup" class="profile-value" disabled>
-                        <option value="5-7">5-7 years</option>
-                        <option value="8-10">8-10 years</option>
-                        <option value="11-13">11-13 years</option>
+                        <option value="5-7" selected>5-7 years</option>
+                        <option value="8-10" selected>8-10 years</option>
+                        <option value="11-13" selected>11-13 years</option>
                         <option value="14-18" selected>14-18 years</option>
                     </select>
                 </div>
@@ -354,9 +408,9 @@
                 <!-- Mode of delivery -->
                 <div class="profile-field"><label>Mode of delivery</label>
                     <select id="fieldMode" class="profile-value" disabled>
-                        <option value="online">Online</option>
+                        <option value="online" selected>Online</option>
                         <option value="inperson">In Person</option>
-                        <option value="hybrid" selected>Hybrid</option>
+                        <option value="hybrid">Hybrid</option>
                     </select>
                 </div>
             </div>
@@ -385,8 +439,8 @@
             <div class="profile-field"><label>Service area *</label>
                 <div class="inline-flex-row">
                     <select id="fieldServiceAreaType" class="profile-value" style="width:auto;" disabled>
-                        <option value="local" selected>Local (specify radius)</option>
-                        <option value="national">National</option>
+                        <option value="local">Local (specify radius)</option>
+                        <option value="national" selected>National</option>
                         <option value="online">Online only</option>
                     </select>
                     <span id="radiusContainer" style="display:inline-flex; align-items:center; gap:0.3rem;">
@@ -399,13 +453,13 @@
             <div class="inline-group">
                 <div class="profile-field"><label>Pricing model *</label>
                     <select id="fieldPricingModel" class="profile-value" disabled>
-                        <option value="hourly" selected>Hourly</option>
+                        <option value="hourly">Hourly</option>
                         <option value="package">Per package</option>
                         <option value="term">Per term</option>
-                        <option value="custom">Custom quote</option>
+                        <option value="custom" selected>Custom quote</option>
                     </select>
                 </div>
-                <div class="profile-field"><label>Starting price (optional)</label><div class="profile-value" id="fieldStartingPrice">R280/hr | R1500/5 sessions</div></div>
+                <div class="profile-field"><label>Starting price (optional)</label><div class="profile-value" id="fieldStartingPrice">Free</div></div>
             </div>
 
             <!-- Availability days -->
@@ -419,7 +473,7 @@
                     <label class="day-checkbox"><input type="checkbox" value="Sat" checked disabled> Sat</label>
                     <label class="day-checkbox"><input type="checkbox" value="Sun" disabled> Sun</label>
                 </div>
-                <div class="profile-value" id="fieldAvailabilityNotes" style="margin-top:0.5rem;">14:00-18:00 weekdays, Sat 09:00-13:00</div>
+                <div class="profile-value" id="fieldAvailabilityNotes" style="margin-top:0.5rem;">24/7 Online - Self-paced learning available anytime</div>
             </div>
 
             <!-- Contact & social with public toggle -->
@@ -433,19 +487,19 @@
                     </label>
                 </div>
                 <div style="margin-top:0.5rem;">
-                    <span id="fieldContactName">Maria van der Merwe</span> · 
-                    <span id="fieldPhone">+27 82 555 1234</span> · 
-                    <span id="fieldContactEmail">maria@brightminds.co.za</span>
+                    <span id="fieldContactName">Support Team</span> · 
+                    <span id="fieldPhone">+27 11 555 1234</span> · 
+                    <span id="fieldContactEmail">support@khanacademy.org.za</span>
                 </div>
                 <!-- Social links preview (only visible if toggle on) -->
                 <div id="socialPreview" class="social-links-preview" style="margin-top:0.8rem;">
-                    <span id="fieldSocial"><i class="fab fa-facebook"></i> <i class="fab fa-instagram"></i> @brightminds_tutoring  |  www.brightminds.co.za  |  FB, IG, LinkedIn</span>
+                    <span id="fieldSocial"><i class="fab fa-facebook"></i> <i class="fab fa-twitter"></i> @khanacademySA  |  www.khanacademy.org.za  |  FB, Twitter, YouTube</span>
                 </div>
             </div>
 
             <!-- listing plan -->
             <div style="display: flex; align-items: center; justify-content: space-between; margin: 1.5rem 0 0.5rem;">
-                <div><span class="plan-badge"><i class="fas fa-crown" style="color:#f7d45a;"></i>  Professional Listing (paid)</span></div>
+                <div><span class="plan-badge"><i class="fas fa-crown" style="color:#f7d45a;"></i>  Free Listing</span></div>
                 <div><i class="fas fa-check-circle" style="color:var(--success);"></i> listing is public</div>
             </div>
 
@@ -454,10 +508,10 @@
                 <div class="profile-field"><label style="font-size:1.2rem; color:var(--accent);">Reviews & Testimonials (Paid tiers)</label></div>
                 <div class="review-item" id="reviewsContainer">
                     <div class="rating-stars">★★★★★</div>
-                    <div class="profile-value" id="fieldReview1" contenteditable="false" style="margin:0.5rem 0;">"Bright Minds transformed my daughter's confidence in maths. Highly recommend!" - Sarah J.</div>
-                    <div class="rating-stars">★★★★☆</div>
-                    <div class="profile-value" id="fieldReview2" contenteditable="false" style="margin:0.5rem 0;">"Excellent science tutor, very patient and knowledgeable." - Thabo M.</div>
-                    <div class="profile-value" id="fieldReview3" contenteditable="false" style="margin:0.5rem 0; font-style:italic;">Average rating: 4.8/5 (based on 12 reviews)</div>
+                    <div class="profile-value" id="fieldReview1" contenteditable="false" style="margin:0.5rem 0;">"Excellent resource for our homeschool curriculum. The video lessons are clear and the practice exercises really help reinforce concepts." - Sarah J.</div>
+                    <div class="rating-stars">★★★★★</div>
+                    <div class="profile-value" id="fieldReview2" contenteditable="false" style="margin:0.5rem 0;">"My kids love the math challenges. It's made learning fun and independent." - Thabo M.</div>
+                    <div class="profile-value" id="fieldReview3" contenteditable="false" style="margin:0.5rem 0; font-style:italic;">Average rating: 4.9/5 (based on 156 reviews)</div>
                 </div>
             </div>
 
@@ -473,7 +527,7 @@
         </div>
 
         <div class="signup-mini">
-            <p><i class="fas fa-database"></i> <strong>Your profile is currently pending approval.</strong> Once verified by an admin, your listing will appear in search results.</p>
+            <p><i class="fas fa-database"></i> <strong>Your profile is currently pending approval.</strong> Once verified by an admin, your listing will appear in search results. Preview your public profile <a href="#" id="previewLink" style="color: var(--accent); font-weight: 600;">here</a>.</p>
         </div>
     </div>
 
@@ -491,5 +545,103 @@
 
     <!-- Load shared dashboard JavaScript -->
     <script src="../../js/dashboards.js"></script>
+    <script>
+        // Override the default tags for Khan Academy
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof tags !== 'undefined') {
+                tags = ['mathematics', 'science', 'online learning', 'free curriculum', 'video lessons'];
+                renderTags();
+            }
+            
+            // Update languages display
+            updateLanguagesDisplay();
+        });
+
+        // Helper to update the languages display based on select options
+        function updateLanguagesDisplay() {
+            const languageSelect = document.getElementById('fieldLanguages');
+            const displayDiv = document.getElementById('languagesDisplay');
+            
+            if (languageSelect && displayDiv) {
+                const selected = [];
+                for (let option of languageSelect.options) {
+                    if (option.selected) {
+                        selected.push(option.value);
+                    }
+                }
+                displayDiv.textContent = selected.join(', ');
+            }
+        }
+
+        // Override toggleEditMode to handle language display
+        const originalToggleEditMode = window.toggleEditMode;
+        window.toggleEditMode = function() {
+            originalToggleEditMode();
+            
+            const languageSelect = document.getElementById('fieldLanguages');
+            const displayDiv = document.getElementById('languagesDisplay');
+            const languageContainer = document.querySelector('.language-select-container');
+            
+            if (editModeActive) {
+                // In edit mode: hide display, show select
+                if (displayDiv) displayDiv.style.display = 'none';
+                if (languageContainer) languageContainer.style.display = 'block';
+            } else {
+                // In view mode: show display, hide select
+                if (displayDiv) displayDiv.style.display = 'block';
+                if (languageContainer) languageContainer.style.display = 'none';
+                
+                // Update display text
+                updateLanguagesDisplay();
+            }
+        };
+
+        // Override cancelEdit to restore language display
+        const originalCancelEdit = window.cancelEdit;
+        window.cancelEdit = function() {
+            originalCancelEdit();
+            
+            const displayDiv = document.getElementById('languagesDisplay');
+            const languageContainer = document.querySelector('.language-select-container');
+            
+            if (!editModeActive) {
+                if (displayDiv) displayDiv.style.display = 'block';
+                if (languageContainer) languageContainer.style.display = 'none';
+                updateLanguagesDisplay();
+            }
+        };
+
+        // Override saveChanges to update display
+        const originalSaveChanges = window.saveChanges;
+        window.saveChanges = function() {
+            originalSaveChanges();
+            
+            const displayDiv = document.getElementById('languagesDisplay');
+            const languageContainer = document.querySelector('.language-select-container');
+            
+            if (!editModeActive) {
+                if (displayDiv) displayDiv.style.display = 'block';
+                if (languageContainer) languageContainer.style.display = 'none';
+                updateLanguagesDisplay();
+            }
+        };
+
+        // Set the public view link to include the user's email
+        document.addEventListener('DOMContentLoaded', function() {
+            const userEmail = document.getElementById('fieldEmail').innerText.trim();
+            const userName = document.getElementById('fieldBusiness').innerText.trim();
+            
+            // Update welcome name
+            document.getElementById('welcomeName').textContent = userName;
+            
+            // Set the public view links
+            const publicViewLink = document.getElementById('publicViewLink');
+            const previewLink = document.getElementById('previewLink');
+            
+            const profileUrl = `../profile.html?email=${encodeURIComponent(userEmail)}`;
+            publicViewLink.href = profileUrl;
+            previewLink.href = profileUrl;
+        });
+    </script>
 </body>
 </html>

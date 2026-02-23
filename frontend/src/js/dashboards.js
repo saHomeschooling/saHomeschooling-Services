@@ -454,137 +454,285 @@ function moderateReview(reviewId, action) {
   buttons.forEach(btn => btn.disabled = true);
 }
 
-// Modal functions
-function showProfileModal(provider) {
+// ========== COMPREHENSIVE PROFILE MODAL ==========
+
+// Complete provider data - matches all fields from client dashboard
+const providerData = {
+  khan: {
+    name: 'Khan Academy SA',
+    email: 'contact@khanacademy.org.za',
+    accountType: 'Organization/Company',
+    yearsExperience: '10+ Years',
+    languages: 'English, Afrikaans, isiZulu',
+    primaryCategory: 'Curriculum Provider',
+    tags: ['mathematics', 'science', 'online learning', 'free curriculum', 'video lessons'],
+    bio: 'Free world-class education for anyone anywhere. Our curriculum covers mathematics, science, computing, humanities and more. We provide video lessons, practice exercises, and personalized learning dashboards for homeschoolers across South Africa. Completely free, forever.',
+    certifications: 'Khan Academy Certified Content Provider, Google for Education Partner',
+    degrees: 'BSc Computer Science (Stanford), MEd (Harvard)',
+    memberships: 'SA Curriculum Association, Digital Learning Collective',
+    clearance: 'Verified (2025)',
+    serviceTitle: 'Math & Science Curriculum (Gr R-12)',
+    ageGroups: ['5-7 years', '8-10 years', '11-13 years', '14-18 years'],
+    deliveryMode: 'Online',
+    province: 'Gauteng',
+    city: 'Johannesburg',
+    serviceArea: 'National',
+    radius: '30',
+    pricingModel: 'Custom quote',
+    startingPrice: 'Free',
+    availabilityDays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+    availabilityNotes: '24/7 Online - Self-paced learning available anytime',
+    contactName: 'Support Team',
+    phone: '+27 11 555 1234',
+    contactEmail: 'support@khanacademy.org.za',
+    social: '@khanacademySA · www.khanacademy.org.za · FB, Twitter, YouTube',
+    listingPlan: 'Free Listing',
+    publicDisplay: true,
+    reviews: {
+      average: 4.9,
+      count: 156,
+      items: [
+        { reviewer: 'Sarah J.', rating: 5, text: 'Excellent resource for our homeschool curriculum. The video lessons are clear and the practice exercises really help reinforce concepts.' },
+        { reviewer: 'Thabo M.', rating: 5, text: 'My kids love the math challenges. It\'s made learning fun and independent.' }
+      ]
+    }
+  },
+  therapy: {
+    name: 'Therapy4Learning',
+    email: 'info@therapy4learning.co.za',
+    accountType: 'Individual Provider',
+    yearsExperience: '5-10 Years',
+    languages: 'English, Afrikaans',
+    primaryCategory: 'Therapist',
+    tags: ['occupational therapy', 'sensory integration', 'child development'],
+    bio: 'Pediatric occupational therapy services for children with learning difficulties.',
+    certifications: 'HPCSA, OT Reg',
+    degrees: 'MSc Occupational Therapy',
+    memberships: 'OTASA',
+    clearance: 'Verified (2025)',
+    serviceTitle: 'Pediatric OT Assessment & Therapy',
+    ageGroups: ['5-7 years', '8-10 years', '11-13 years'],
+    deliveryMode: 'In Person',
+    province: 'Western Cape',
+    city: 'Cape Town',
+    serviceArea: 'Local',
+    radius: '15',
+    pricingModel: 'Hourly / Per package',
+    startingPrice: 'R450/hr',
+    availabilityDays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+    availabilityNotes: 'Mon-Fri 9am-5pm',
+    contactName: 'Dr Sarah Khumalo',
+    phone: '+27 21 555 9876',
+    contactEmail: 'drsarah@therapy4learning.co.za',
+    social: '@therapy4learning · www.therapy4learning.co.za',
+    listingPlan: 'Professional Listing',
+    publicDisplay: true,
+    reviews: {
+      average: 4.7,
+      count: 18,
+      items: [
+        { reviewer: 'Thabo M.', rating: 4, text: 'Great occupational therapist, very good with children.' }
+      ]
+    }
+  },
+  creative: {
+    name: 'Creative Arts Studio',
+    email: 'hello@creativeartsstudio.co.za',
+    accountType: 'Organization/Company',
+    yearsExperience: '3-5 Years',
+    languages: 'English, Afrikaans, isiXhosa',
+    primaryCategory: 'Extracurricular Activities',
+    tags: ['art', 'music', 'drama', 'creative expression'],
+    bio: 'After-school arts program fostering creativity through painting, music, and drama.',
+    certifications: 'Arts Education Certification',
+    degrees: 'BA Fine Arts, Dip Music',
+    memberships: 'SA Arts Education Association',
+    clearance: 'Pending',
+    serviceTitle: 'After-school Creative Arts Program',
+    ageGroups: ['5-7 years', '8-10 years', '11-13 years'],
+    deliveryMode: 'In Person',
+    province: 'Gauteng',
+    city: 'Pretoria',
+    serviceArea: 'Local',
+    radius: '10',
+    pricingModel: 'Per term',
+    startingPrice: 'R1200/term',
+    availabilityDays: ['Mon', 'Tue', 'Wed', 'Thu'],
+    availabilityNotes: 'Mon-Thu 14:00-17:00',
+    contactName: 'Lisa van Wyk',
+    phone: '+27 12 345 6789',
+    contactEmail: 'lisa@creativeartsstudio.co.za',
+    social: '@creativeartspta · www.creativeartsstudio.co.za',
+    listingPlan: 'Free Listing',
+    publicDisplay: true,
+    reviews: {
+      average: 3.5,
+      count: 4,
+      items: []
+    }
+  },
+  bright: {
+    name: 'Bright Minds Tutoring',
+    email: 'hello@brightminds.co.za',
+    accountType: 'Organization/Company',
+    yearsExperience: '10+ Years',
+    languages: 'English, Afrikaans, isiXhosa',
+    primaryCategory: 'Tutor (Math & Science)',
+    tags: ['mathematics', 'tutoring', 'grade 8-12'],
+    bio: 'We offer specialised Maths & Science tutoring for grades 8–12 with a creative curriculum approach. Small groups & individual support. Based in Johannesburg but available nationwide online. Certified educators with 10+ years experience.',
+    certifications: 'PGCE, TEFL, Maths Specialist',
+    degrees: 'BSc Mathematics, MEd',
+    memberships: 'SACE, SAALT, IEB Affiliate',
+    clearance: 'Verified (2025)',
+    serviceTitle: 'Math & Science Mentor (Gr 8-12)',
+    ageGroups: ['14-18 years'],
+    deliveryMode: 'Online & In-Person',
+    province: 'Gauteng',
+    city: 'Johannesburg',
+    serviceArea: 'Local, National online',
+    radius: '30',
+    pricingModel: 'Hourly / Per package',
+    startingPrice: 'R280/hr | R1500/5 sessions',
+    availabilityDays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+    availabilityNotes: 'Mon–Fri 14:00-18:00, Sat 09:00-13:00',
+    contactName: 'Maria van der Merwe',
+    phone: '+27 82 555 1234',
+    contactEmail: 'maria@brightminds.co.za',
+    social: '@brightminds_tutoring · www.brightminds.co.za',
+    listingPlan: 'Professional Listing (paid)',
+    publicDisplay: true,
+    reviews: {
+      average: 4.8,
+      count: 12,
+      items: [
+        { reviewer: 'Sarah J.', rating: 5, text: 'Bright Minds transformed my daughter\'s confidence in maths.' },
+        { reviewer: 'Thabo M.', rating: 4, text: 'Excellent science tutor, very patient and knowledgeable.' }
+      ]
+    }
+  },
+  edu: {
+    name: 'EduConsult Pro',
+    email: 'info@educonsultpro.co.za',
+    accountType: 'Individual Provider',
+    yearsExperience: '5-10 Years',
+    languages: 'English, Afrikaans',
+    primaryCategory: 'Educational Consultant',
+    tags: ['curriculum advice', 'school placement', 'learning support'],
+    bio: 'Independent educational consultancy helping families choose the right curriculum and schools.',
+    certifications: 'Educational Consulting Certification',
+    degrees: 'MEd, BEd',
+    memberships: 'SAERA, IACAC',
+    clearance: 'Verified (2024)',
+    serviceTitle: 'Homeschool Curriculum Consulting',
+    ageGroups: ['All ages'],
+    deliveryMode: 'Online, In Person',
+    province: 'Western Cape',
+    city: 'Cape Town',
+    serviceArea: 'National',
+    radius: '',
+    pricingModel: 'Hourly, Per package',
+    startingPrice: 'R500/hr',
+    availabilityDays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+    availabilityNotes: 'Mon-Fri 9am-5pm, Sat by appt',
+    contactName: 'Dr James Ndlovu',
+    phone: '+27 21 555 4321',
+    contactEmail: 'james@educonsultpro.co.za',
+    social: '@educonsultpro · www.educonsultpro.co.za',
+    listingPlan: 'Professional Listing',
+    publicDisplay: true,
+    reviews: {
+      average: 4.9,
+      count: 24,
+      items: [
+        { reviewer: 'Linda van Wyk', rating: 5, text: 'James helped us choose the perfect curriculum for our son.' }
+      ]
+    }
+  }
+};
+
+// Enhanced modal function that shows ALL client details
+function showProfileModal(providerKey) {
   const modal = document.getElementById('profileModal');
   const modalTitle = document.getElementById('modalTitle');
   const modalBody = document.getElementById('modalBody');
-
-  // Set content based on provider
-  const profiles = {
-    khan: {
-      title: 'Khan Academy SA - Profile',
-      content: `
-        <div class="modal-field"><label>Full name / Business</label><div class="value">Khan Academy SA</div></div>
-        <div class="modal-field"><label>Email address</label><div class="value">contact@khanacademy.org.za</div></div>
-        <div class="modal-field"><label>Account type</label><div class="value">Organization/Company</div></div>
-        <div class="modal-field"><label>Years of Experience</label><div class="value">10+ Years</div></div>
-        <div class="modal-field"><label>Languages spoken</label><div class="value">English, Afrikaans, isiZulu</div></div>
-        <div class="modal-field"><label>Primary category</label><div class="value">Curriculum Provider</div></div>
-        <div class="modal-field"><label>Tags</label><div class="value">mathematics, science, online learning</div></div>
-        <div class="modal-field"><label>Short bio</label><div class="value">Free world-class education for anyone anywhere.</div></div>
-        <div class="modal-field"><label>Service title</label><div class="value">Math & Science Curriculum (Gr R-12)</div></div>
-        <div class="modal-field"><label>Age group served</label><div class="value">5-18 years</div></div>
-        <div class="modal-field"><label>Mode of delivery</label><div class="value">Online</div></div>
-        <div class="modal-field"><label>Province / City</label><div class="value">Gauteng, Johannesburg</div></div>
-        <div class="modal-field"><label>Service area</label><div class="value">National, Online only</div></div>
-        <div class="modal-field"><label>Pricing model</label><div class="value">Free / Custom quote</div></div>
-        <div class="modal-field"><label>Starting price</label><div class="value">Free</div></div>
-        <div class="modal-field"><label>Availability</label><div class="value">24/7 Online</div></div>
-        <div class="modal-field"><label>Primary contact</label><div class="value">Support Team · support@khanacademy.org.za</div></div>
-        <div class="modal-field"><label>Listing plan</label><div class="value">Free Listing</div></div>
-      `
-    },
-    therapy: {
-      title: 'Therapy4Learning - Profile',
-      content: `
-        <div class="modal-field"><label>Full name / Business</label><div class="value">Therapy4Learning</div></div>
-        <div class="modal-field"><label>Email address</label><div class="value">info@therapy4learning.co.za</div></div>
-        <div class="modal-field"><label>Account type</label><div class="value">Individual Provider</div></div>
-        <div class="modal-field"><label>Years of Experience</label><div class="value">5-10 Years</div></div>
-        <div class="modal-field"><label>Languages spoken</label><div class="value">English, Afrikaans</div></div>
-        <div class="modal-field"><label>Primary category</label><div class="value">Therapist</div></div>
-        <div class="modal-field"><label>Tags</label><div class="value">occupational therapy, sensory integration</div></div>
-        <div class="modal-field"><label>Short bio</label><div class="value">Pediatric occupational therapy services for children with learning difficulties.</div></div>
-        <div class="modal-field"><label>Service title</label><div class="value">Pediatric OT Assessment & Therapy</div></div>
-        <div class="modal-field"><label>Age group served</label><div class="value">5-13 years</div></div>
-        <div class="modal-field"><label>Mode of delivery</label><div class="value">In Person</div></div>
-        <div class="modal-field"><label>Province / City</label><div class="value">Western Cape, Cape Town</div></div>
-        <div class="modal-field"><label>Service area</label><div class="value">Local (15km radius)</div></div>
-        <div class="modal-field"><label>Pricing model</label><div class="value">Hourly / Per package</div></div>
-        <div class="modal-field"><label>Starting price</label><div class="value">R450/hr</div></div>
-        <div class="modal-field"><label>Availability</label><div class="value">Mon-Fri 9am-5pm</div></div>
-        <div class="modal-field"><label>Primary contact</label><div class="value">Dr Sarah Khumalo · +27 21 555 9876</div></div>
-        <div class="modal-field"><label>Listing plan</label><div class="value">Professional Listing</div></div>
-      `
-    },
-    creative: {
-      title: 'Creative Arts Studio - Profile',
-      content: `
-        <div class="modal-field"><label>Full name / Business</label><div class="value">Creative Arts Studio</div></div>
-        <div class="modal-field"><label>Email address</label><div class="value">hello@creativeartsstudio.co.za</div></div>
-        <div class="modal-field"><label>Account type</label><div class="value">Organization/Company</div></div>
-        <div class="modal-field"><label>Years of Experience</label><div class="value">3-5 Years</div></div>
-        <div class="modal-field"><label>Languages spoken</label><div class="value">English, Afrikaans, isiXhosa</div></div>
-        <div class="modal-field"><label>Primary category</label><div class="value">Extracurricular Activities</div></div>
-        <div class="modal-field"><label>Tags</label><div class="value">art, music, drama, creative expression</div></div>
-        <div class="modal-field"><label>Short bio</label><div class="value">After-school arts program fostering creativity through painting, music, and drama.</div></div>
-        <div class="modal-field"><label>Service title</label><div class="value">After-school Creative Arts Program</div></div>
-        <div class="modal-field"><label>Age group served</label><div class="value">5-13 years</div></div>
-        <div class="modal-field"><label>Mode of delivery</label><div class="value">In Person</div></div>
-        <div class="modal-field"><label>Province / City</label><div class="value">Gauteng, Pretoria</div></div>
-        <div class="modal-field"><label>Service area</label><div class="value">Local (10km radius)</div></div>
-        <div class="modal-field"><label>Pricing model</label><div class="value">Per term</div></div>
-        <div class="modal-field"><label>Starting price</label><div class="value">R1200/term</div></div>
-        <div class="modal-field"><label>Availability</label><div class="value">Mon-Thu 14:00-17:00</div></div>
-        <div class="modal-field"><label>Primary contact</label><div class="value">Lisa van Wyk · +27 12 345 6789</div></div>
-        <div class="modal-field"><label>Listing plan</label><div class="value">Free Listing</div></div>
-      `
-    },
-    bright: {
-      title: 'Bright Minds Tutoring - Profile',
-      content: `
-        <div class="modal-field"><label>Full name / Business</label><div class="value">Bright Minds Tutoring</div></div>
-        <div class="modal-field"><label>Email address</label><div class="value">hello@brightminds.co.za</div></div>
-        <div class="modal-field"><label>Account type</label><div class="value">Organization/Company</div></div>
-        <div class="modal-field"><label>Years of Experience</label><div class="value">10+ Years</div></div>
-        <div class="modal-field"><label>Languages spoken</label><div class="value">English, Afrikaans, isiXhosa</div></div>
-        <div class="modal-field"><label>Primary category</label><div class="value">Tutor (Math & Science)</div></div>
-        <div class="modal-field"><label>Tags</label><div class="value">mathematics, tutoring, grade 8-12</div></div>
-        <div class="modal-field"><label>Short bio</label><div class="value">Specialised Maths & Science tutoring for grades 8–12 with a creative curriculum approach.</div></div>
-        <div class="modal-field"><label>Certifications</label><div class="value">PGCE, TEFL, Maths Specialist</div></div>
-        <div class="modal-field"><label>Degrees</label><div class="value">BSc Mathematics, MEd</div></div>
-        <div class="modal-field"><label>Service title</label><div class="value">Math & Science Mentor (Gr 8-12)</div></div>
-        <div class="modal-field"><label>Age group served</label><div class="value">14-18 years</div></div>
-        <div class="modal-field"><label>Mode of delivery</label><div class="value">Online & In-Person</div></div>
-        <div class="modal-field"><label>Province / City</label><div class="value">Gauteng, Johannesburg</div></div>
-        <div class="modal-field"><label>Service area</label><div class="value">Local (30km radius), National online</div></div>
-        <div class="modal-field"><label>Pricing model</label><div class="value">Hourly / Per package</div></div>
-        <div class="modal-field"><label>Starting price</label><div class="value">R280/hr | R1500/5 sessions</div></div>
-        <div class="modal-field"><label>Availability</label><div class="value">Mon–Fri 14:00-18:00, Sat 09:00-13:00</div></div>
-        <div class="modal-field"><label>Primary contact</label><div class="value">Maria van der Merwe · +27 82 555 1234</div></div>
-        <div class="modal-field"><label>Listing plan</label><div class="value">Professional Listing (paid)</div></div>
-      `
-    },
-    edu: {
-      title: 'EduConsult Pro - Profile',
-      content: `
-        <div class="modal-field"><label>Full name / Business</label><div class="value">EduConsult Pro</div></div>
-        <div class="modal-field"><label>Email address</label><div class="value">info@educonsultpro.co.za</div></div>
-        <div class="modal-field"><label>Account type</label><div class="value">Individual Provider</div></div>
-        <div class="modal-field"><label>Years of Experience</label><div class="value">5-10 Years</div></div>
-        <div class="modal-field"><label>Languages spoken</label><div class="value">English, Afrikaans</div></div>
-        <div class="modal-field"><label>Primary category</label><div class="value">Educational Consultant</div></div>
-        <div class="modal-field"><label>Tags</label><div class="value">curriculum advice, school placement</div></div>
-        <div class="modal-field"><label>Short bio</label><div class="value">Independent educational consultancy helping families choose the right curriculum and schools.</div></div>
-        <div class="modal-field"><label>Service title</label><div class="value">Homeschool Curriculum Consulting</div></div>
-        <div class="modal-field"><label>Age group served</label><div class="value">All ages</div></div>
-        <div class="modal-field"><label>Mode of delivery</label><div class="value">Online, In Person</div></div>
-        <div class="modal-field"><label>Province / City</label><div class="value">Western Cape, Cape Town</div></div>
-        <div class="modal-field"><label>Service area</label><div class="value">National</div></div>
-        <div class="modal-field"><label>Pricing model</label><div class="value">Hourly, Per package</div></div>
-        <div class="modal-field"><label>Starting price</label><div class="value">R500/hr</div></div>
-        <div class="modal-field"><label>Availability</label><div class="value">Mon-Fri 9am-5pm, Sat by appt</div></div>
-        <div class="modal-field"><label>Primary contact</label><div class="value">Dr James Ndlovu · +27 21 555 4321</div></div>
-        <div class="modal-field"><label>Listing plan</label><div class="value">Professional Listing</div></div>
-      `
-    }
-  };
-
-  const profile = profiles[provider] || profiles.bright;
-  modalTitle.textContent = profile.title;
-  modalBody.innerHTML = profile.content;
-
+  
+  const data = providerData[providerKey] || providerData.bright;
+  
+  modalTitle.textContent = `${data.name} - Complete Profile`;
+  
+  // Build comprehensive HTML with all fields
+  modalBody.innerHTML = `
+    <div style="border-bottom: 2px solid var(--accent-light); margin-bottom: 1rem; padding-bottom: 0.5rem;">
+      <h3 style="color: var(--accent); font-size: 1.2rem;">Account Information</h3>
+    </div>
+    <div class="modal-field"><label>Full name / Business</label><div class="value">${data.name}</div></div>
+    <div class="modal-field"><label>Email address</label><div class="value">${data.email}</div></div>
+    <div class="modal-field"><label>Account type</label><div class="value">${data.accountType}</div></div>
+    <div class="modal-field"><label>Years of Experience</label><div class="value">${data.yearsExperience}</div></div>
+    <div class="modal-field"><label>Languages spoken</label><div class="value">${data.languages}</div></div>
+    <div class="modal-field"><label>Primary category</label><div class="value">${data.primaryCategory}</div></div>
+    
+    <div style="border-bottom: 2px solid var(--accent-light); margin: 1rem 0 0.5rem; padding-bottom: 0.5rem;">
+      <h3 style="color: var(--accent); font-size: 1.2rem;">Tags & Bio</h3>
+    </div>
+    <div class="modal-field"><label>Tags</label><div class="value">${data.tags.join(', ')}</div></div>
+    <div class="modal-field"><label>Short bio</label><div class="value">${data.bio}</div></div>
+    
+    <div style="border-bottom: 2px solid var(--accent-light); margin: 1rem 0 0.5rem; padding-bottom: 0.5rem;">
+      <h3 style="color: var(--accent); font-size: 1.2rem;">Qualifications & Experience</h3>
+    </div>
+    <div class="modal-field"><label>Certifications</label><div class="value">${data.certifications}</div></div>
+    <div class="modal-field"><label>Degrees</label><div class="value">${data.degrees}</div></div>
+    <div class="modal-field"><label>Professional memberships</label><div class="value">${data.memberships}</div></div>
+    <div class="modal-field"><label>Background clearance</label><div class="value">${data.clearance}</div></div>
+    
+    <div style="border-bottom: 2px solid var(--accent-light); margin: 1rem 0 0.5rem; padding-bottom: 0.5rem;">
+      <h3 style="color: var(--accent); font-size: 1.2rem;">Service Details</h3>
+    </div>
+    <div class="modal-field"><label>Service title</label><div class="value">${data.serviceTitle}</div></div>
+    <div class="modal-field"><label>Age groups served</label><div class="value">${data.ageGroups.join(', ')}</div></div>
+    <div class="modal-field"><label>Mode of delivery</label><div class="value">${data.deliveryMode}</div></div>
+    
+    <div style="border-bottom: 2px solid var(--accent-light); margin: 1rem 0 0.5rem; padding-bottom: 0.5rem;">
+      <h3 style="color: var(--accent); font-size: 1.2rem;">Location & Reach</h3>
+    </div>
+    <div class="modal-field"><label>Province</label><div class="value">${data.province}</div></div>
+    <div class="modal-field"><label>City / Town</label><div class="value">${data.city}</div></div>
+    <div class="modal-field"><label>Service area</label><div class="value">${data.serviceArea}${data.radius ? ' (' + data.radius + ' km radius)' : ''}</div></div>
+    
+    <div style="border-bottom: 2px solid var(--accent-light); margin: 1rem 0 0.5rem; padding-bottom: 0.5rem;">
+      <h3 style="color: var(--accent); font-size: 1.2rem;">Pricing & Availability</h3>
+    </div>
+    <div class="modal-field"><label>Pricing model</label><div class="value">${data.pricingModel}</div></div>
+    <div class="modal-field"><label>Starting price</label><div class="value">${data.startingPrice}</div></div>
+    <div class="modal-field"><label>Days available</label><div class="value">${data.availabilityDays.join(', ')}</div></div>
+    <div class="modal-field"><label>Availability notes</label><div class="value">${data.availabilityNotes}</div></div>
+    
+    <div style="border-bottom: 2px solid var(--accent-light); margin: 1rem 0 0.5rem; padding-bottom: 0.5rem;">
+      <h3 style="color: var(--accent); font-size: 1.2rem;">Contact & Online Presence</h3>
+    </div>
+    <div class="modal-field"><label>Primary contact</label><div class="value">${data.contactName}</div></div>
+    <div class="modal-field"><label>Phone number</label><div class="value">${data.phone}</div></div>
+    <div class="modal-field"><label>Contact email</label><div class="value">${data.contactEmail}</div></div>
+    <div class="modal-field"><label>Social / website</label><div class="value">${data.social}</div></div>
+    <div class="modal-field"><label>Public display</label><div class="value">${data.publicDisplay ? 'Enabled' : 'Disabled'}</div></div>
+    <div class="modal-field"><label>Listing plan</label><div class="value">${data.listingPlan}</div></div>
+    
+    <div style="border-bottom: 2px solid var(--accent-light); margin: 1rem 0 0.5rem; padding-bottom: 0.5rem;">
+      <h3 style="color: var(--accent); font-size: 1.2rem;">Reviews & Ratings</h3>
+    </div>
+    <div class="modal-field"><label>Average rating</label><div class="value">${data.reviews.average}/5 (${data.reviews.count} reviews)</div></div>
+    ${data.reviews.items.map(review => `
+      <div style="background: #f8fafc; padding: 0.8rem; border-radius: 12px; margin-bottom: 0.5rem;">
+        <div style="display: flex; justify-content: space-between;">
+          <strong>${review.reviewer}</strong>
+          <span style="color: #f5b342;">${'★'.repeat(review.rating)}${review.rating < 5 ? '☆'.repeat(5-review.rating) : ''}</span>
+        </div>
+        <div style="font-size: 0.85rem; margin-top: 0.3rem;">"${review.text}"</div>
+      </div>
+    `).join('')}
+  `;
+  
   modal.style.display = 'block';
 }
 
@@ -667,19 +815,21 @@ function handleLogin(event) {
     return;
   }
 
-  // Demo credentials
+  // Mock data for admin login
   if (email === 'admin@sahomeschooling.co.za' && password === 'admin123') {
     showNotification('Admin login successful! Redirecting...', 'success');
     setTimeout(() => {
       window.location.href = '../dashboards/admin-dashboard.html';
     }, 1500);
-  } else if (email && password.length >= 8) {
-    showNotification('Login successful! Redirecting to dashboard...', 'success');
+  } 
+  // Mock data for client login - specific test email or any email with password length >= 8
+  else if (email === 'contact@khanacademy.org.za' || (email && password.length >= 8)) {
+    showNotification('Client login successful! Redirecting to dashboard...', 'success');
     setTimeout(() => {
       window.location.href = '../dashboards/client-dashboard.html';
     }, 1500);
   } else {
-    showNotification('Invalid credentials', 'error');
+    showNotification('Invalid credentials. Use admin@sahomeschooling.co.za for admin or contact@khanacademy.org.za for client.', 'error');
   }
 }
 
