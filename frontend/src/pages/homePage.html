@@ -74,7 +74,7 @@
     .sec-eyebrow{display:block;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:2.5px;color:var(--accent);margin-bottom:5px;}
     .sec-header h2{font-family:'Playfair Display',serif;font-size:clamp(1.5rem,3vw,2rem);font-weight:800;color:var(--dark);line-height:1.15;}
     .sec-right{font-size:0.84rem;color:var(--muted);}
-    .sec-right a{color:var(--accent);font-weight:600;}
+    .sec-right a{color:var(--accent);font-weight:600;cursor:pointer;}
     .provider-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;}
     .provider-card{background:var(--white);border-radius:var(--radius-lg);overflow:hidden;border:1px solid var(--border);box-shadow:var(--shadow-sm);transition:box-shadow 0.2s,transform 0.2s;display:flex;flex-direction:column;}
     .provider-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);}
@@ -110,6 +110,11 @@
     .grid-empty{grid-column:1/-1;text-align:center;padding:70px 20px;color:var(--muted);}
     .grid-empty i{font-size:2.2rem;margin-bottom:12px;opacity:0.3;display:block;}
     .grid-empty h3{font-family:'Playfair Display',serif;font-size:1.25rem;color:var(--dark);margin-bottom:7px;}
+
+    /* SHOW ALL EXPANDED GRID */
+    #allProvidersSection{display:none;padding:0 0 40px;}
+    #allProvidersSection.visible{display:block;}
+    .all-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;}
 
     /* HOW IT WORKS */
     .how-section{padding:76px 0;background:var(--white);}
@@ -215,10 +220,10 @@
     .toast.show{transform:translateY(0);opacity:1;}
     .toast i{color:#22c55e;}
 
-    @media(max-width:1100px){.provider-grid{grid-template-columns:repeat(2,1fr);}.steps-grid{grid-template-columns:repeat(2,1fr);}.step:nth-child(2){border-right:none;}.step:nth-child(1),.step:nth-child(2){border-bottom:1px solid var(--border);}.cta-box{grid-template-columns:1fr;gap:28px;padding:36px 32px;}.sah-footer-grid{grid-template-columns:1fr 1fr;gap:32px;}}
-    @media(max-width:768px){.nav-links{display:none;}.provider-grid{grid-template-columns:repeat(2,1fr);}.hero-search{flex-direction:column;}.hs-sep{width:100%;height:1px;margin:0;}.hs-btn{padding:14px;text-align:center;}.steps-grid{grid-template-columns:1fr;}.step{border-right:none!important;border-bottom:1px solid var(--border);}.step:last-child{border-bottom:none;}}
+    @media(max-width:1100px){.provider-grid,.all-grid{grid-template-columns:repeat(2,1fr);}.steps-grid{grid-template-columns:repeat(2,1fr);}.step:nth-child(2){border-right:none;}.step:nth-child(1),.step:nth-child(2){border-bottom:1px solid var(--border);}.cta-box{grid-template-columns:1fr;gap:28px;padding:36px 32px;}.sah-footer-grid{grid-template-columns:1fr 1fr;gap:32px;}}
+    @media(max-width:768px){.nav-links{display:none;}.provider-grid,.all-grid{grid-template-columns:repeat(2,1fr);}.hero-search{flex-direction:column;}.hs-sep{width:100%;height:1px;margin:0;}.hs-btn{padding:14px;text-align:center;}.steps-grid{grid-template-columns:1fr;}.step{border-right:none!important;border-bottom:1px solid var(--border);}.step:last-child{border-bottom:none;}}
     @media(max-width:640px){.sah-footer{padding:44px 0 24px;}.sah-footer .container{padding:0 20px;}.sah-footer-grid{grid-template-columns:1fr;gap:28px;}.sah-footer-bottom{flex-direction:column;align-items:flex-start;gap:12px;}.sah-footer-bottom-links{flex-wrap:wrap;gap:12px;}}
-    @media(max-width:480px){.provider-grid{grid-template-columns:1fr;}}
+    @media(max-width:480px){.provider-grid,.all-grid{grid-template-columns:1fr;}}
   </style>
 </head>
 <body>
@@ -303,6 +308,17 @@
         <div class="sec-right" id="gridCount"></div>
       </div>
       <div class="provider-grid" id="providerGrid"></div>
+
+      <!-- Expanded "all providers" grid shown when user clicks "View all" -->
+      <div id="allProvidersSection">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin:32px 0 18px;">
+          <h3 style="font-family:'Playfair Display',serif;font-size:1.25rem;font-weight:800;color:var(--dark);">All Providers</h3>
+          <button onclick="collapseAll()" style="background:none;border:none;color:var(--accent);font-weight:600;font-size:0.85rem;cursor:pointer;">
+            <i class="fas fa-chevron-up" style="font-size:0.75rem;margin-right:4px;"></i> Show less
+          </button>
+        </div>
+        <div class="all-grid" id="allProvidersGrid"></div>
+      </div>
     </div>
   </section>
 
@@ -548,12 +564,70 @@
     const CAT_ICON={tutor:'fa-chalkboard-teacher',therapist:'fa-heart',curriculum:'fa-book-open',school:'fa-school',consultant:'fa-user-tie',extracurricular:'fa-palette'};
     const TIER_LBL={featured:'Featured Partner',pro:'Trusted Provider',free:'Community Member'};
     const BADGE={featured:'<span class="cbadge cbadge-featured">Featured</span>',new:'<span class="cbadge cbadge-new">New</span>',verified:'<span class="cbadge cbadge-verified">Verified</span>'};
+
+    // Track current filter state
+    let currentCat = 'all';
+
     function getAll(){const s=JSON.parse(localStorage.getItem('sah_providers')||'[]');return[...s,...SEED].sort((a,b)=>{const o={featured:0,pro:1,free:2};const d=(o[a.tier]??2)-(o[b.tier]??2);if(d)return d;return new Date(b.registered)-new Date(a.registered);});}
     function stars(r){return'\u2605'.repeat(Math.floor(r))+(r%1>=0.5?'\u00bd':'');}
     function cardHTML(p){const ic=CAT_ICON[p.category]||'fa-star';const th=p.image?`<img src="${p.image}" alt="${p.name}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"><div class="card-thumb-fallback" style="display:none"><i class="fas ${ic}"></i></div>`:`<div class="card-thumb-fallback"><i class="fas ${ic}"></i></div>`;return`<article class="provider-card" data-cat="${p.category}"><div class="card-thumb">${th}<div class="card-badges">${BADGE[p.badge]||''}</div><button class="card-save"><i class="far fa-heart"></i></button></div><div class="card-provider-row"><div class="pav"><i class="fas ${ic}"></i></div><div><div class="pav-name">${p.name}</div><div class="pav-tier">${TIER_LBL[p.tier]||'Community Member'}</div></div></div><div class="card-body"><div class="card-title">${p.name}</div><div class="card-meta"><span><i class="fas fa-map-marker-alt"></i>${p.location}</span><span><i class="fas fa-laptop"></i>${p.delivery}</span></div>${p.rating?`<div class="card-rating"><span class="stars">${stars(p.rating)}</span><span class="rnum">${p.rating.toFixed(1)}</span><span class="rcnt">(${p.reviewCount})</span></div>`:''}<div class="card-foot"><div><div class="from-label">Starting from</div><div class="card-price">${p.priceFrom||'Contact'}</div></div><button class="card-cta" onclick="viewProfile('${p.id}')">View Profile</button></div></div></article>`;}
-    function renderGrid(cat){const grid=document.getElementById('providerGrid');const head=document.getElementById('gridHeading');const cnt=document.getElementById('gridCount');let list=getAll();if(cat&&cat!=='all')list=list.filter(p=>p.category===cat);const hasUser=JSON.parse(localStorage.getItem('sah_providers')||'[]').length>0;head.textContent=hasUser?'Recently Added Providers':'Featured Providers';if(!list.length){grid.innerHTML=`<div class="grid-empty"><i class="fas fa-search"></i><h3>No providers found in this category</h3><p>Be the first to list \u2014 it's free to get started.</p><br><button class="cta-btn" style="font-size:0.88rem;" onclick="openModal('registerModal')"><i class="fas fa-plus"></i> Add Your Listing</button></div>`;cnt.textContent='';return;}cnt.innerHTML=`<a href="#">View all ${list.length} providers &rarr;</a>`;grid.innerHTML=list.slice(0,4).map(cardHTML).join('');}
+
+    function renderGrid(cat){
+      currentCat = cat;
+      const grid=document.getElementById('providerGrid');
+      const head=document.getElementById('gridHeading');
+      const cnt=document.getElementById('gridCount');
+      // Hide "all providers" expanded section when re-filtering
+      document.getElementById('allProvidersSection').classList.remove('visible');
+
+      let list=getAll();
+      if(cat&&cat!=='all')list=list.filter(p=>p.category===cat);
+      const hasUser=JSON.parse(localStorage.getItem('sah_providers')||'[]').length>0;
+      head.textContent=hasUser?'Recently Added Providers':'Featured Providers';
+
+      if(!list.length){
+        grid.innerHTML=`<div class="grid-empty"><i class="fas fa-search"></i><h3>No providers found in this category</h3><p>Be the first to list \u2014 it's free to get started.</p><br><button class="cta-btn" style="font-size:0.88rem;" onclick="openModal('registerModal')"><i class="fas fa-plus"></i> Add Your Listing</button></div>`;
+        cnt.textContent='';
+        return;
+      }
+
+      const total = list.length;
+      const preview = list.slice(0,4);
+
+      grid.innerHTML=preview.map(cardHTML).join('');
+
+      if(total > 4){
+        cnt.innerHTML=`<a onclick="showAllProviders('${cat}')" style="cursor:pointer;">View all ${total} providers &rarr;</a>`;
+      } else {
+        cnt.innerHTML=`<span>${total} provider${total===1?'':'s'}</span>`;
+      }
+    }
+
+    function showAllProviders(cat){
+      let list=getAll();
+      if(cat&&cat!=='all')list=list.filter(p=>p.category===cat);
+      // Show remaining providers (beyond the first 4)
+      const rest = list.slice(4);
+      const allGrid = document.getElementById('allProvidersGrid');
+      allGrid.innerHTML = rest.map(cardHTML).join('');
+      const section = document.getElementById('allProvidersSection');
+      section.classList.add('visible');
+      // Scroll to the expanded section
+      setTimeout(()=>section.scrollIntoView({behavior:'smooth',block:'start'}),50);
+      // Update the "view all" link to hide
+      document.getElementById('gridCount').innerHTML=`<span>${list.length} providers total</span>`;
+    }
+
+    function collapseAll(){
+      document.getElementById('allProvidersSection').classList.remove('visible');
+      // Restore the "view all" link
+      renderGrid(currentCat);
+      document.getElementById('providers').scrollIntoView({behavior:'smooth',block:'start'});
+    }
+
     function filterCat(cat,btn){document.querySelectorAll('.fpill').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderGrid(cat);}
-    function handleSearch(){const term=document.getElementById('heroSearch').value.trim().toLowerCase();const cat=document.getElementById('heroCategory').value;let list=getAll();if(cat)list=list.filter(p=>p.category===cat);if(term)list=list.filter(p=>p.name.toLowerCase().includes(term)||(p.location||'').toLowerCase().includes(term));const grid=document.getElementById('providerGrid');grid.innerHTML=list.length?list.slice(0,4).map(cardHTML).join(''):`<div class="grid-empty"><i class="fas fa-search"></i><h3>No results found</h3><p>Try a different keyword or browse all categories.</p></div>`;document.getElementById('providers').scrollIntoView({behavior:'smooth'});}
+
+    function handleSearch(){const term=document.getElementById('heroSearch').value.trim().toLowerCase();const cat=document.getElementById('heroCategory').value;let list=getAll();if(cat)list=list.filter(p=>p.category===cat);if(term)list=list.filter(p=>p.name.toLowerCase().includes(term)||(p.location||'').toLowerCase().includes(term));const grid=document.getElementById('providerGrid');document.getElementById('allProvidersSection').classList.remove('visible');grid.innerHTML=list.length?list.slice(0,4).map(cardHTML).join(''):`<div class="grid-empty"><i class="fas fa-search"></i><h3>No results found</h3><p>Try a different keyword or browse all categories.</p></div>`;document.getElementById('providers').scrollIntoView({behavior:'smooth'});}
 
     function togglePlan(item){const isOpen=item.classList.contains('open');document.querySelectorAll('.plan-item').forEach(p=>p.classList.remove('open'));if(!isOpen)item.classList.add('open');}
 
@@ -563,22 +637,11 @@
       const all=[...JSON.parse(localStorage.getItem('sah_providers')||'[]'),...SEED];
       const p=all.find(x=>x.id===id);
       if(!p){showToast('Profile not found.',true);return;}
-      const params=new URLSearchParams({
-        id:p.id,
-        name:p.name,
-        tagline:p.tagline||'',
-        cat:p.category.charAt(0).toUpperCase()+p.category.slice(1),
-        location:p.location||'',
-        delivery:p.delivery||'',
-        tier:p.tier||'free',
-        price:p.priceFrom||'Contact',
-        rating:p.rating||'',
-        reviews:p.reviewCount||0,
-        badge:p.badge||'',
-        img:p.image||''
-      });
+      const params=new URLSearchParams({id:p.id,name:p.name,tagline:p.tagline||'',cat:p.category.charAt(0).toUpperCase()+p.category.slice(1),location:p.location||'',delivery:p.delivery||'',tier:p.tier||'free',price:p.priceFrom||'Contact',rating:p.rating||'',reviews:p.reviewCount||0,badge:p.badge||'',img:p.image||''});
       window.location.href='profile.html?'+params.toString();}
+
     function handleLogin(){if(!document.getElementById('loginEmail').value){showToast('Please enter your email.',true);return;}closeModal('loginModal');showToast('Welcome back!');}
+
     function handleRegister(){
       const n=document.getElementById('regName').value.trim();
       const e=document.getElementById('regEmail').value.trim();
@@ -587,29 +650,15 @@
       const t=document.getElementById('regType').value;
       if(!n||!e||!p||!c||!t){showToast('Please fill in all fields.',true);return;}
       const id='usr-'+Date.now();
-      const provider={
-        id,name:n,category:c,
-        tagline:'',
-        location:'South Africa',delivery:'Online',
-        image:null,priceFrom:'Contact',
-        badge:'new',rating:null,reviewCount:0,
-        tier:'free',email:e,
-        registered:new Date().toISOString()
-      };
+      const provider={id,name:n,category:c,tagline:'',location:'South Africa',delivery:'Online',image:null,priceFrom:'Contact',badge:'new',rating:null,reviewCount:0,tier:'free',email:e,registered:new Date().toISOString()};
       const stored=JSON.parse(localStorage.getItem('sah_providers')||'[]');
       stored.unshift(provider);
       localStorage.setItem('sah_providers',JSON.stringify(stored));
       closeModal('registerModal');
-      // Navigate straight to the new profile page
-      const params=new URLSearchParams({
-        id,name:n,tagline:'',
-        cat:c.charAt(0).toUpperCase()+c.slice(1),
-        location:'South Africa',delivery:'Online',
-        tier:'free',price:'Contact',
-        rating:'',reviews:0,badge:'new',img:''
-      });
+      const params=new URLSearchParams({id,name:n,tagline:'',cat:c.charAt(0).toUpperCase()+c.slice(1),location:'South Africa',delivery:'Online',tier:'free',price:'Contact',rating:'',reviews:0,badge:'new',img:''});
       window.location.href='profile.html?'+params.toString();
     }
+
     function openModal(id){document.getElementById(id).classList.add('open');document.body.style.overflow='hidden';}
     function closeModal(id){document.getElementById(id).classList.remove('open');document.body.style.overflow='';}
     function overlayClose(e,id){if(e.target===document.getElementById(id))closeModal(id);}
