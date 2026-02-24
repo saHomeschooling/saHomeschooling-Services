@@ -453,7 +453,7 @@
     const loginForm = document.getElementById('loginForm');
     const alertBox = document.getElementById('loginAlert');
 
-    // Pre-fill with client test email that matches the name on client dashboard
+    // Pre-fill with client test email
     const emailInput = document.getElementById('loginEmail');
     if (emailInput) {
       emailInput.value = 'contact@khanacademy.org.za';
@@ -532,10 +532,10 @@
         return;
       }
 
-      const email = document.getElementById('loginEmail').value;
+      const email = document.getElementById('loginEmail').value.trim();
       const password = document.getElementById('loginPassword').value;
 
-      // Mock data for admin login
+      // ✅ FIXED: Admin check uses strict && so it won't bleed into client block
       if (email === 'admin@sahomeschooling.co.za' && password === 'admin123') {
         alertBox.className = 'alert success';
         alertBox.innerHTML = '<i class="fa-regular fa-circle-check"></i> Admin login successful! Redirecting to admin dashboard...';
@@ -544,9 +544,9 @@
         setTimeout(() => {
           window.location.href = 'dashboards/admin-dashboard.html';
         }, 1500);
-      } 
-      // Mock data for client login - specific test email that matches the name on client dashboard
-      else if (email === 'contact@khanacademy.org.za' || (email && password.length >= 8)) {
+
+      // ✅ FIXED: Client check uses && (not ||) so it only matches the specific client email
+      } else if (email === 'contact@khanacademy.org.za' && password.length >= 8) {
         alertBox.className = 'alert success';
         alertBox.innerHTML = '<i class="fa-regular fa-circle-check"></i> Client login successful! Redirecting to your dashboard...';
         alertBox.style.display = 'block';
@@ -554,6 +554,7 @@
         setTimeout(() => {
           window.location.href = 'dashboards/client-dashboard.html';
         }, 1500);
+
       } else {
         alertBox.className = 'alert error';
         alertBox.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> Invalid credentials. Please try again.';
@@ -567,18 +568,6 @@
   })();
 </script>
 
-<!-- 
-  DESIGN VERIFICATION:
-  - Follows the PDF requirements: clean login, no extra social/divider.
-  - ONE PAGE on desktop (no scroll) — tested for 1080p, 768p heights.
-  - Scroll only allowed on mobile devices (max-width:800px) and rare very small height screens.
-  - All colors, input sizes, button match the register theme exactly.
-  - "Create an account" link points to registration.html
-  - Redirects to correct dashboard paths: 
-      admin → dashboards/admin-dashboard.html
-      client → dashboards/client-dashboard.html
-  - Pre-filled with client test email: contact@khanacademy.org.za (matches the name on client dashboard)
-  - Test credentials section removed from UI
--->
+
 </body>
 </html>
