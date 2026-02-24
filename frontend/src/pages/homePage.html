@@ -75,7 +75,7 @@
     .sec-eyebrow{display:block;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:2.5px;color:var(--accent);margin-bottom:5px;}
     .sec-header h2{font-family:'Playfair Display',serif;font-size:clamp(1.5rem,3vw,2rem);font-weight:800;color:var(--dark);line-height:1.15;}
     .sec-right{font-size:0.84rem;color:var(--muted);}
-    .sec-right a{color:var(--accent);font-weight:600;}
+    .sec-right a{color:var(--accent);font-weight:600;cursor:pointer;}
     .provider-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;}
     .provider-card{background:var(--white);border-radius:var(--radius-lg);overflow:hidden;border:1px solid var(--border);box-shadow:var(--shadow-sm);transition:box-shadow 0.2s,transform 0.2s;display:flex;flex-direction:column;}
     .provider-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);}
@@ -111,6 +111,11 @@
     .grid-empty{grid-column:1/-1;text-align:center;padding:70px 20px;color:var(--muted);}
     .grid-empty i{font-size:2.2rem;margin-bottom:12px;opacity:0.3;display:block;}
     .grid-empty h3{font-family:'Playfair Display',serif;font-size:1.25rem;color:var(--dark);margin-bottom:7px;}
+
+    /* SHOW ALL EXPANDED GRID */
+    #allProvidersSection{display:none;padding:0 0 40px;}
+    #allProvidersSection.visible{display:block;}
+    .all-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;}
 
     /* HOW IT WORKS */
     .how-section{padding:76px 0;background:var(--white);}
@@ -330,6 +335,17 @@
         <div class="sec-right" id="gridCount"></div>
       </div>
       <div class="provider-grid" id="providerGrid"></div>
+
+      <!-- Expanded "all providers" grid shown when user clicks "View all" -->
+      <div id="allProvidersSection">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin:32px 0 18px;">
+          <h3 style="font-family:'Playfair Display',serif;font-size:1.25rem;font-weight:800;color:var(--dark);">All Providers</h3>
+          <button onclick="collapseAll()" style="background:none;border:none;color:var(--accent);font-weight:600;font-size:0.85rem;cursor:pointer;">
+            <i class="fas fa-chevron-up" style="font-size:0.75rem;margin-right:4px;"></i> Show less
+          </button>
+        </div>
+        <div class="all-grid" id="allProvidersGrid"></div>
+      </div>
     </div>
   </section>
 
