@@ -712,9 +712,19 @@
 
   <script>
     (function() {
-      // ---------- step definitions (unchanged, with multi delivery & expanded socials) ----------
+      // ---------- step definitions with all 7 steps preserved, only order changed ----------
       const steps = [
-        { // step 1: Account Setup
+        { // NEW STEP 1: Choose Your Listing Plan (formerly step 7)
+          fields: [
+            { type: 'radio-group', label: 'Select a plan', name: 'listingPlan', options: [
+              'Free Listing – basic profile',
+              'Professional Listing – R149/month (full contact, direct enquiries)',
+              'Featured Partner – R399/month (homepage placement, analytics)'
+            ], required: true, col: 'full', default: 'Free Listing – basic profile' },
+            { type: 'terms-check', label: 'I agree to the Terms and Community Guidelines', name: 'terms', required: true, col: 'full' }
+          ]
+        },
+        { // STEP 2: Account Setup (formerly step 1)
           fields: [
             { type: 'text', label: 'Full Name / Business Name', name: 'fullName', required: true, col: 'full', placeholder: 'e.g. Thando Mkhize or Bright Minds Learning' },
             { type: 'email', label: 'Email Address', name: 'email', required: true, col: 'half', placeholder: 'name@example.com' },
@@ -722,7 +732,7 @@
             { type: 'select', label: 'Account Type', name: 'accountType', required: true, options: ['Individual Provider', 'Organisation / Company'], col: 'full' }
           ]
         },
-        { // step 2: Provider Identity & Trust
+        { // STEP 3: Provider Identity & Trust (formerly step 2)
           fields: [
             { type: 'file', label: 'Profile Photo / Logo', name: 'profilePhoto', accept: 'image/*', required: false, col: 'half' },
             { type: 'textarea', label: 'Short Bio (150–250 words)', name: 'bio', placeholder: 'Tell families about your teaching philosophy, experience, and approach...', required: true, col: 'full', rows: 3 },
@@ -732,7 +742,7 @@
             { type: 'multicheck', label: 'Languages Spoken', name: 'languages', options: ['English','Afrikaans','isiZulu','isiXhosa','Sepedi','Setswana','Sesotho','Xitsonga','SiSwati','Tshivenda','isiNdebele','Other'], required: false, col: 'full' }
           ]
         },
-        { // step 3: Services Offered (Delivery Mode now multicheck)
+        { // STEP 4: Services Offered (formerly step 3) - Delivery Mode now radio group
           fields: [
             { type: 'select', label: 'Primary Category', name: 'primaryCat', required: true, options: ['Tutor','Therapist','Curriculum Provider','Online / Hybrid School','Educational Consultant','Extracurricular / Enrichment'], col: 'half' },
             { type: 'multicheck', label: 'Secondary Categories', name: 'secondaryCats', options: ['Tutor','Therapist','Curriculum','School','Consultant','Enrichment'], required: false, col: 'half' },
@@ -740,10 +750,10 @@
             { type: 'textarea', label: 'Service Description', name: 'serviceDesc', required: true, col: 'full', rows: 2, placeholder: 'Describe what you offer, your methods, and what makes you unique...' },
             { type: 'text', label: 'Subjects / Specialisations', name: 'subjects', placeholder: 'e.g. Mathematics, Phonics, OT, ADHD support', required: true, col: 'half' },
             { type: 'multicheck', label: 'Age Groups Served', name: 'ageGroups', options: ['5–7','8–10','11–13','14–18'], required: true, col: 'half' },
-            { type: 'multicheck', label: 'Delivery Mode', name: 'deliveryMode', options: ['Online','In-person','Hybrid'], required: true, col: 'full' }
+            { type: 'radio-group', label: 'Delivery Mode', name: 'deliveryMode', options: ['Online', 'In-person', 'Hybrid (Online & In-person)'], required: true, col: 'full' }
           ]
         },
-        { // step 4: Location & Reach
+        { // STEP 5: Location & Reach (formerly step 4)
           fields: [
             { type: 'text', label: 'City', name: 'city', required: true, col: 'half', placeholder: 'e.g. Cape Town' },
             { type: 'select', label: 'Province', name: 'province', required: true, options: ['Eastern Cape','Free State','Gauteng','KwaZulu-Natal','Limpopo','Mpumalanga','Northern Cape','North West','Western Cape'], col: 'half' },
@@ -751,18 +761,18 @@
             { type: 'conditional-text', label: 'If local, specify radius (e.g. 30 km)', name: 'localRadius', placeholder: 'e.g. 30 km', required: false, col: 'half', dependsOn: 'serviceArea', dependsValue: 'Local (X km)' }
           ]
         },
-        { // step 5: Pricing & Availability
+        { // STEP 6: Pricing & Availability (formerly step 5)
           fields: [
             { type: 'select', label: 'Pricing Model', name: 'pricingModel', options: ['Hourly','Per package','Per term','Custom quote'], required: true, col: 'half' },
             { type: 'text', label: 'Starting Price (optional, e.g. R280/hr)', name: 'startingPrice', required: false, col: 'half', placeholder: 'e.g. R350/session' },
             { type: 'multicheck', label: 'Days available', name: 'daysAvailable', options: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'], required: true, col: 'full' },
-            { type: 'text', label: 'Time slots (e.g. 9am–2pm)', name: 'timeSlots', placeholder: 'e.g. 9am–2pm, 4pm–7pm', required: true, col: 'full' }
+            { type: 'text', label: 'Time slots', name: 'timeSlots', placeholder: 'e.g. 9:00–14:00, 15:30–17:30 (24h format recommended)', required: true, col: 'full' }
           ]
         },
-        { // step 6: Contact & Online Presence (expanded socials)
+        { // STEP 7: Contact & Online Presence (formerly step 6) - NOW FINAL STEP WITH SUBMIT and SA phone formatting
           fields: [
-            { type: 'tel', label: 'Phone Number', name: 'phone', required: true, col: 'half', placeholder: '0712345678' },
-            { type: 'tel', label: 'WhatsApp Number', name: 'whatsapp', required: false, col: 'half', placeholder: '0712345678' },
+            { type: 'tel', label: 'Phone Number', name: 'phone', required: true, col: 'half', placeholder: '+27 71 234 5678' },
+            { type: 'tel', label: 'WhatsApp Number', name: 'whatsapp', required: false, col: 'half', placeholder: '+27 71 234 5678' },
             { type: 'email', label: 'Email for inquiries', name: 'inquiryEmail', required: true, col: 'full', placeholder: 'contact@example.com' },
             { type: 'url', label: 'Website', name: 'website', required: false, col: 'half', placeholder: 'https://yourwebsite.co.za' },
             { type: 'url', label: 'Facebook', name: 'facebook', placeholder: 'https://facebook.com/yourpage', required: false, col: 'half' },
@@ -772,21 +782,11 @@
             { type: 'url', label: 'Pinterest', name: 'pinterest', placeholder: 'https://pinterest.com/yourprofile', required: false, col: 'half' },
             { type: 'url', label: 'TikTok', name: 'tiktok', placeholder: 'https://tiktok.com/@yourhandle', required: false, col: 'half' }
           ]
-        },
-        { // step 7: Choose Your Listing Plan
-          fields: [
-            { type: 'radio-group', label: 'Select a plan', name: 'listingPlan', options: [
-              'Free Listing – basic profile',
-              'Professional Listing – R149/month (full contact, direct enquiries)',
-              'Featured Partner – R399/month (homepage placement, analytics)'
-            ], required: true, col: 'full', default: 'Free Listing – basic profile' },
-            { type: 'terms-check', label: 'I agree to the Terms and Community Guidelines', name: 'terms', required: true, col: 'full' }
-          ]
         }
       ];
 
       let currentStep = 1;
-      const totalSteps = steps.length;
+      const totalSteps = steps.length; // now 7 steps
       let formData = {};
 
       const stepContainer = document.getElementById('stepContainer');
@@ -864,8 +864,77 @@
         toggleLocal();
       }
 
-      function getStepTitle(step) { return ['Account Setup','Provider Identity & Trust','Services Offered','Location & Reach','Pricing & Availability','Contact & Online Presence','Choose Your Listing Plan'][step-1]; }
-      function getStepDesc(step) { return ['Create your provider account','Build trust with qualifications','Tell families what you offer','Where can you serve families?','Set your rates and schedule','How families can reach you','Select a plan (free or premium)'][step-1]; }
+      // Phone number formatting for South African numbers
+      function formatPhoneNumber(input) {
+        if (!input) return;
+        let value = input.value.replace(/\D/g, '');
+        
+        // If user starts typing 0, replace with +27
+        if (value.startsWith('0')) {
+          value = '27' + value.substring(1);
+        }
+        
+        // Format as +27 XX XXX XXXX
+        if (value.length >= 2) {
+          let formatted = '+' + value.substring(0, 2);
+          if (value.length > 2) {
+            formatted += ' ' + value.substring(2, 4);
+          }
+          if (value.length > 4) {
+            formatted += ' ' + value.substring(4, 7);
+          }
+          if (value.length > 7) {
+            formatted += ' ' + value.substring(7, 11);
+          }
+          input.value = formatted;
+        } else if (value.length > 0) {
+          input.value = '+' + value;
+        }
+      }
+
+      function attachPhoneFormatter() {
+        const phoneInput = document.getElementById('phone');
+        const whatsappInput = document.getElementById('whatsapp');
+        
+        if (phoneInput) {
+          phoneInput.addEventListener('input', function(e) {
+            formatPhoneNumber(this);
+          });
+        }
+        
+        if (whatsappInput) {
+          whatsappInput.addEventListener('input', function(e) {
+            formatPhoneNumber(this);
+          });
+        }
+      }
+
+      function getStepTitle(step) { 
+        const titles = [
+          'Choose Your Listing Plan',
+          'Account Setup',
+          'Provider Identity & Trust',
+          'Services Offered',
+          'Location & Reach',
+          'Pricing & Availability',
+          'Contact & Online Presence'
+        ];
+        return titles[step-1]; 
+      }
+      
+      function getStepDesc(step) { 
+        const desc = [
+          'Select a plan and agree to terms',
+          'Create your provider account',
+          'Build trust with qualifications',
+          'Tell families what you offer',
+          'Where can you serve families?',
+          'Set your rates and schedule',
+          'How families can reach you (final step)'
+        ];
+        return desc[step-1]; 
+      }
+      
       function getIcon(type) { return 'edit'; }
 
       function renderStep(step) {
@@ -946,8 +1015,9 @@
         }
 
         attachPasswordToggle();
-        if (step === 2) attachOtherLanguageHandler();
-        if (step === 4) attachConditionalHandler();
+        if (step === 3) attachOtherLanguageHandler(); // Languages on step 3
+        if (step === 5) attachConditionalHandler(); // Conditional radius on step 5
+        if (step === 7) attachPhoneFormatter(); // Phone formatting on final step
         setupTypingClear();
       }
 
@@ -969,7 +1039,7 @@
             else if (el && el.type === 'file' && el.files.length) formData[f.name] = el.files[0].name;
           }
         });
-        if (currentStep === 2 && document.getElementById('otherLangField')) {
+        if (currentStep === 3 && document.getElementById('otherLangField')) {
           formData.otherLanguage = document.getElementById('otherLangField').value;
         }
       }
@@ -978,6 +1048,32 @@
         const stepDef = steps[step-1];
         for (let f of stepDef.fields) {
           if (!f.required) continue;
+          
+          // Special validation for time slots (step 6)
+          if (f.name === 'timeSlots' && f.required) {
+            const val = formData[f.name];
+            if (!val || val.trim() === '') return f.label;
+            // Basic time format validation (e.g., "9:00–14:00" or "09:00-17:00")
+            const timePattern = /^(\d{1,2}:\d{2})\s*[-–]\s*(\d{1,2}:\d{2})(\s*,\s*(\d{1,2}:\d{2})\s*[-–]\s*(\d{1,2}:\d{2}))*$/;
+            if (!timePattern.test(val.trim())) {
+              return 'time slots in format like 9:00–14:00, 15:30–17:30';
+            }
+            continue;
+          }
+          
+          // Special validation for SA phone numbers (step 7)
+          if (f.name === 'phone' && f.required) {
+            const val = formData[f.name];
+            if (!val || val.trim() === '') return f.label;
+            // SA phone number validation: +27 followed by 9 digits (with optional spaces)
+            const saPhonePattern = /^\+27\s?[1-9]\d{1}\s?\d{3}\s?\d{4}$|^\+27[1-9]\d{8}$/;
+            const cleaned = val.replace(/\s/g, '');
+            if (!saPhonePattern.test(cleaned)) {
+              return 'valid SA phone number starting with +27 (e.g., +27 71 234 5678)';
+            }
+            continue;
+          }
+          
           if (f.type === 'multicheck') {
             const checked = formData[f.name] || [];
             if (checked.length === 0) return f.label;
