@@ -4,200 +4,138 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Provider Profile — SA Homeschooling Directory</title>
-
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-
   <style>
-    :root {
-      --accent:       #c0234a;
-      --accent-dark:  #96183a;
-      --accent-light: #f5d0d8;
-      --dark:         #111111;
-      --mid:          #3a1a22;
-      --muted:        #6b7280;
-      --light-bg:     #f8f4f5;
-      --white:        #ffffff;
-      --border:       rgba(0,0,0,0.08);
-      --shadow-sm:    0 1px 4px rgba(0,0,0,0.06);
-      --shadow-md:    0 4px 20px rgba(0,0,0,0.09);
-      --shadow-lg:    0 12px 48px rgba(0,0,0,0.13);
-      --radius:       8px;
-      --radius-lg:    12px;
-      --header-h:     68px;
-    }
-
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; }
-    body { font-family: 'DM Sans', sans-serif; background: var(--light-bg); color: var(--dark); line-height: 1.6; }
-    img { display: block; max-width: 100%; }
-    a { color: inherit; text-decoration: none; }
-    button { font-family: inherit; cursor: pointer; }
-    .container { max-width: 1280px; margin: 0 auto; padding: 0 32px; }
-
-    /* HEADER */
-    header { position: sticky; top: 0; z-index: 1000; height: var(--header-h); background: var(--accent); box-shadow: 0 2px 12px rgba(192,35,74,0.25); }
-    .nav-inner { height: 100%; display: flex; justify-content: space-between; align-items: center; }
-    .nav-left { display: flex; align-items: center; gap: 18px; }
-    .back-link { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.85rem; color: rgba(255,255,255,0.85); transition: color 0.15s; }
-    .back-link:hover { color: #fff; }
-    .back-link i { font-size: 0.78rem; }
-    .brand-divider { width: 1px; height: 28px; background: rgba(255,255,255,0.3); border-radius: 1px; }
-    .brand-name { font-family: 'Playfair Display', serif; font-weight: 800; font-size: 1rem; color: #fff; letter-spacing: 0.2px; }
-    .brand-tag { display: block; font-size: 0.66rem; color: rgba(255,255,255,0.65); font-weight: 500; letter-spacing: 0.5px; }
-    .nav-ctas { display: flex; gap: 10px; }
-    .btn-ghost-nav { padding: 7px 16px; border-radius: 5px; border: 1.5px solid rgba(255,255,255,0.45); background: transparent; color: #fff; font-weight: 600; font-size: 0.85rem; transition: all 0.15s; }
-    .btn-ghost-nav:hover { border-color: #fff; background: rgba(255,255,255,0.1); }
-    .btn-solid-nav { padding: 7px 18px; border-radius: 5px; background: #fff; color: var(--accent); font-weight: 700; font-size: 0.85rem; border: none; transition: all 0.15s; }
-    .btn-solid-nav:hover { background: var(--accent-light); }
-
-    /* BREADCRUMB */
-    .breadcrumb-bar { background: var(--white); border-bottom: 1px solid var(--border); padding: 10px 0; }
-    .breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: var(--muted); }
-    .breadcrumb a { color: var(--muted); transition: color 0.15s; }
-    .breadcrumb a:hover { color: var(--accent); }
-    .breadcrumb i { font-size: 0.6rem; opacity: 0.4; }
-
-    /* PAGE LAYOUT */
-    .page-wrap { max-width: 1280px; margin: 0 auto; padding: 32px 32px 80px; display: grid; grid-template-columns: 1fr 340px; gap: 28px; align-items: start; }
-    .sidebar { position: sticky; top: calc(var(--header-h) + 24px); }
-
-    /* CARDS */
-    .card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); margin-bottom: 20px; overflow: hidden; }
-    .card-pad { padding: 26px 28px; }
-    .sec-eyebrow { display: block; font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2.5px; color: var(--accent); margin-bottom: 5px; }
-    .card-heading { font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 800; color: var(--dark); margin-bottom: 16px; }
-
-    /* PROFILE HEAD */
-    .profile-head-card { background: var(--white); border: 1px solid var(--border); border-top: 3px solid var(--accent); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); margin-bottom: 20px; overflow: hidden; }
-    .profile-head-body { padding: 28px; }
-    .profile-head-inner { display: flex; gap: 24px; align-items: flex-start; }
-
-    .avatar-lg { flex-shrink: 0; width: 108px; height: 108px; border-radius: 50%; border: 3px solid var(--accent-light); box-shadow: var(--shadow-md); overflow: hidden; background: var(--accent-light); display: flex; align-items: center; justify-content: center; }
-    .avatar-lg img { width: 100%; height: 100%; object-fit: cover; }
-    .avatar-placeholder { font-size: 2.5rem; color: var(--accent); }
-
-    .profile-info { flex: 1; min-width: 0; }
-    .badge-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
-    .badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 11px; border-radius: 4px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; }
-    .badge-featured { background: var(--accent); color: #fff; }
-    .badge-verified  { background: #15803d; color: #fff; }
-    .badge-new       { background: #0d7d6c; color: #fff; }
-    .badge-pro       { background: #5b21b6; color: #fff; }
-
-    .profile-name { font-family: 'Playfair Display', serif; font-size: 1.75rem; font-weight: 900; color: var(--dark); margin-bottom: 4px; line-height: 1.15; }
-    .profile-tagline { font-size: 0.92rem; color: var(--muted); margin-bottom: 14px; }
-    .meta-strip { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-bottom: 18px; font-size: 0.84rem; color: var(--muted); }
-    .meta-item { display: flex; align-items: center; gap: 5px; }
-    .meta-item i { color: var(--accent); font-size: 0.78rem; width: 13px; text-align: center; }
-    .meta-item strong { color: var(--dark); }
-
-    .action-row { display: flex; flex-wrap: wrap; gap: 9px; }
-    .btn { display: inline-flex; align-items: center; gap: 7px; padding: 9px 18px; border-radius: var(--radius); font-weight: 700; font-size: 0.87rem; border: none; transition: all 0.15s; }
-    .btn-primary { background: var(--accent); color: #fff; }
-    .btn-primary:hover { background: var(--accent-dark); }
-    .btn-outline { border: 1.5px solid var(--border); background: var(--white); color: var(--mid); }
-    .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
-    .btn-whatsapp { background: #25D366; color: #fff; }
-    .btn-whatsapp:hover { background: #1ebe5a; }
-    .btn-book { background: var(--dark); color: #fff; }
-    .btn-book:hover { background: #333; }
-
-    .rating-bar { display: flex; align-items: center; gap: 14px; margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--border); }
-    .rating-big { font-family: 'Playfair Display', serif; font-size: 2.4rem; font-weight: 900; color: var(--accent); line-height: 1; }
-    .rating-stars { font-size: 1.05rem; color: #d97706; letter-spacing: 1px; }
-    .rating-sub { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
-
-    /* CONTENT */
-    .content-body p + p { margin-top: 12px; }
-    .content-body p { font-size: 0.93rem; color: #374151; line-height: 1.75; }
-    .tag-cloud { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
-    .tag { padding: 5px 13px; border-radius: 5px; background: var(--light-bg); border: 1px solid var(--border); font-size: 0.82rem; color: var(--mid); font-weight: 600; }
-    .grade-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
-    .grade-pill { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--accent-light); display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; color: var(--accent); }
-    .qual-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
-    .qual-list li { display: flex; align-items: flex-start; gap: 10px; font-size: 0.9rem; color: #374151; }
-    .qual-list li i { color: var(--accent); font-size: 0.85rem; margin-top: 3px; flex-shrink: 0; }
-    .section-divider { height: 1px; background: var(--border); margin: 20px 0; }
-
-    /* REVIEWS */
-    .review-card { padding: 16px; background: var(--light-bg); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 12px; }
-    .review-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
-    .reviewer-name { font-weight: 700; font-size: 0.88rem; }
-    .review-stars { color: #d97706; font-size: 0.85rem; }
-    .review-date { font-size: 0.75rem; color: var(--muted); margin-bottom: 8px; }
-    .review-text { font-size: 0.87rem; color: #374151; line-height: 1.65; }
-
-    /* NEW PROFILE BANNER — shown for newly registered providers */
-    .new-profile-banner { background: linear-gradient(135deg, #fef3c7, #fff); border: 1px solid #fbbf24; border-radius: var(--radius-lg); padding: 18px 22px; margin-bottom: 20px; display: flex; align-items: flex-start; gap: 14px; }
-    .new-profile-banner i { color: #d97706; font-size: 1.2rem; flex-shrink: 0; margin-top: 2px; }
-    .new-profile-banner h3 { font-weight: 700; font-size: 0.95rem; color: #92400e; margin-bottom: 4px; }
-    .new-profile-banner p { font-size: 0.85rem; color: #78350f; line-height: 1.5; }
-    .new-profile-banner .tip-list { list-style: none; margin-top: 8px; display: flex; flex-direction: column; gap: 4px; }
-    .new-profile-banner .tip-list li { font-size: 0.82rem; color: #78350f; display: flex; align-items: center; gap: 6px; }
-    .new-profile-banner .tip-list li i { font-size: 0.7rem; color: #d97706; }
-
-    /* SIDEBAR */
-    .sidebar .card { margin-bottom: 18px; }
-    .sidebar .card-pad { padding: 20px 22px; }
-    .form-group { display: flex; flex-direction: column; gap: 10px; }
-    .form-row { display: flex; gap: 10px; }
-    .form-row .field { flex: 1; }
-    .field label { display: block; font-size: 0.78rem; font-weight: 600; color: var(--muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
-    .field input, .field select, .field textarea { width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--light-bg); color: var(--dark); font-family: inherit; font-size: 0.87rem; outline: none; transition: border-color 0.15s; }
-    .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); background: #fff; }
-    .field textarea { resize: vertical; min-height: 80px; }
-    .btn-block { width: 100%; justify-content: center; padding: 11px; }
-
-    .dc-item { display: flex; align-items: center; gap: 12px; padding: 11px 13px; background: var(--light-bg); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 8px; }
-    .dc-item.dc-whatsapp { background: #f0fdf4; border-color: #86efac; }
-    .dc-icon { width: 34px; height: 34px; border-radius: 6px; display: flex; align-items: center; justify-content: center; background: var(--white); box-shadow: var(--shadow-sm); }
-    .dc-icon i { font-size: 0.9rem; color: var(--accent); }
-    .dc-icon.wa i { color: #25D366; }
-    .dc-meta { flex: 1; min-width: 0; }
-    .dc-label { font-size: 0.72rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
-    .dc-value { font-size: 0.88rem; font-weight: 600; color: var(--dark); }
-    .dc-socials { display: flex; gap: 8px; margin-top: 10px; }
-    .dc-soc { width: 34px; height: 34px; border-radius: var(--radius); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 0.85rem; transition: all 0.15s; }
-    .dc-soc:hover { background: var(--accent); color: white; border-color: var(--accent); }
-
-    .avail-grid { display: flex; flex-wrap: wrap; gap: 7px; margin: 12px 0; }
-    .avail-pill { padding: 5px 12px; border-radius: 5px; font-size: 0.78rem; font-weight: 700; border: 1px solid var(--border); color: var(--muted); background: var(--light-bg); }
-    .avail-pill.on { background: var(--accent); color: white; border-color: var(--accent); }
-    .map-ph { height: 150px; border-radius: var(--radius); background: var(--light-bg); border: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--muted); gap: 7px; font-size: 0.85rem; }
-    .map-ph i { font-size: 1.4rem; color: var(--accent); }
-
-    /* TIER VISIBILITY */
-    .paid-only, .paid-flex, .featured-only { display: none; }
-    [data-tier="pro"]      .paid-only    { display: block; }
-    [data-tier="pro"]      .paid-flex    { display: flex; }
-    [data-tier="featured"] .paid-only    { display: block; }
-    [data-tier="featured"] .paid-flex    { display: flex; }
-    [data-tier="featured"] .featured-only { display: block; }
-
-    /* PRICE BADGE */
-    .price-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; background: var(--accent-light); border: 1px solid rgba(192,35,74,0.2); border-radius: var(--radius); font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 800; color: var(--accent); margin-bottom: 14px; }
-
-    /* TOAST */
-    .toast { position: fixed; bottom: 24px; right: 24px; background: var(--dark); color: #fff; padding: 12px 20px; border-radius: var(--radius); font-size: 0.88rem; font-weight: 600; box-shadow: var(--shadow-lg); transform: translateY(80px); opacity: 0; transition: all 0.3s; z-index: 9999; display: flex; align-items: center; gap: 10px; }
-    .toast.show { transform: translateY(0); opacity: 1; }
-
-    /* RESPONSIVE */
-    @media (max-width: 1024px) { .page-wrap { grid-template-columns: 1fr; } .sidebar { position: static; } }
-    @media (max-width: 768px) { .profile-head-inner { flex-direction: column; align-items: center; text-align: center; } .badge-row { justify-content: center; } .action-row { justify-content: center; } .meta-strip { justify-content: center; } }
-    @media (max-width: 640px) { .page-wrap { padding: 16px 16px 60px; } .container { padding: 0 16px; } .profile-name { font-size: 1.45rem; } }
+    :root{--accent:#c0234a;--accent-dark:#96183a;--accent-light:#f5d0d8;--dark:#111111;--mid:#3a1a22;--muted:#6b7280;--light-bg:#f8f4f5;--white:#ffffff;--border:rgba(0,0,0,0.08);--shadow-sm:0 1px 4px rgba(0,0,0,0.06);--shadow-md:0 4px 20px rgba(0,0,0,0.09);--shadow-lg:0 12px 48px rgba(0,0,0,0.13);--radius:8px;--radius-lg:12px;--header-h:68px;}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    html{scroll-behavior:smooth;}
+    body{font-family:"DM Sans",sans-serif;background:var(--light-bg);color:var(--dark);line-height:1.6;}
+    img{display:block;max-width:100%;}
+    a{color:inherit;text-decoration:none;}
+    button{font-family:inherit;cursor:pointer;}
+    .container{max-width:1280px;margin:0 auto;padding:0 32px;}
+    header{position:sticky;top:0;z-index:1000;height:var(--header-h);background:var(--accent);box-shadow:0 2px 12px rgba(192,35,74,0.25);}
+    .nav-inner{height:100%;display:flex;justify-content:space-between;align-items:center;}
+    .nav-left{display:flex;align-items:center;gap:18px;}
+    .back-link{display:flex;align-items:center;gap:8px;font-weight:600;font-size:0.85rem;color:rgba(255,255,255,0.85);transition:color 0.15s;}
+    .back-link:hover{color:#fff;}
+    .back-link i{font-size:0.78rem;}
+    .brand-divider{width:1px;height:28px;background:rgba(255,255,255,0.3);border-radius:1px;}
+    .brand-name{font-family:"Playfair Display",serif;font-weight:800;font-size:1rem;color:#fff;letter-spacing:0.2px;}
+    .brand-tag{display:block;font-size:0.66rem;color:rgba(255,255,255,0.65);font-weight:500;letter-spacing:0.5px;}
+    .nav-ctas{display:flex;gap:10px;}
+    .btn-ghost-nav{padding:7px 16px;border-radius:5px;border:1.5px solid rgba(255,255,255,0.45);background:transparent;color:#fff;font-weight:600;font-size:0.85rem;transition:all 0.15s;}
+    .btn-ghost-nav:hover{border-color:#fff;background:rgba(255,255,255,0.1);}
+    .btn-solid-nav{padding:7px 18px;border-radius:5px;background:#fff;color:var(--accent);font-weight:700;font-size:0.85rem;border:none;transition:all 0.15s;}
+    .btn-solid-nav:hover{background:var(--accent-light);}
+    .page-wrap{max-width:1280px;margin:0 auto;padding:32px 32px 80px;display:grid;grid-template-columns:1fr 340px;gap:28px;align-items:start;}
+    .sidebar{position:sticky;top:calc(var(--header-h) + 24px);}
+    .card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);margin-bottom:20px;overflow:hidden;}
+    .card-pad{padding:26px 28px;}
+    .sec-eyebrow{display:block;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:2.5px;color:var(--accent);margin-bottom:5px;}
+    .card-heading{font-family:"Playfair Display",serif;font-size:1.2rem;font-weight:800;color:var(--dark);margin-bottom:16px;}
+    .profile-head-card{background:var(--white);border:1px solid var(--border);border-top:3px solid var(--accent);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);margin-bottom:20px;overflow:hidden;}
+    .profile-head-body{padding:28px;}
+    .profile-head-inner{display:flex;gap:24px;align-items:flex-start;}
+    .avatar-lg{flex-shrink:0;width:108px;height:108px;border-radius:50%;border:3px solid var(--accent-light);box-shadow:var(--shadow-md);overflow:hidden;background:var(--accent-light);display:flex;align-items:center;justify-content:center;}
+    .avatar-lg img{width:100%;height:100%;object-fit:cover;}
+    .avatar-placeholder{font-size:2.5rem;color:var(--accent);}
+    .profile-info{flex:1;min-width:0;}
+    .badge-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
+    .badge{display:inline-flex;align-items:center;gap:5px;padding:4px 11px;border-radius:4px;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.3px;}
+    .badge-featured{background:var(--accent);color:#fff;}
+    .badge-verified{background:#15803d;color:#fff;}
+    .badge-new{background:#0d7d6c;color:#fff;}
+    .profile-name{font-family:"Playfair Display",serif;font-size:1.75rem;font-weight:900;color:var(--dark);margin-bottom:4px;line-height:1.15;}
+    .profile-tagline{font-size:0.92rem;color:var(--muted);margin-bottom:14px;}
+    .meta-strip{display:flex;flex-wrap:wrap;gap:8px 20px;margin-bottom:18px;font-size:0.84rem;color:var(--muted);}
+    .meta-item{display:flex;align-items:center;gap:5px;}
+    .meta-item i{color:var(--accent);font-size:0.78rem;width:13px;text-align:center;}
+    .meta-item strong{color:var(--dark);}
+    .action-row{display:flex;flex-wrap:wrap;gap:9px;}
+    .btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:var(--radius);font-weight:700;font-size:0.87rem;border:none;transition:all 0.15s;}
+    .btn-primary{background:var(--accent);color:#fff;}
+    .btn-primary:hover{background:var(--accent-dark);}
+    .btn-outline{border:1.5px solid var(--border);background:var(--white);color:var(--mid);}
+    .btn-outline:hover{border-color:var(--accent);color:var(--accent);}
+    .btn-whatsapp{background:#25D366;color:#fff;}
+    .btn-whatsapp:hover{background:#1ebe5a;}
+    .btn-book{background:var(--dark);color:#fff;}
+    .rating-bar{display:flex;align-items:center;gap:14px;margin-top:18px;padding-top:18px;border-top:1px solid var(--border);}
+    .rating-big{font-family:"Playfair Display",serif;font-size:2.4rem;font-weight:900;color:var(--accent);line-height:1;}
+    .rating-stars{font-size:1.05rem;color:#d97706;letter-spacing:1px;}
+    .rating-sub{font-size:0.78rem;color:var(--muted);margin-top:2px;}
+    .content-body p+p{margin-top:12px;}
+    .content-body p{font-size:0.93rem;color:#374151;line-height:1.75;}
+    .tag-cloud{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px;}
+    .tag{padding:5px 13px;border-radius:5px;background:var(--light-bg);border:1px solid var(--border);font-size:0.82rem;color:var(--mid);font-weight:600;}
+    .grade-pills{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;}
+    .grade-pill{width:40px;height:40px;border-radius:50%;border:2px solid var(--accent-light);display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;color:var(--accent);}
+    .qual-list{list-style:none;display:flex;flex-direction:column;gap:10px;}
+    .qual-list li{display:flex;align-items:flex-start;gap:10px;font-size:0.9rem;color:#374151;}
+    .qual-list li i{color:var(--accent);font-size:0.85rem;margin-top:3px;flex-shrink:0;}
+    .section-divider{height:1px;background:var(--border);margin:20px 0;}
+    .review-card{padding:16px;background:var(--light-bg);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:12px;}
+    .review-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+    .reviewer-name{font-weight:700;font-size:0.88rem;}
+    .review-stars{color:#d97706;font-size:0.85rem;}
+    .review-date{font-size:0.75rem;color:var(--muted);margin-bottom:8px;}
+    .review-text{font-size:0.87rem;color:#374151;line-height:1.65;}
+    .new-profile-banner{background:linear-gradient(135deg,#fef3c7,#fff);border:1px solid #fbbf24;border-radius:var(--radius-lg);padding:18px 22px;margin-bottom:20px;display:flex;align-items:flex-start;gap:14px;}
+    .new-profile-banner i{color:#d97706;font-size:1.2rem;flex-shrink:0;margin-top:2px;}
+    .new-profile-banner h3{font-weight:700;font-size:0.95rem;color:#92400e;margin-bottom:4px;}
+    .new-profile-banner p{font-size:0.85rem;color:#78350f;line-height:1.5;}
+    .new-profile-banner .tip-list{list-style:none;margin-top:8px;display:flex;flex-direction:column;gap:4px;}
+    .new-profile-banner .tip-list li{font-size:0.82rem;color:#78350f;display:flex;align-items:center;gap:6px;}
+    .new-profile-banner .tip-list li i{font-size:0.7rem;color:#d97706;}
+    .sidebar .card{margin-bottom:18px;}
+    .sidebar .card-pad{padding:20px 22px;}
+    .form-group{display:flex;flex-direction:column;gap:10px;}
+    .form-row{display:flex;gap:10px;}
+    .form-row .field{flex:1;}
+    .field label{display:block;font-size:0.78rem;font-weight:600;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;}
+    .field input,.field select,.field textarea{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:var(--radius);background:var(--light-bg);color:var(--dark);font-family:inherit;font-size:0.87rem;outline:none;transition:border-color 0.15s;}
+    .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent);background:#fff;}
+    .field textarea{resize:vertical;min-height:80px;}
+    .btn-block{width:100%;justify-content:center;padding:11px;}
+    .dc-item{display:flex;align-items:center;gap:12px;padding:11px 13px;background:var(--light-bg);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:8px;}
+    .dc-item.dc-whatsapp{background:#f0fdf4;border-color:#86efac;}
+    .dc-icon{width:34px;height:34px;border-radius:6px;display:flex;align-items:center;justify-content:center;background:var(--white);box-shadow:var(--shadow-sm);}
+    .dc-icon i{font-size:0.9rem;color:var(--accent);}
+    .dc-icon.wa i{color:#25D366;}
+    .dc-meta{flex:1;min-width:0;}
+    .dc-label{font-size:0.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;}
+    .dc-value{font-size:0.88rem;font-weight:600;color:var(--dark);}
+    .dc-socials{display:flex;gap:8px;margin-top:10px;}
+    .dc-soc{width:34px;height:34px;border-radius:var(--radius);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:0.85rem;transition:all 0.15s;}
+    .dc-soc:hover{background:var(--accent);color:white;border-color:var(--accent);}
+    .avail-grid{display:flex;flex-wrap:wrap;gap:7px;margin:12px 0;}
+    .avail-pill{padding:5px 12px;border-radius:5px;font-size:0.78rem;font-weight:700;border:1px solid var(--border);color:var(--muted);background:var(--light-bg);}
+    .avail-pill.on{background:var(--accent);color:white;border-color:var(--accent);}
+    .map-ph{height:150px;border-radius:var(--radius);background:var(--light-bg);border:1px solid var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--muted);gap:7px;font-size:0.85rem;}
+    .map-ph i{font-size:1.4rem;color:var(--accent);}
+    .paid-only,.paid-flex,.featured-only{display:none;}
+    [data-tier="pro"] .paid-only{display:block;}
+    [data-tier="pro"] .paid-flex{display:flex;}
+    [data-tier="featured"] .paid-only{display:block;}
+    [data-tier="featured"] .paid-flex{display:flex;}
+    [data-tier="featured"] .featured-only{display:block;}
+    .price-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:var(--accent-light);border:1px solid rgba(192,35,74,0.2);border-radius:var(--radius);font-family:"Playfair Display",serif;font-size:1.1rem;font-weight:800;color:var(--accent);margin-bottom:14px;}
+    .toast{position:fixed;bottom:24px;right:24px;background:var(--dark);color:#fff;padding:12px 20px;border-radius:var(--radius);font-size:0.88rem;font-weight:600;box-shadow:var(--shadow-lg);transform:translateY(80px);opacity:0;transition:all 0.3s;z-index:9999;display:flex;align-items:center;gap:10px;}
+    .toast.show{transform:translateY(0);opacity:1;}
+    @media(max-width:1024px){.page-wrap{grid-template-columns:1fr;}.sidebar{position:static;}}
+    @media(max-width:768px){.profile-head-inner{flex-direction:column;align-items:center;text-align:center;}.badge-row{justify-content:center;}.action-row{justify-content:center;}.meta-strip{justify-content:center;}}
+    @media(max-width:640px){.page-wrap{padding:16px 16px 60px;}.container{padding:0 16px;}.profile-name{font-size:1.45rem;}}
   </style>
 </head>
 <body>
-
   <header>
     <div class="container nav-inner">
       <div class="nav-left">
-        <a href="homePage.html" class="back-link">
-          <i class="fas fa-arrow-left"></i> Back to Directory
-        </a>
+        <a href="homePage.html" class="back-link"><i class="fas fa-arrow-left"></i> Back to Directory</a>
         <div class="brand-divider"></div>
         <a href="homePage.html">
           <span class="brand-name">SA Homeschooling</span>
@@ -211,23 +149,8 @@
     </div>
   </header>
 
-  <div class="breadcrumb-bar">
-    <div class="container">
-      <nav class="breadcrumb" aria-label="Breadcrumb">
-        <a href="homePage.html">Directory</a>
-        <i class="fas fa-chevron-right"></i>
-        <a href="homePage.html" id="breadcrumbCat">Providers</a>
-        <i class="fas fa-chevron-right"></i>
-        <span id="breadcrumbName">Profile</span>
-      </nav>
-    </div>
-  </div>
-
   <div class="page-wrap" id="profilePage" data-tier="free">
-
     <main>
-
-      <!-- New-profile welcome banner (shown only for newly registered users) -->
       <div class="new-profile-banner" id="newProfileBanner" style="display:none;">
         <i class="fas fa-rocket"></i>
         <div>
@@ -240,74 +163,48 @@
           </ul>
         </div>
       </div>
-
-      <!-- Profile head -->
       <div class="profile-head-card">
         <div class="profile-head-body">
           <div class="profile-head-inner">
-
             <div class="avatar-lg" id="profileAvatar">
               <i class="fas fa-user avatar-placeholder" id="avatarPlaceholder"></i>
               <img src="" alt="" id="avatarImg" style="display:none;">
             </div>
-
             <div class="profile-info">
               <div class="badge-row" id="badgeRow"></div>
-
-              <h1 class="profile-name" id="profileName">Loading…</h1>
+              <h1 class="profile-name" id="profileName">Loading...</h1>
               <p class="profile-tagline" id="profileTagline"></p>
-
               <div id="priceBadgeWrap"></div>
-
               <div class="meta-strip">
-                <div class="meta-item"><i class="fas fa-tag"></i><strong id="profileCat">—</strong></div>
-                <div class="meta-item"><i class="fas fa-map-marker-alt"></i><span id="profileLocation">—</span></div>
-                <div class="meta-item"><i class="fas fa-laptop-house"></i><span id="profileDelivery">—</span></div>
+                <div class="meta-item"><i class="fas fa-tag"></i><strong id="profileCat">-</strong></div>
+                <div class="meta-item"><i class="fas fa-map-marker-alt"></i><span id="profileLocation">-</span></div>
+                <div class="meta-item"><i class="fas fa-laptop-house"></i><span id="profileDelivery">-</span></div>
               </div>
-
               <div class="action-row">
-                <button class="btn btn-primary" onclick="scrollToContact()">
-                  <i class="fas fa-envelope"></i> Contact Provider
-                </button>
-                <button class="btn btn-whatsapp paid-only" onclick="showToast('WhatsApp link opens here')">
-                  <i class="fab fa-whatsapp"></i> WhatsApp
-                </button>
-                <button class="btn btn-book featured-only" onclick="showToast('Booking system coming soon')">
-                  <i class="far fa-calendar-check"></i> Book Session
-                </button>
-                <button class="btn btn-outline" onclick="showToast('Saved to favourites!')">
-                  <i class="far fa-heart"></i> Save
-                </button>
-                <button class="btn btn-outline" onclick="shareProfile()">
-                  <i class="fas fa-share-alt"></i> Share
-                </button>
+                <button class="btn btn-primary" onclick="scrollToContact()"><i class="fas fa-envelope"></i> Contact Provider</button>
+                <button class="btn btn-whatsapp paid-only" onclick="showToast('WhatsApp link opens here')"><i class="fab fa-whatsapp"></i> WhatsApp</button>
+                <button class="btn btn-book featured-only" onclick="showToast('Booking system coming soon')"><i class="far fa-calendar-check"></i> Book Session</button>
+                <button class="btn btn-outline" onclick="showToast('Saved to favourites!')"><i class="far fa-heart"></i> Save</button>
+                <button class="btn btn-outline" onclick="shareProfile()"><i class="fas fa-share-alt"></i> Share</button>
               </div>
-
               <div class="rating-bar paid-only" id="ratingBar">
-                <div class="rating-big" id="ratingNum">—</div>
+                <div class="rating-big" id="ratingNum">-</div>
                 <div>
                   <div class="rating-stars" id="ratingStars"></div>
                   <div class="rating-sub" id="ratingCount"></div>
                 </div>
               </div>
             </div>
-
           </div>
         </div>
       </div>
-
-      <!-- About -->
       <div class="card">
         <div class="card-pad">
           <span class="sec-eyebrow">About the Provider</span>
           <h2 class="card-heading">About Us</h2>
-          <div class="content-body" id="aboutBody">
-            <p>This provider has not yet added a description. Check back soon or send an enquiry below.</p>
-          </div>
+          <div class="content-body" id="aboutBody"><p>This provider has not yet added a description. Check back soon or send an enquiry below.</p></div>
         </div>
       </div>
-
-      <!-- Services -->
       <div class="card">
         <div class="card-pad">
           <span class="sec-eyebrow">Services</span>
@@ -318,70 +215,41 @@
           <div class="grade-pills" style="margin-top:10px;" id="gradePills"></div>
         </div>
       </div>
-
-      <!-- Qualifications -->
       <div class="card">
         <div class="card-pad">
           <span class="sec-eyebrow">Credentials</span>
           <h2 class="card-heading">Qualifications</h2>
-          <ul class="qual-list" id="qualList">
-            <li><i class="fas fa-info-circle"></i> Qualifications not yet provided</li>
-          </ul>
+          <ul class="qual-list" id="qualList"><li><i class="fas fa-info-circle"></i> Qualifications not yet provided</li></ul>
         </div>
       </div>
-
-      <!-- Reviews — paid tiers only -->
       <div class="card paid-only" id="reviewsCard">
         <div class="card-pad">
           <span class="sec-eyebrow">Testimonials</span>
           <h2 class="card-heading">Parent Reviews</h2>
-          <div id="reviewsList">
-            <p style="font-size:0.88rem;color:var(--muted);">No reviews yet.</p>
-          </div>
+          <div id="reviewsList"><p style="font-size:0.88rem;color:var(--muted);">No reviews yet.</p></div>
         </div>
       </div>
-
     </main>
-
     <aside class="sidebar" id="contactSection">
-
-      <!-- Price / upgrade prompt for free tier -->
       <div class="card" id="upgradeCard" style="display:none;">
         <div class="card-pad" style="text-align:center;">
           <i class="fas fa-lock" style="font-size:1.4rem;color:var(--muted);margin-bottom:10px;"></i>
           <p style="font-size:0.85rem;color:var(--muted);margin-bottom:14px;">Upgrade to <strong>Trusted Provider</strong> to show your phone, WhatsApp and website to families.</p>
-          <a href="homePage.html#list" class="btn btn-primary" style="display:inline-flex;width:100%;justify-content:center;">
-            <i class="fas fa-arrow-up"></i> Upgrade Plan
-          </a>
+          <a href="homePage.html#list" class="btn btn-primary" style="display:inline-flex;width:100%;justify-content:center;"><i class="fas fa-arrow-up"></i> Upgrade Plan</a>
         </div>
       </div>
-
-      <!-- Enquiry form -->
       <div class="card">
         <div class="card-pad">
           <span class="sec-eyebrow">Get in Touch</span>
           <h3 class="card-heading" style="font-size:1rem;">Send an Enquiry</h3>
           <div class="form-group">
             <div class="form-row">
-              <div class="field">
-                <label>First name</label>
-                <input type="text" placeholder="Sarah">
-              </div>
-              <div class="field">
-                <label>Last name</label>
-                <input type="text" placeholder="Smith">
-              </div>
+              <div class="field"><label>First name</label><input type="text" placeholder="Sarah"></div>
+              <div class="field"><label>Last name</label><input type="text" placeholder="Smith"></div>
             </div>
-            <div class="field">
-              <label>Email</label>
-              <input type="email" placeholder="sarah@email.com">
-            </div>
-            <div class="field">
-              <label>Phone</label>
-              <input type="tel" placeholder="082 000 0000">
-            </div>
-            <div class="field">
-              <label>Subject</label>
+            <div class="field"><label>Email</label><input type="email" placeholder="sarah@email.com"></div>
+            <div class="field"><label>Phone</label><input type="tel" placeholder="082 000 0000"></div>
+            <div class="field"><label>Subject</label>
               <select>
                 <option>General enquiry</option>
                 <option>Pricing &amp; availability</option>
@@ -389,382 +257,225 @@
                 <option>Curriculum question</option>
               </select>
             </div>
-            <div class="field">
-              <label>Message</label>
-              <textarea placeholder="Hi, I'd like to know more about&#8230;"></textarea>
-            </div>
-            <button class="btn btn-primary btn-block" onclick="showToast('Enquiry sent! The provider will respond within 24 hours.')">
-              <i class="fas fa-paper-plane"></i> Send Enquiry
-            </button>
+            <div class="field"><label>Message</label><textarea placeholder="Hi, I'd like to know more about..."></textarea></div>
+            <button class="btn btn-primary btn-block" onclick="showToast('Enquiry sent! The provider will respond within 24 hours.')"><i class="fas fa-paper-plane"></i> Send Enquiry</button>
           </div>
         </div>
       </div>
-
-      <!-- Direct contact — paid tiers only -->
       <div class="card paid-only">
         <div class="card-pad">
           <span class="sec-eyebrow">Direct Contact</span>
           <h3 class="card-heading" style="font-size:1rem;">Contact Details</h3>
-          <div class="dc-item">
-            <div class="dc-icon"><i class="fas fa-phone"></i></div>
-            <div class="dc-meta"><div class="dc-label">Phone</div><div class="dc-value" id="dcPhone">—</div></div>
-          </div>
-          <div class="dc-item dc-whatsapp">
-            <div class="dc-icon wa"><i class="fab fa-whatsapp"></i></div>
-            <div class="dc-meta"><div class="dc-label">WhatsApp</div><div class="dc-value" id="dcWhatsApp">—</div></div>
-          </div>
-          <div class="dc-item">
-            <div class="dc-icon"><i class="fas fa-globe"></i></div>
-            <div class="dc-meta"><div class="dc-label">Website</div><div class="dc-value" id="dcWebsite">Contact for details</div></div>
-          </div>
+          <div class="dc-item"><div class="dc-icon"><i class="fas fa-phone"></i></div><div class="dc-meta"><div class="dc-label">Phone</div><div class="dc-value" id="dcPhone">-</div></div></div>
+          <div class="dc-item dc-whatsapp"><div class="dc-icon wa"><i class="fab fa-whatsapp"></i></div><div class="dc-meta"><div class="dc-label">WhatsApp</div><div class="dc-value" id="dcWhatsApp">-</div></div></div>
+          <div class="dc-item"><div class="dc-icon"><i class="fas fa-envelope"></i></div><div class="dc-meta"><div class="dc-label">Email</div><div class="dc-value" id="dcEmail">Contact for details</div></div></div>
+          <div class="dc-item"><div class="dc-icon"><i class="fas fa-globe"></i></div><div class="dc-meta"><div class="dc-label">Website</div><div class="dc-value" id="dcWebsite">Contact for details</div></div></div>
           <div class="dc-socials">
-            <a href="#" class="dc-soc" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-            <a href="#" class="dc-soc" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-            <a href="#" class="dc-soc" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
-            <a href="#" class="dc-soc" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+            <a href="#" class="dc-soc"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" class="dc-soc"><i class="fab fa-instagram"></i></a>
+            <a href="#" class="dc-soc"><i class="fab fa-youtube"></i></a>
+            <a href="#" class="dc-soc"><i class="fab fa-linkedin-in"></i></a>
           </div>
         </div>
       </div>
-
-      <!-- Availability -->
       <div class="card">
         <div class="card-pad">
           <span class="sec-eyebrow">Schedule</span>
           <h3 class="card-heading" style="font-size:1rem;">Availability</h3>
-          <div class="avail-grid">
-            <div class="avail-pill on">Mon</div>
-            <div class="avail-pill on">Tue</div>
-            <div class="avail-pill on">Wed</div>
-            <div class="avail-pill on">Thu</div>
-            <div class="avail-pill">Fri</div>
-            <div class="avail-pill on">Sat</div>
-            <div class="avail-pill">Sun</div>
+          <div class="avail-grid" id="availGrid">
+            <div class="avail-pill on">Mon</div><div class="avail-pill on">Tue</div><div class="avail-pill on">Wed</div>
+            <div class="avail-pill on">Thu</div><div class="avail-pill">Fri</div><div class="avail-pill on">Sat</div><div class="avail-pill">Sun</div>
           </div>
-          <p style="font-size:0.82rem;color:var(--muted);">Sessions: 07:00&#8211;17:00 SAST</p>
+          <p id="availNote" style="font-size:0.82rem;color:var(--muted);">Sessions: 07:00-17:00 SAST</p>
         </div>
       </div>
-
-      <!-- Location -->
       <div class="card">
         <div class="card-pad">
           <span class="sec-eyebrow">Location</span>
           <h3 class="card-heading" style="font-size:1rem;">Where We Operate</h3>
-          <div class="map-ph">
-            <i class="fas fa-map-marker-alt"></i>
-            <span id="mapLocation">South Africa</span>
-            <span style="font-size:0.75rem;">+ nationwide online</span>
-          </div>
-          <p style="font-size:0.82rem;color:var(--muted);margin-top:10px;">
-            <i class="fas fa-laptop" style="color:var(--accent);margin-right:5px;"></i>
-            Online sessions available nationwide
-          </p>
+          <div class="map-ph"><i class="fas fa-map-marker-alt"></i><span id="mapLocation">South Africa</span><span style="font-size:0.75rem;">+ nationwide online</span></div>
+          <p style="font-size:0.82rem;color:var(--muted);margin-top:10px;"><i class="fas fa-laptop" style="color:var(--accent);margin-right:5px;"></i>Online sessions available nationwide</p>
         </div>
       </div>
-
     </aside>
   </div>
 
-  <!-- Footer -->
   <footer style="background:#0e0e0e;color:rgba(255,255,255,0.45);padding:28px 0;text-align:center;font-size:0.82rem;">
-    <div class="container">
-      <p>&#169; 2025 SA Homeschooling Directory. <a href="homePage.html" style="color:rgba(255,255,255,0.55);">Back to Directory</a></p>
-    </div>
+    <div class="container"><p>&copy; 2025 SA Homeschooling Directory. <a href="homePage.html" style="color:rgba(255,255,255,0.55);">Back to Directory</a></p></div>
   </footer>
 
-  <div class="toast" id="toast">
-    <i class="fas fa-check-circle" style="color:#4ade80;"></i>
-    <span id="toastMsg">Done!</span>
-  </div>
+  <div class="toast" id="toast"><i class="fas fa-check-circle" style="color:#4ade80;"></i><span id="toastMsg">Done!</span></div>
 
   <script>
-    /* ─────────────────────────────────────────
-       SEED DATA (mirrors homePage.html exactly)
-    ───────────────────────────────────────── */
-    const SEED = [
-      {
-        id:'s1', name:'STEM Mastery Tutors', category:'tutor',
-        tagline:'Expert Mathematics, Physical Sciences & Coding — Grades 8 to 12',
-        location:'Johannesburg, Gauteng', delivery:'Online & In-person',
-        image:'https://images.unsplash.com/photo-1522202176988-66273c2b033f?w=600&auto=format&fit=crop&q=75',
-        priceFrom:'R280/hr', badge:'featured', rating:4.9, reviewCount:62, tier:'featured',
-        registered:'2025-01-10T08:00:00Z',
-        about:'We help homeschooling families master Mathematics, Physical Sciences and Coding through personalised, engaging lessons tailored to each child\'s unique learning style.\n\nOur approach combines conceptual understanding, exam technique and real-world application to build lasting confidence. Lessons are structured around CAPS-aligned outcomes while going beyond the curriculum to foster genuine curiosity.',
-        services:['Mathematics','Physical Sciences','Coding & Robotics','Chemistry','Study Skills','Exam Prep'],
-        grades:['8','9','10','11','12'],
-        qualifications:[
-          {icon:'fa-graduation-cap', text:'BSc Mathematics & Physics — University of Pretoria'},
-          {icon:'fa-graduation-cap', text:'PGCE (Secondary Mathematics) — UNISA'},
-          {icon:'fa-certificate',     text:'Cambridge International A-Level Examiner, 2018–present'},
-          {icon:'fa-check-circle',    text:'SACE registered educator — #20345678'},
-          {icon:'fa-shield-alt',      text:'Police clearance certificate on file'}
-        ],
-        reviews:[
-          {name:'Marelize van der Berg', stars:5, date:'March 2025 · Johannesburg', text:'My son went from 45% to 82% in Matric Maths within two terms. The tutors are patient, structured and genuinely care about understanding — not just passing.'},
-          {name:'Thabo Nkosi',           stars:5, date:'January 2025 · Pretoria',    text:'Excellent online sessions. The coding course opened up a whole new world for my daughter. She built her first app after just 6 weeks!'},
-          {name:'Karen Botha',           stars:4, date:'November 2024 · Sandton',   text:'Very professional and thorough. My daughter struggled with Physical Sciences but now approaches problems with real confidence.'}
-        ]
-      },
-      {
-        id:'s2', name:'Creative Minds Curriculum', category:'curriculum',
-        tagline:'Structured homeschool curriculum for independent learners',
-        location:'Cape Town, Western Cape', delivery:'Online',
-        image:'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=600&auto=format&fit=crop&q=75',
-        priceFrom:'R4 200/term', badge:'verified', rating:5.0, reviewCount:34, tier:'pro',
-        registered:'2025-01-12T09:00:00Z',
-        about:'Creative Minds Curriculum provides thoughtfully designed, parent-friendly homeschool packages aligned to CAPS and Cambridge frameworks. Our resources are crafted by qualified educators and designed to inspire a love of learning.',
-        services:['CAPS Curriculum','Cambridge Prep','Life Skills','Language Arts','Natural Sciences'],
-        grades:['1','2','3','4','5','6','7'],
-        qualifications:[
-          {icon:'fa-graduation-cap', text:'BEd Foundation Phase — Stellenbosch University'},
-          {icon:'fa-certificate',     text:'Cambridge Curriculum Design Certificate'}
-        ],
-        reviews:[
-          {name:'Annelie du Plessis', stars:5, date:'February 2025 · Cape Town', text:'Finally a curriculum that fits our lifestyle. Well-structured, creative and my children actually enjoy it!'}
-        ]
-      },
-      {
-        id:'s3', name:'EduTherapy SA', category:'therapist',
-        tagline:'Educational therapy, learning support and remediation for homeschoolers',
-        location:'Durban, KwaZulu-Natal', delivery:'Hybrid',
-        image:'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=600&auto=format&fit=crop&q=75',
-        priceFrom:'R650/session', badge:'featured', rating:4.8, reviewCount:47, tier:'featured',
-        registered:'2025-01-14T10:00:00Z',
-        about:'EduTherapy SA specialises in supporting children with learning barriers including dyslexia, dyscalculia, ADHD and sensory processing challenges. We combine educational therapy with occupational therapy referrals to create holistic support plans.',
-        services:['Educational Therapy','Learning Assessment','Remediation','ADHD Support','Dyslexia Intervention'],
-        grades:['1','2','3','4','5','6','7','8','9'],
-        qualifications:[
-          {icon:'fa-graduation-cap', text:'MEd Learning Support — UKZN'},
-          {icon:'fa-certificate',     text:'Educational Therapist (SAETA registered)'},
-          {icon:'fa-shield-alt',      text:'Police clearance on file'}
-        ],
-        reviews:[
-          {name:'Priya Govender', stars:5, date:'April 2025 · Durban', text:'Our son\'s confidence has transformed. The assessments were thorough and the programme was tailored perfectly to his needs.'}
-        ]
-      },
-      {
-        id:'s4', name:'Future Leaders Academy', category:'school',
-        tagline:'Accredited online schooling for homeschooling families nationwide',
-        location:'Online — National', delivery:'Online',
-        image:'https://images.unsplash.com/photo-1529390079861-591de3547d13?w=600&auto=format&fit=crop&q=75',
-        priceFrom:'Custom quote', badge:'new', rating:4.7, reviewCount:18, tier:'pro',
-        registered:'2025-01-16T11:00:00Z',
-        about:'Future Leaders Academy is a UMALUSI-accredited online school offering Grades 4–12. We blend live classes, recorded lessons and one-on-one tutor support to create a flexible, high-quality education that works for homeschooling families across South Africa.',
-        services:['Full-time Online Schooling','Part-time Enrolment','Matric','Cambridge IGCSE','Extra Classes'],
-        grades:['4','5','6','7','8','9','10','11','12'],
-        qualifications:[
-          {icon:'fa-certificate',  text:'UMALUSI Accredited'},
-          {icon:'fa-check-circle', text:'Cambridge International Registered Centre'},
-          {icon:'fa-graduation-cap', text:'DBE Qualified educators across all subjects'}
-        ],
-        reviews:[
-          {name:'Siphiwe Dlamini', stars:5, date:'March 2025 · Online', text:'My teenager thrives in the live online classes. The teachers are accessible and the platform is easy to use.'}
-        ]
+    const SEED=[{id:"s1",name:"STEM Mastery Tutors",category:"tutor",tagline:"Expert Mathematics, Physical Sciences & Coding — Grades 8 to 12",location:"Johannesburg, Gauteng",delivery:"Online & In-person",image:"https://images.unsplash.com/photo-1522202176988-66273c2b033f?w=600&auto=format&fit=crop&q=75",priceFrom:"R280/hr",badge:"featured",rating:4.9,reviewCount:62,tier:"featured",registered:"2025-01-10T08:00:00Z",about:"We help homeschooling families master Mathematics, Physical Sciences and Coding through personalised, engaging lessons tailored to each child unique learning style.\n\nOur approach combines conceptual understanding, exam technique and real-world application to build lasting confidence.",services:["Mathematics","Physical Sciences","Coding & Robotics","Chemistry","Study Skills","Exam Prep"],grades:["8","9","10","11","12"],qualifications:[{icon:"fa-graduation-cap",text:"BSc Mathematics & Physics — University of Pretoria"},{icon:"fa-graduation-cap",text:"PGCE (Secondary Mathematics) — UNISA"},{icon:"fa-certificate",text:"Cambridge International A-Level Examiner, 2018-present"},{icon:"fa-check-circle",text:"SACE registered educator"},{icon:"fa-shield-alt",text:"Police clearance certificate on file"}],reviews:[{name:"Marelize van der Berg",stars:5,date:"March 2025 · Johannesburg",text:"My son went from 45% to 82% in Matric Maths within two terms."},{name:"Thabo Nkosi",stars:5,date:"January 2025 · Pretoria",text:"Excellent online sessions. The coding course opened up a whole new world for my daughter."},{name:"Karen Botha",stars:4,date:"November 2024 · Sandton",text:"Very professional and thorough."}]},{id:"s2",name:"Creative Minds Curriculum",category:"curriculum",tagline:"Structured homeschool curriculum for independent learners",location:"Cape Town, Western Cape",delivery:"Online",image:"https://images.unsplash.com/photo-1509062522246-3755977927d7?w=600&auto=format&fit=crop&q=75",priceFrom:"R4 200/term",badge:"verified",rating:5.0,reviewCount:34,tier:"pro",registered:"2025-01-12T09:00:00Z",about:"Creative Minds Curriculum provides thoughtfully designed, parent-friendly homeschool packages aligned to CAPS and Cambridge frameworks.",services:["CAPS Curriculum","Cambridge Prep","Life Skills","Language Arts","Natural Sciences"],grades:["1","2","3","4","5","6","7"],qualifications:[{icon:"fa-graduation-cap",text:"BEd Foundation Phase — Stellenbosch University"},{icon:"fa-certificate",text:"Cambridge Curriculum Design Certificate"}],reviews:[{name:"Annelie du Plessis",stars:5,date:"February 2025 · Cape Town",text:"Finally a curriculum that fits our lifestyle!"}]},{id:"s3",name:"EduTherapy SA",category:"therapist",tagline:"Educational therapy, learning support and remediation for homeschoolers",location:"Durban, KwaZulu-Natal",delivery:"Hybrid",image:"https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=600&auto=format&fit=crop&q=75",priceFrom:"R650/session",badge:"featured",rating:4.8,reviewCount:47,tier:"featured",registered:"2025-01-14T10:00:00Z",about:"EduTherapy SA specialises in supporting children with learning barriers including dyslexia, dyscalculia, ADHD and sensory processing challenges.",services:["Educational Therapy","Learning Assessment","Remediation","ADHD Support","Dyslexia Intervention"],grades:["1","2","3","4","5","6","7","8","9"],qualifications:[{icon:"fa-graduation-cap",text:"MEd Learning Support — UKZN"},{icon:"fa-certificate",text:"Educational Therapist (SAETA registered)"},{icon:"fa-shield-alt",text:"Police clearance on file"}],reviews:[{name:"Priya Govender",stars:5,date:"April 2025 · Durban",text:"Our son confidence has transformed."}]},{id:"s4",name:"Future Leaders Academy",category:"school",tagline:"Accredited online schooling for homeschooling families nationwide",location:"Online — National",delivery:"Online",image:"https://images.unsplash.com/photo-1529390079861-591de3547d13?w=600&auto=format&fit=crop&q=75",priceFrom:"Custom quote",badge:"new",rating:4.7,reviewCount:18,tier:"pro",registered:"2025-01-16T11:00:00Z",about:"Future Leaders Academy is a UMALUSI-accredited online school offering Grades 4-12.",services:["Full-time Online Schooling","Part-time Enrolment","Matric","Cambridge IGCSE","Extra Classes"],grades:["4","5","6","7","8","9","10","11","12"],qualifications:[{icon:"fa-certificate",text:"UMALUSI Accredited"},{icon:"fa-check-circle",text:"Cambridge International Registered Centre"},{icon:"fa-graduation-cap",text:"DBE Qualified educators across all subjects"}],reviews:[{name:"Siphiwe Dlamini",stars:5,date:"March 2025 · Online",text:"My teenager thrives in the live online classes."}]}];
+    const CAT_ICON={tutor:"fa-chalkboard-teacher",therapist:"fa-heart",curriculum:"fa-book-open",school:"fa-school",consultant:"fa-user-tie",extracurricular:"fa-palette"};
+    function el(id){return document.getElementById(id);}
+    function set(id,val){const e=el(id);if(e)e.textContent=val;}
+    function starsHTML(r){if(!r)return"";const full=Math.floor(r);const half=r%1>=0.5;return"★".repeat(full)+(half?"½":"")+"☆".repeat(5-full-(half?1:0));}
+    // ── Load profile: prefers full dashboard data from localStorage ─────────────
+    function loadProfile(){
+      const params=new URLSearchParams(location.search);
+      const id=params.get("id");
+      if(!id)return;
+
+      // 1. Attempt to load rich dashboard data first (written by client-dashboard)
+      let dashData=null;
+      if(params.get("dash")==="1"){
+        // Search all sah_dash_profile_* keys for a matching id
+        for(let i=0;i<localStorage.length;i++){
+          const key=localStorage.key(i);
+          if(key&&key.startsWith("sah_dash_profile_")){
+            try{
+              const d=JSON.parse(localStorage.getItem(key)||"{}");
+              if(d.id===id){dashData=d;break;}
+            }catch(e){}
+          }
+        }
+        // Fallback: check sah_providers array
+        if(!dashData){
+          const ps=JSON.parse(localStorage.getItem("sah_providers")||"[]");
+          dashData=ps.find(p=>p.id===id)||null;
+        }
       }
-    ];
 
-    /* ─────────────────────────────────────────
-       HELPERS
-    ───────────────────────────────────────── */
-    function el(id){ return document.getElementById(id); }
-    function set(id, val){ const e=el(id); if(e) e.textContent=val; }
+      // 2. Also check SEED + stored providers (for non-dashboard profiles)
+      const stored=JSON.parse(localStorage.getItem("sah_providers")||"[]");
+      const all=[...stored,...SEED];
+      const seedProvider=all.find(p=>p.id===id);
 
-    function starsHTML(r) {
-      if(!r) return '';
-      const full = Math.floor(r);
-      const half = r % 1 >= 0.5;
-      return '★'.repeat(full) + (half ? '½' : '') + '☆'.repeat(5 - full - (half?1:0));
+      // 3. Merge: dashboard data wins over seed, URL params fill remaining gaps
+      const data=dashData?{...dashData}:(seedProvider?{...seedProvider}:{});
+
+      if(params.get("name"))data.name=params.get("name");
+      if(params.get("tagline"))data.tagline=params.get("tagline")||data.tagline||"";
+      if(params.get("cat"))data.catLabel=params.get("cat");
+      if(params.get("location"))data.location=params.get("location");
+      if(params.get("delivery"))data.delivery=params.get("delivery");
+      if(params.get("tier"))data.tier=params.get("tier");
+      if(params.get("price"))data.priceFrom=params.get("price");
+      if(params.get("img")&&params.get("img")!=="")data.image=params.get("img");
+      if(params.get("badge"))data.badge=params.get("badge");
+      if(params.get("rating")&&params.get("rating")!=="")data.rating=parseFloat(params.get("rating"));
+      if(params.get("reviews"))data.reviewCount=parseInt(params.get("reviews"))||0;
+      if(!data.catLabel&&data.category)data.catLabel=data.category.charAt(0).toUpperCase()+data.category.slice(1);
+
+      // Map dashboard bio field → about field
+      if(!data.about&&data.bio)data.about=data.bio;
+      // Map dashboard services (tags) array
+      if(!data.services&&data.tags)data.services=data.tags;
+
+      const isDashboard=!!dashData;
+      renderProfile(data, !seedProvider&&!isDashboard, isDashboard);
     }
 
-    const CAT_ICON = {
-      tutor:'fa-chalkboard-teacher', therapist:'fa-heart',
-      curriculum:'fa-book-open', school:'fa-school',
-      consultant:'fa-user-tie', extracurricular:'fa-palette'
-    };
+    function renderProfile(d,isNew,isDash){
+      document.title=(d.name||"Provider")+" — SA Homeschooling Directory";
+      const tier=d.tier||"free";
+      el("profilePage").dataset.tier=tier;
+      if(isNew){el("newProfileBanner").style.display="flex";el("upgradeCard").style.display="block";}
 
-    /* ─────────────────────────────────────────
-       LOAD & RENDER PROFILE
-    ───────────────────────────────────────── */
-    function loadProfile() {
-      const params = new URLSearchParams(location.search);
-      const id = params.get('id');
-      if (!id) return;
-
-      // 1. Try to find full data in SEED or localStorage
-      const stored = JSON.parse(localStorage.getItem('sah_providers') || '[]');
-      const all = [...stored, ...SEED];
-      const provider = all.find(p => p.id === id);
-
-      // 2. Build a merged data object — URL params fill any gaps
-      const data = provider ? { ...provider } : {};
-
-      // URL params always override (fresher data, catches newly registered)
-      if (params.get('name'))     data.name     = params.get('name');
-      if (params.get('tagline'))  data.tagline  = params.get('tagline') || data.tagline || '';
-      if (params.get('cat'))      data.catLabel = params.get('cat');
-      if (params.get('location')) data.location = params.get('location');
-      if (params.get('delivery')) data.delivery = params.get('delivery');
-      if (params.get('tier'))     data.tier     = params.get('tier');
-      if (params.get('price'))    data.priceFrom= params.get('price');
-      if (params.get('img'))      data.image    = params.get('img');
-      if (params.get('badge'))    data.badge    = params.get('badge');
-      if (params.get('rating') && params.get('rating') !== '')
-                                  data.rating   = parseFloat(params.get('rating'));
-      if (params.get('reviews'))  data.reviewCount = parseInt(params.get('reviews')) || 0;
-
-      // Derive category label from category key if no explicit catLabel
-      if (!data.catLabel && data.category) {
-        data.catLabel = data.category.charAt(0).toUpperCase() + data.category.slice(1);
-      }
-
-      renderProfile(data, !provider); // second arg = isNewRegistration
-    }
-
-    function renderProfile(d, isNew) {
-      // Page title + breadcrumb
-      document.title = (d.name || 'Provider') + ' — SA Homeschooling Directory';
-      set('breadcrumbName', d.name || 'Profile');
-      set('breadcrumbCat',  d.catLabel || 'Providers');
-
-      // Tier
-      const tier = d.tier || 'free';
-      el('profilePage').dataset.tier = tier;
-
-      // New registration banner
-      if (isNew) {
-        el('newProfileBanner').style.display = 'flex';
-        el('upgradeCard').style.display = 'block';
-      }
-
-      // Avatar
-      if (d.image) {
-        const img = el('avatarImg');
-        img.src = d.image;
-        img.alt = d.name || '';
-        img.style.display = 'block';
-        el('avatarPlaceholder').style.display = 'none';
+      // ── Avatar ───────────────────────────────────────────────────────────────
+      if(d.image&&d.image!==""){
+        const img=el("avatarImg");img.src=d.image;img.alt=d.name||"";img.style.display="block";
+        el("avatarPlaceholder").style.display="none";
       } else {
-        // Show category icon as placeholder
-        const catKey = d.category || '';
-        const iconClass = CAT_ICON[catKey] || 'fa-user';
-        el('avatarPlaceholder').className = `fas ${iconClass} avatar-placeholder`;
+        const iconClass=CAT_ICON[d.category||""]||"fa-user";
+        el("avatarPlaceholder").className="fas "+iconClass+" avatar-placeholder";
       }
 
-      // Badges
-      const badgeRow = el('badgeRow');
-      badgeRow.innerHTML = '';
-      if (d.badge === 'featured' || tier === 'featured') {
-        badgeRow.innerHTML += '<span class="badge badge-featured"><i class="fas fa-star"></i> Featured Partner</span>';
-      }
-      if (d.badge === 'verified' || tier === 'pro' || tier === 'featured') {
-        badgeRow.innerHTML += '<span class="badge badge-verified"><i class="fas fa-check"></i> Verified</span>';
-      }
-      if (d.badge === 'new') {
-        badgeRow.innerHTML += '<span class="badge badge-new"><i class="fas fa-certificate"></i> New Listing</span>';
-      }
+      // ── Badges ───────────────────────────────────────────────────────────────
+      const br=el("badgeRow");br.innerHTML="";
+      if(d.badge==="featured"||tier==="featured")br.innerHTML+="<span class=\"badge badge-featured\"><i class=\"fas fa-star\"></i> Featured Partner</span>";
+      if(d.badge==="verified"||tier==="pro"||tier==="featured")br.innerHTML+="<span class=\"badge badge-verified\"><i class=\"fas fa-check\"></i> Verified</span>";
+      if(d.badge==="new")br.innerHTML+="<span class=\"badge badge-new\"><i class=\"fas fa-certificate\"></i> New Listing</span>";
 
-      // Name + tagline
-      set('profileName',    d.name    || 'Unnamed Provider');
-      set('profileTagline', d.tagline || '');
+      // ── Core fields ──────────────────────────────────────────────────────────
+      set("profileName",d.name||"Unnamed Provider");
+      set("profileTagline",d.tagline||"");
+      if(d.priceFrom&&d.priceFrom!=="Contact")el("priceBadgeWrap").innerHTML="<div class=\"price-badge\"><i class=\"fas fa-tag\"></i> From "+d.priceFrom+"</div>";
+      set("profileCat",d.catLabel||"-");
+      set("profileLocation",d.location||"-");
+      set("profileDelivery",d.delivery||"-");
+      set("mapLocation",d.location||"South Africa");
 
-      // Price badge
-      if (d.priceFrom && d.priceFrom !== 'Contact') {
-        el('priceBadgeWrap').innerHTML =
-          `<div class="price-badge"><i class="fas fa-tag"></i> From ${d.priceFrom}</div>`;
+      // ── Rating ───────────────────────────────────────────────────────────────
+      if(d.rating&&(tier==="pro"||tier==="featured")){
+        set("ratingNum",d.rating.toFixed(1));set("ratingStars",starsHTML(d.rating));
+        set("ratingCount","Based on "+(d.reviewCount||0)+" verified reviews");
       }
 
-      // Meta strip
-      set('profileCat',      d.catLabel || '—');
-      set('profileLocation', d.location || '—');
-      set('profileDelivery', d.delivery || '—');
-      set('mapLocation',     d.location || 'South Africa');
-
-      // Rating (paid tiers)
-      if (d.rating && (tier === 'pro' || tier === 'featured')) {
-        set('ratingNum',   d.rating.toFixed(1));
-        set('ratingStars', starsHTML(d.rating));
-        set('ratingCount', `Based on ${d.reviewCount || 0} verified reviews`);
+      // ── About / Bio ──────────────────────────────────────────────────────────
+      const aboutEl=el("aboutBody");
+      const aboutText=d.about||d.bio||"";
+      if(aboutText){
+        const paras=aboutText.split("\n\n").filter(Boolean);
+        aboutEl.innerHTML=paras.map(p=>"<p>"+p+"</p>").join("");
+      }
+      // Append languages & years as a meta note if from dashboard
+      if(isDash&&(d.languages||d.years)){
+        let meta="";
+        if(d.languages&&d.languages.length)meta+="<p style=\"margin-top:12px;\"><strong>Languages:</strong> "+d.languages.join(", ")+"</p>";
+        if(d.years)meta+="<p><strong>Experience:</strong> "+d.years+" years</p>";
+        if(meta)aboutEl.innerHTML+=meta;
       }
 
-      // About
-      if (d.about) {
-        const paras = d.about.split('\n\n').filter(Boolean);
-        el('aboutBody').innerHTML = paras.map(p => `<p>${p}</p>`).join('');
+      // ── Services (tags) ───────────────────────────────────────────────────────
+      const tc=el("serviceTagCloud");
+      const svcList=d.services||d.tags||[];
+      if(svcList.length)tc.innerHTML=svcList.map(s=>"<span class=\"tag\">"+s+"</span>").join("");
+      else tc.innerHTML="<span class=\"tag\" style=\"color:var(--muted)\">No services listed yet</span>";
+
+      // ── Grades ────────────────────────────────────────────────────────────────
+      const gp=el("gradePills");
+      if(d.grades&&d.grades.length)gp.innerHTML=d.grades.map(g=>"<div class=\"grade-pill\">"+g+"</div>").join("");
+      else{
+        // Try to infer from ageGroup if from dashboard
+        if(isDash&&d.ageGroup){
+          gp.innerHTML="<span class=\"tag\">"+d.ageGroup+"</span>";
+        } else {
+          gp.innerHTML="<span style=\"font-size:0.84rem;color:var(--muted)\">Not specified</span>";
+        }
       }
 
-      // Services
-      const tagCloud = el('serviceTagCloud');
-      if (d.services && d.services.length) {
-        tagCloud.innerHTML = d.services
-          .map(s => `<span class="tag">${s}</span>`)
-          .join('');
-      } else {
-        tagCloud.innerHTML = '<span class="tag" style="color:var(--muted);">No services listed yet</span>';
+      // ── Qualifications ────────────────────────────────────────────────────────
+      const ql=el("qualList");
+      if(d.qualifications&&d.qualifications.length){
+        ql.innerHTML=d.qualifications.map(q=>"<li><i class=\"fas "+q.icon+"\"></i>"+q.text+"</li>").join("");
       }
 
-      // Grades
-      const gradePills = el('gradePills');
-      if (d.grades && d.grades.length) {
-        gradePills.innerHTML = d.grades
-          .map(g => `<div class="grade-pill">${g}</div>`)
-          .join('');
-      } else {
-        gradePills.innerHTML = '<span style="font-size:0.84rem;color:var(--muted);">Not specified</span>';
+      // ── Availability (dashboard) ──────────────────────────────────────────────
+      if(isDash&&d.availDays){
+        const days=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+        const availGrid=el("availGrid");
+        if(availGrid){
+          availGrid.innerHTML=days.map(day=>"<div class=\"avail-pill"+(d.availDays.includes(day)?" on":"")+"\">"
+            +day+"</div>").join("");
+        }
+        const availNote=el("availNote");
+        if(availNote&&d.availNotes)availNote.textContent=d.availNotes;
       }
 
-      // Qualifications
-      const qualList = el('qualList');
-      if (d.qualifications && d.qualifications.length) {
-        qualList.innerHTML = d.qualifications
-          .map(q => `<li><i class="fas ${q.icon}"></i>${q.text}</li>`)
-          .join('');
+      // ── Direct contact (paid tiers + dashboard with public toggle) ────────────
+      if(isDash&&d.publicContact!==false){
+        if(d.phone){const e=el("dcPhone");if(e)e.textContent=d.phone;}
+        if(d.phone){const e=el("dcWhatsApp");if(e)e.textContent=d.phone;}
+        if(d.website){
+          const e=el("dcWebsite");
+          if(e){e.textContent=d.website;e.parentElement.innerHTML="<a href=\""+d.website+"\" target=\"_blank\" style=\"color:var(--accent);\">"+d.website+"</a>";}
+        }
+        if(d.contactEmail){const e=el("dcEmail");if(e)e.textContent=d.contactEmail;}
       }
 
-      // Reviews (paid tiers only)
-      if (d.reviews && d.reviews.length && (tier === 'pro' || tier === 'featured')) {
-        el('reviewsList').innerHTML = d.reviews.map(r => `
-          <div class="review-card">
-            <div class="review-header">
-              <span class="reviewer-name">${r.name}</span>
-              <span class="review-stars">${'★'.repeat(r.stars)}${'☆'.repeat(5-r.stars)}</span>
-            </div>
-            <div class="review-date">${r.date}</div>
-            <p class="review-text">${r.text}</p>
-          </div>
-        `).join('');
+      // ── Reviews ───────────────────────────────────────────────────────────────
+      if(d.reviews&&d.reviews.length&&(tier==="pro"||tier==="featured")){
+        el("reviewsList").innerHTML=d.reviews.map(r=>"<div class=\"review-card\"><div class=\"review-header\"><span class=\"reviewer-name\">"+r.name+"</span><span class=\"review-stars\">"+"★".repeat(r.stars)+"☆".repeat(5-r.stars)+"</span></div><div class=\"review-date\">"+r.date+"</div><p class=\"review-text\">"+r.text+"</p></div>").join("");
       }
     }
-
-    /* ─────────────────────────────────────────
-       UTILITIES
-    ───────────────────────────────────────── */
     let toastTimer;
-    function showToast(msg) {
-      const t = el('toast');
-      el('toastMsg').textContent = msg;
-      t.classList.add('show');
-      clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
-    }
-
-    function scrollToContact() {
-      el('contactSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-
-    function shareProfile() {
-      if (navigator.share) {
-        navigator.share({ title: document.title, url: location.href });
-      } else {
-        navigator.clipboard.writeText(location.href).then(() => {
-          showToast('Link copied to clipboard!');
-        });
-      }
-    }
-
-    /* ─────────────────────────────────────────
-       INIT
-    ───────────────────────────────────────── */
-    document.addEventListener('DOMContentLoaded', loadProfile);
+    function showToast(msg){const t=el("toast");el("toastMsg").textContent=msg;t.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove("show"),3200);}
+    function scrollToContact(){el("contactSection").scrollIntoView({behavior:"smooth",block:"start"});}
+    function shareProfile(){if(navigator.share){navigator.share({title:document.title,url:location.href});}else{navigator.clipboard.writeText(location.href).then(()=>{showToast("Link copied to clipboard!");});}}
+    document.addEventListener("DOMContentLoaded",loadProfile);
   </script>
-
 </body>
 </html>

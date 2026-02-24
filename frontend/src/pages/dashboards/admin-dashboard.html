@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard · SA Homeschooling</title>
+    <!-- Font Awesome 6 (free) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- shared dashboard CSS with custom palette -->
+    <link rel="stylesheet" href="../../css/dashboard.css">
+    <style>
+        /* additional admin-specific styles */
+        :root {
+            --accent: #e02b58;
+            --accent-2: #f472b6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+        .admin-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            border-bottom: 2px solid #eef2f7;
+            padding-bottom: 0.5rem;
+        }
+        .tab-btn {
+            background: transparent;
+            border: none;
+            padding: 0.6rem 1.5rem;
+            border-radius: 40px;
+            font-weight: 600;
+            color: #4a617c;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .tab-btn.active {
+            background: var(--accent);
+            color: white;
+        }
+        .tab-pane {
+            display: none;
+        }
+        .tab-pane.active {
+            display: block;
+        }
+        .pending-badge {
+            background: var(--warning);
+            color: white;
+            padding: 0.2rem 0.8rem;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        .approved-badge {
+            background: var(--success);
+            color: white;
+            padding: 0.2rem 0.8rem;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        .rejected-badge {
+            background: var(--danger);
+            color: white;
+            padding: 0.2rem 0.8rem;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        .status-selector {
+            display: flex;
+            gap: 0.3rem;
+            align-items: center;
+        }
+        .status-selector select {
+            padding: 0.2rem 0.5rem;
+            border-radius: 30px;
+            border: 1px solid #cbd5e1;
+            font-size: 0.8rem;
+        }
+        .featured-slots {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        .slot-card {
+            background: #f8fafc;
+            border-radius: 20px;
+            padding: 1rem;
+            flex: 1 1 200px;
+            border: 1px solid #e2e8f0;
+        }
+        .slot-card h4 {
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+        .slot-list {
+            list-style: none;
+            padding: 0;
+        }
+        .slot-list li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.3rem 0;
+            border-bottom: 1px dashed #cbd5e1;
+        }
+        .badge-selector {
+            display: flex;
+            gap: 0.3rem;
+            flex-wrap: wrap;
+        }
+        .badge-option {
+            padding: 0.2rem 0.8rem;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+        .badge-option.community {
+            background: #e2e8f0;
+            color: #1e293b;
+        }
+        .badge-option.trusted {
+            background: #dbeafe;
+            color: #1e3a8a;
+        }
+        .badge-option.featured {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        .badge-option.selected {
+            border: 2px solid var(--accent);
+        }
+        .provider-actions {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .override-toggle {
+            background: #f1f5f9;
+            padding: 0.2rem 0.8rem;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        /* Review moderation styles */
+        .review-card {
+            background: #f8fafc;
+            border-radius: 20px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border: 1px solid #e2e8f0;
+        }
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        .review-provider {
+            font-weight: 700;
+            color: var(--accent);
+        }
+        .review-rating {
+            color: #f5b342;
+        }
+        .review-text {
+            margin: 0.5rem 0;
+            font-style: italic;
+        }
+        .review-actions {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: flex-end;
+        }
+        .review-actions button {
+            padding: 0.3rem 1.2rem;
+            border-radius: 30px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .btn-approve {
+            background: var(--success);
+            color: white;
+        }
+        .btn-reject {
+            background: var(--danger);
+            color: white;
+        }
+        .review-status {
+            font-size: 0.8rem;
+            padding: 0.2rem 1rem;
+            border-radius: 30px;
+            background: var(--warning);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header styled like homepage - removed SAH logo -->
+    <header class="top-header">
+        <div class="logo-area">
+            <div class="trusted-text" style="border-left: none; padding-left: 0;">
+                Trusted Homeschooling Directory
+                <span>SA Homeschooling</span>
+            </div>
+        </div>
+        <div class="nav-links">
+            <a href="../homePage.html">Home</a>
+            <a href="../homePage.html#providers">Find Providers</a>
+            <a href="../homePage.html#list">List Services</a>
+            <a href="#">Join Directory</a>
+            <a href="#">About</a>
+            <a href="../homePage.html#list" class="cta-nav">List Your Service</a>
+        </div>
+    </header>
+
+    <div class="dash-wrapper">
+        <div class="page-headline">
+            <h1>Admin Control Panel</h1>
+            <p>Manage listings, approvals, featured slots, provider badges, and moderate reviews</p>
+        </div>
+
+        <!-- admin dashboard card -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-shield-alt"></i>
+                <h2>Directory Oversight</h2>
+                <span class="badge"><i class="fas fa-lock"></i> admin</span>
+            </div>
+
+            <!-- statistics summary -->
+            <div class="admin-stats">
+                <div class="stat-box"><h3>28</h3><p>total providers</p></div>
+                <div class="stat-box"><h3>8</h3><p>pending approval</p></div>
+                <div class="stat-box"><h3>6</h3><p>featured slots</p></div>
+                <div class="stat-box"><h3>12</h3><p>reviews pending</p></div>
+            </div>
+
+            <!-- admin tabs -->
+            <div class="admin-tabs">
+                <button class="tab-btn active" onclick="switchTab('pending')">Pending Approvals</button>
+                <button class="tab-btn" onclick="switchTab('all')">All Listings</button>
+                <button class="tab-btn" onclick="switchTab('featured')">Featured Slots</button>
+                <button class="tab-btn" onclick="switchTab('categories')">Category Mgmt</button>
+                <button class="tab-btn" onclick="switchTab('reviews')">Review Moderation <span class="pending-badge" style="margin-left:0.3rem;">12</span></button>
+            </div>
+
+            <!-- PENDING APPROVALS TAB -->
+            <div id="pending-tab" class="tab-pane active">
+                <p class="list-title"><i class="fas fa-hourglass-half"></i> Pending Approval (8) — click on profile to view full details</p>
+                
+                <div class="provider-row" id="pending1">
+                    <div class="provider-info" onclick="showProfileModal('khan')">
+                        <span class="avatar-small">KM</span>
+                        <div>
+                            <strong>Khan Academy SA</strong> 
+                            <span class="provider-cat">(curriculum provider)</span>
+                            <span class="pending-badge">pending</span>
+                            <div style="font-size:0.8rem; color:#64748b;">Missing: service area, languages</div>
+                        </div>
+                    </div>
+                    <div class="provider-actions">
+                        <select class="status-select" onchange="handleStatusChange(this, 'pending1')">
+                            <option value="pending" selected>Pending</option>
+                            <option value="approved">Approve</option>
+                            <option value="rejected">Reject</option>
+                        </select>
+                        <label class="override-toggle">
+                            <input type="checkbox" onchange="toggleOverride('pending1')"> <i class="fas fa-gavel"></i> Override
+                        </label>
+                        <div class="badge-selector">
+                            <span class="badge-option community" onclick="selectBadge('pending1', 'community')">Community</span>
+                            <span class="badge-option trusted" onclick="selectBadge('pending1', 'trusted')">Trusted</span>
+                            <span class="badge-option featured" onclick="selectBadge('pending1', 'featured')">Featured</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="provider-row" id="pending2">
+                    <div class="provider-info" onclick="showProfileModal('therapy')">
+                        <span class="avatar-small">TL</span>
+                        <div>
+                            <strong>Therapy4Learning</strong> 
+                            <span class="provider-cat">(therapist)</span>
+                            <span class="pending-badge">pending</span>
+                            <div style="font-size:0.8rem; color:#64748b;">Missing: qualifications, bio</div>
+                        </div>
+                    </div>
+                    <div class="provider-actions">
+                        <select class="status-select" onchange="handleStatusChange(this, 'pending2')">
+                            <option value="pending" selected>Pending</option>
+                            <option value="approved">Approve</option>
+                            <option value="rejected">Reject</option>
+                        </select>
+                        <label class="override-toggle">
+                            <input type="checkbox" onchange="toggleOverride('pending2')"> <i class="fas fa-gavel"></i> Override
+                        </label>
+                        <div class="badge-selector">
+                            <span class="badge-option community" onclick="selectBadge('pending2', 'community')">Community</span>
+                            <span class="badge-option trusted" onclick="selectBadge('pending2', 'trusted')">Trusted</span>
+                            <span class="badge-option featured" onclick="selectBadge('pending2', 'featured')">Featured</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="provider-row" id="pending3">
+                    <div class="provider-info" onclick="showProfileModal('creative')">
+                        <span class="avatar-small">CA</span>
+                        <div>
+                            <strong>Creative Arts Studio</strong> 
+                            <span class="provider-cat">(extracurricular)</span>
+                            <span class="pending-badge">pending</span>
+                            <div style="font-size:0.8rem; color:#64748b;">Missing: availability, pricing</div>
+                        </div>
+                    </div>
+                    <div class="provider-actions">
+                        <select class="status-select" onchange="handleStatusChange(this, 'pending3')">
+                            <option value="pending" selected>Pending</option>
+                            <option value="approved">Approve</option>
+                            <option value="rejected">Reject</option>
+                        </select>
+                        <label class="override-toggle">
+                            <input type="checkbox" onchange="toggleOverride('pending3')"> <i class="fas fa-gavel"></i> Override
+                        </label>
+                        <div class="badge-selector">
+                            <span class="badge-option community" onclick="selectBadge('pending3', 'community')">Community</span>
+                            <span class="badge-option trusted" onclick="selectBadge('pending3', 'trusted')">Trusted</span>
+                            <span class="badge-option featured" onclick="selectBadge('pending3', 'featured')">Featured</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ALL LISTINGS TAB -->
+            <div id="all-tab" class="tab-pane">
+                <p class="list-title"><i class="fas fa-list"></i> All Providers — Promote/Demote & Manage Badges</p>
+                
+                <div class="provider-row">
+                    <div class="provider-info" onclick="showProfileModal('bright')">
+                        <span class="avatar-small">BT</span>
+                        <div>
+                            <strong>Bright Minds Tutoring</strong> 
+                            <span class="provider-cat">(tutor)</span>
+                            <span class="approved-badge">approved</span>
+                            <span class="featured-tag"><i class="fas fa-crown"></i> featured</span>
+                        </div>
+                    </div>
+                    <div class="provider-actions">
+                        <div style="display:flex; gap:0.3rem;">
+                            <button class="btn-edit" style="padding:0.2rem 1rem;" onclick="promoteListing('BT')"><i class="fas fa-arrow-up"></i> Promote</button>
+                            <button class="btn-edit" style="padding:0.2rem 1rem;" onclick="demoteListing('BT')"><i class="fas fa-arrow-down"></i> Demote</button>
+                        </div>
+                        <div class="badge-selector">
+                            <span class="badge-option community" onclick="selectBadge('BT', 'community')">Community</span>
+                            <span class="badge-option trusted" onclick="selectBadge('BT', 'trusted')">Trusted</span>
+                            <span class="badge-option featured selected" onclick="selectBadge('BT', 'featured')">Featured</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="provider-row">
+                    <div class="provider-info" onclick="showProfileModal('edu')">
+                        <span class="avatar-small">EC</span>
+                        <div>
+                            <strong>EduConsult Pro</strong> 
+                            <span class="provider-cat">(consultant)</span>
+                            <span class="approved-badge">approved</span>
+                            <span class="featured-tag"><i class="fas fa-check-circle"></i> trusted</span>
+                        </div>
+                    </div>
+                    <div class="provider-actions">
+                        <div style="display:flex; gap:0.3rem;">
+                            <button class="btn-edit" style="padding:0.2rem 1rem;" onclick="promoteListing('EC')"><i class="fas fa-arrow-up"></i> Promote</button>
+                            <button class="btn-edit" style="padding:0.2rem 1rem;" onclick="demoteListing('EC')"><i class="fas fa-arrow-down"></i> Demote</button>
+                        </div>
+                        <div class="badge-selector">
+                            <span class="badge-option community" onclick="selectBadge('EC', 'community')">Community</span>
+                            <span class="badge-option trusted selected" onclick="selectBadge('EC', 'trusted')">Trusted</span>
+                            <span class="badge-option featured" onclick="selectBadge('EC', 'featured')">Featured</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FEATURED SLOTS TAB -->
+            <div id="featured-tab" class="tab-pane">
+                <p class="list-title"><i class="fas fa-star"></i> Category-Level Featured Slots</p>
+                
+                <div class="featured-slots">
+                    <div class="slot-card">
+                        <h4>Mathematics</h4>
+                        <p>2/4 featured slots filled</p>
+                        <ul class="slot-list">
+                            <li>Bright Minds <i class="fas fa-crown" style="color:var(--warning);"></i> <button onclick="removeFeatured('math', 'Bright Minds')">remove</button></li>
+                            <li>Math Wizards <i class="fas fa-crown" style="color:var(--warning);"></i> <button onclick="removeFeatured('math', 'Math Wizards')">remove</button></li>
+                            <li><em>empty slot</em> <button onclick="assignFeatured('math')">assign</button></li>
+                            <li><em>empty slot</em> <button onclick="assignFeatured('math')">assign</button></li>
+                        </ul>
+                    </div>
+                    <div class="slot-card">
+                        <h4>Science</h4>
+                        <p>3/4 featured slots filled</p>
+                        <ul class="slot-list">
+                            <li>Bright Minds <i class="fas fa-crown" style="color:var(--warning);"></i> <button onclick="removeFeatured('science', 'Bright Minds')">remove</button></li>
+                            <li>Bio Explorers <i class="fas fa-crown" style="color:var(--warning);"></i> <button onclick="removeFeatured('science', 'Bio Explorers')">remove</button></li>
+                            <li>Chem Lab <i class="fas fa-crown" style="color:var(--warning);"></i> <button onclick="removeFeatured('science', 'Chem Lab')">remove</button></li>
+                            <li><em>empty slot</em> <button onclick="assignFeatured('science')">assign</button></li>
+                        </ul>
+                    </div>
+                    <div class="slot-card">
+                        <h4>Therapy</h4>
+                        <p>1/2 featured slots filled</p>
+                        <ul class="slot-list">
+                            <li>Therapy4Learning <i class="fas fa-crown" style="color:var(--warning);"></i> <button onclick="removeFeatured('therapy', 'Therapy4Learning')">remove</button></li>
+                            <li><em>empty slot</em> <button onclick="assignFeatured('therapy')">assign</button></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div style="background:#f1f6fe; border-radius:20px; padding:1rem; margin-top:1rem;">
+                    <p><i class="fas fa-edit"></i> <strong>Manual override active:</strong> Admin can assign any provider to featured slots regardless of plan.</p>
+                </div>
+            </div>
+
+            <!-- CATEGORY MANAGEMENT TAB -->
+            <div id="categories-tab" class="tab-pane">
+                <p class="list-title"><i class="fas fa-tags"></i> Manage Categories & Featured Limits</p>
+                
+                <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(250px,1fr)); gap:1rem;">
+                    <div class="slot-card">
+                        <h4>Mathematics</h4>
+                        <p>Featured slots: 4 max</p>
+                        <p>Current: 2 filled</p>
+                        <input type="number" value="4" min="1" max="10" style="width:80px; border-radius:30px; border:1px solid #cbd5e1; padding:0.3rem;">
+                        <button class="btn-edit" style="margin-left:0.5rem;" onclick="updateCategoryLimit('math')">Update</button>
+                    </div>
+                    <div class="slot-card">
+                        <h4>Science</h4>
+                        <p>Featured slots: 4 max</p>
+                        <p>Current: 3 filled</p>
+                        <input type="number" value="4" min="1" max="10" style="width:80px; border-radius:30px; border:1px solid #cbd5e1; padding:0.3rem;">
+                        <button class="btn-edit" style="margin-left:0.5rem;" onclick="updateCategoryLimit('science')">Update</button>
+                    </div>
+                    <div class="slot-card">
+                        <h4>Therapy</h4>
+                        <p>Featured slots: 2 max</p>
+                        <p>Current: 1 filled</p>
+                        <input type="number" value="2" min="1" max="10" style="width:80px; border-radius:30px; border:1px solid #cbd5e1; padding:0.3rem;">
+                        <button class="btn-edit" style="margin-left:0.5rem;" onclick="updateCategoryLimit('therapy')">Update</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- REVIEW MODERATION TAB -->
+            <div id="reviews-tab" class="tab-pane">
+                <p class="list-title"><i class="fas fa-star-half-alt"></i> Moderate Reviews (12 pending)</p>
+                
+                <!-- Pending Review 1 -->
+                <div class="review-card" id="review1">
+                    <div class="review-header">
+                        <span class="review-provider">Bright Minds Tutoring</span>
+                        <span class="review-rating">★★★★★</span>
+                        <span class="review-status pending-badge">pending</span>
+                    </div>
+                    <div class="review-text">"My daughter has improved so much in maths! The tutor is patient and explains concepts clearly. Highly recommend!"</div>
+                    <div style="font-size:0.8rem; color:#64748b; margin-bottom:0.5rem;">Reviewed by: Sarah J. · 2 days ago</div>
+                    <div class="review-actions">
+                        <button class="btn-approve" onclick="moderateReview('review1', 'approve')"><i class="fas fa-check"></i> Approve</button>
+                        <button class="btn-reject" onclick="moderateReview('review1', 'reject')"><i class="fas fa-times"></i> Reject</button>
+                    </div>
+                </div>
+
+                <!-- Pending Review 2 -->
+                <div class="review-card" id="review2">
+                    <div class="review-header">
+                        <span class="review-provider">Therapy4Learning</span>
+                        <span class="review-rating">★★★★☆</span>
+                        <span class="review-status pending-badge">pending</span>
+                    </div>
+                    <div class="review-text">"Great occupational therapist, very good with children. The sessions are engaging and helpful. Would recommend."</div>
+                    <div style="font-size:0.8rem; color:#64748b; margin-bottom:0.5rem;">Reviewed by: Thabo M. · 3 days ago</div>
+                    <div class="review-actions">
+                        <button class="btn-approve" onclick="moderateReview('review2', 'approve')"><i class="fas fa-check"></i> Approve</button>
+                        <button class="btn-reject" onclick="moderateReview('review2', 'reject')"><i class="fas fa-times"></i> Reject</button>
+                    </div>
+                </div>
+
+                <!-- Pending Review 3 -->
+                <div class="review-card" id="review3">
+                    <div class="review-header">
+                        <span class="review-provider">EduConsult Pro</span>
+                        <span class="review-rating">★★★★★</span>
+                        <span class="review-status pending-badge">pending</span>
+                    </div>
+                    <div class="review-text">"James helped us choose the perfect curriculum for our son. His advice was invaluable and saved us so much time."</div>
+                    <div style="font-size:0.8rem; color:#64748b; margin-bottom:0.5rem;">Reviewed by: Linda van Wyk · 1 day ago</div>
+                    <div class="review-actions">
+                        <button class="btn-approve" onclick="moderateReview('review3', 'approve')"><i class="fas fa-check"></i> Approve</button>
+                        <button class="btn-reject" onclick="moderateReview('review3', 'reject')"><i class="fas fa-times"></i> Reject</button>
+                    </div>
+                </div>
+
+                <div style="background:#f1f6fe; border-radius:20px; padding:1rem; margin-top:1rem;">
+                    <p><i class="fas fa-info-circle"></i> <strong>Review Moderation:</strong> Only approved reviews appear on client profile pages. Rejected reviews are not shown.</p>
+                </div>
+            </div>
+
+            <hr>
+            <div style="display: flex; justify-content: space-between; align-items:center;">
+                <span class="plan-badge" style="background: #e2eaf3; color:#1e3a5a;"><i class="fas fa-history"></i> audit log</span>
+                <span><i class="fas fa-toggle-on" style="color:var(--accent);"></i> manual verification override active</span>
+            </div>
+        </div>
+
+        <div class="signup-mini">
+            <p><i class="fas fa-check-circle"></i> <strong>Admin capabilities:</strong> Approve/reject pending, override incomplete profiles, promote/demote listings, manage category featured slots, assign badges, and <strong>moderate reviews</strong> (approve/reject before they appear on client pages).</p>
+        </div>
+    </div>
+
+    <!-- Profile Modal -->
+    <div id="profileModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <h2 id="modalTitle">Provider Profile</h2>
+            <div id="modalBody">
+                <!-- Profile details will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer from shared component -->
+    <div id="footer-placeholder"></div>
+
+    <!-- Load footer -->
+    <script>
+        fetch('../shared/footer.html')
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('footer-placeholder').innerHTML = data;
+            });
+    </script>
+
+    <!-- Load shared dashboard JavaScript -->
+    <script src="../../js/dashboards.js"></script>
+</body>
+</html>
