@@ -637,18 +637,11 @@
           </div>
         </div>
 
-        <!-- For families -->
-        <div class="sah-footer-col">
-          <h4>For Families</h4>
-          <ul>
-            <li><a href="../homePage.html#providers">Find a Tutor</a></li>
-            <li><a href="../homePage.html#providers">Browse Curriculum</a></li>
-            <li><a href="../homePage.html#providers">Therapists</a></li>
-            <li><a href="../homePage.html#providers">Online Schools</a></li>
-            <li><a href="../homePage.html#providers">Consultants</a></li>
-            <li><a href="../homePage.html#providers">Enrichment</a></li>
-          </ul>
-        </div>
+    // Pre-fill with client test email
+    const emailInput = document.getElementById('loginEmail');
+    if (emailInput) {
+      emailInput.value = 'contact@khanacademy.org.za';
+    }
 
         <!-- For providers -->
         <div class="sah-footer-col">
@@ -774,77 +767,42 @@
           showFieldError(password, 'Password must be at least 8 characters');
         }
 
-        return isValid;
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value;
+
+      // ✅ FIXED: Admin check uses strict && so it won't bleed into client block
+      if (email === 'admin@sahomeschooling.co.za' && password === 'admin123') {
+        alertBox.className = 'alert success';
+        alertBox.innerHTML = '<i class="fa-regular fa-circle-check"></i> Admin login successful! Redirecting to admin dashboard...';
+        alertBox.style.display = 'block';
+
+        setTimeout(() => {
+          window.location.href = 'dashboards/admin-dashboard.html';
+        }, 1500);
+
+      // ✅ FIXED: Client check uses && (not ||) so it only matches the specific client email
+      } else if (email === 'contact@khanacademy.org.za' && password.length >= 8) {
+        alertBox.className = 'alert success';
+        alertBox.innerHTML = '<i class="fa-regular fa-circle-check"></i> Client login successful! Redirecting to your dashboard...';
+        alertBox.style.display = 'block';
+
+        setTimeout(() => {
+          window.location.href = 'dashboards/client-dashboard.html';
+        }, 1500);
+
+      } else {
+        alertBox.className = 'alert error';
+        alertBox.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> Invalid credentials. Please try again.';
+        alertBox.style.display = 'block';
       }
+    });
 
-      loginForm.addEventListener('input', (e) => {
-        const target = e.target;
-        if (target.id === 'loginEmail' || target.id === 'loginPassword') {
-          target.classList.remove('input-error');
-          const wrapper = target.closest('.field');
-          if (wrapper) {
-            const msg = wrapper.querySelector('.field-error-message');
-            if (msg) msg.remove();
-          }
-        }
-        alertBox.style.display = 'none';
-      });
+    window.addEventListener('load', () => {
+      alertBox.style.display = 'none';
+    });
+  })();
+</script>
 
-      loginForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        alertBox.style.display = 'none';
-        alertBox.classList.remove('success');
 
-        const valid = validateLogin();
-
-        if (!valid) {
-          alertMsg.innerText = 'Please check your email and password.';
-          alertBox.style.display = 'flex';
-          alertBox.classList.remove('success');
-
-          const firstErr = document.querySelector('.input-error');
-          if (firstErr) {
-            firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          } else {
-            document.querySelector('.onboarding-lead h1').scrollIntoView({ behavior: 'smooth', block: 'start' });
-          }
-          return;
-        }
-
-        // ===== MOCK DATA INTEGRATION (exactly as provided, unchanged) =====
-        const email = document.getElementById('loginEmail').value;
-        const password = document.getElementById('loginPassword').value;
-
-        // Mock data for admin login
-        if (email === 'admin@sahomeschooling.co.za' && password === 'admin123') {
-          alertBox.className = 'alert success';
-          alertBox.innerHTML = '<i class="fa-regular fa-circle-check"></i> Admin login successful! Redirecting to admin dashboard...';
-          alertBox.style.display = 'block';
-
-          setTimeout(() => {
-            window.location.href = 'dashboards/admin-dashboard.html';
-          }, 1500);
-        } 
-        // Mock data for client login - specific test email that matches the name on client dashboard
-        else if (email === 'contact@khanacademy.org.za' || (email && password.length >= 8)) {
-          alertBox.className = 'alert success';
-          alertBox.innerHTML = '<i class="fa-regular fa-circle-check"></i> Client login successful! Redirecting to your dashboard...';
-          alertBox.style.display = 'block';
-
-          setTimeout(() => {
-            window.location.href = 'dashboards/client-dashboard.html';
-          }, 1500);
-        } else {
-          alertBox.className = 'alert error';
-          alertBox.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> Invalid credentials. Please try again.';
-          alertBox.style.display = 'block';
-        }
-      });
-
-      window.addEventListener('load', () => {
-        alertBox.style.display = 'none';
-      });
-    })();
-  </script>
 </body>
 </html>
