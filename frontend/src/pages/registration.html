@@ -767,8 +767,27 @@
           document.querySelector('.step-title').scrollIntoView({ behavior: 'smooth', block: 'start' });
           return;
         }
+        
+        // Store user data in localStorage with pending status
+        const users = JSON.parse(localStorage.getItem('sah_users') || '[]');
+        const newUser = {
+          id: Date.now(),
+          fullName: formData.fullName || 'New Provider',
+          email: formData.email || '',
+          accountType: formData.accountType || 'Individual Provider',
+          primaryCategory: formData.primaryCat || '',
+          status: 'pending', // Default to pending
+          registered: new Date().toISOString(),
+          tier: formData.listingPlan?.includes('Free') ? 'free' : formData.listingPlan?.includes('Professional') ? 'pro' : 'featured',
+          data: formData // Store all form data
+        };
+        users.push(newUser);
+        localStorage.setItem('sah_users', JSON.stringify(users));
+        
         showToast('Profile created successfully! Redirecting to dashboard...');
-        setTimeout(() => window.location.href = '/dashboard/dashboard.html', 1500);
+        
+        // Redirect to client dashboard
+        setTimeout(() => window.location.href = '../pages/dashboards/client-dashboard.html', 1500);
       }
 
       function showToast(msg) {

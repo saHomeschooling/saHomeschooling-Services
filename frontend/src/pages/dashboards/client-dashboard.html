@@ -4,350 +4,295 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Client Dashboard · SA Homeschooling</title>
-    <!-- Font Awesome 6 (free) -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- shared dashboard CSS with custom palette -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="../../css/dashboard.css">
     <style>
-        /* additional inline styles */
-        .editable-field {
-            transition: all 0.1s ease;
-        }
-        .edit-mode .profile-value {
-            background: #fff9f0;
-            border: 1.5px solid var(--accent);
-            cursor: pointer;
-            padding: 0.6rem 0.9rem;
-            box-shadow: 0 0 0 3px rgba(224,43,88,0.1);
-        }
-        .edit-mode .profile-field label {
-            color: var(--accent);
-        }
-        .hidden-file-input {
-            display: none;
-        }
-        .photo-round img {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            object-fit: cover;
-            display: block;
-        }
-        .edit-mode select.profile-value,
-        .edit-mode input.profile-value {
-            appearance: none;
-            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23e02b58' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
-            background-repeat: no-repeat;
-            background-position: right 0.7rem center;
-            background-size: 1rem;
-            padding-right: 2rem;
-        }
-        .days-multi {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            margin-top: 0.5rem;
-        }
-        .day-checkbox {
-            display: flex;
-            align-items: center;
+        /* ─── Client-specific additions ─────────────────────────── */
+        .hidden-file-input { display: none; }
+
+        /* Edit mode field highlighting */
+        .edit-mode .profile-value[contenteditable="true"] {
             background: white;
-            border: 1px solid #cbd5e1;
-            border-radius: 30px;
-            padding: 0.3rem 1rem;
-            font-size: 0.85rem;
-            font-weight: 500;
-            color: #1f3a5f;
-        }
-        .day-checkbox input {
-            margin-right: 0.3rem;
-            accent-color: var(--accent);
-        }
-        .edit-mode .day-checkbox {
             border-color: var(--accent);
-            background: #fff0f3;
+            box-shadow: 0 0 0 3px var(--accent-light);
+            cursor: text;
         }
-        .inline-flex-row {
+
+        .edit-mode .profile-field > label { color: var(--accent); }
+
+        /* Editable field cursor */
+        [contenteditable="true"] { cursor: text; }
+        [contenteditable="false"] { cursor: default; }
+
+        /* Section dividers */
+        .section-label {
+            font-family: var(--font-serif);
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--ink);
+            margin: 1.75rem 0 1rem;
+            padding-bottom: 0.625rem;
+            border-bottom: 1px solid var(--border);
             display: flex;
-            gap: 0.5rem;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-        .radius-input {
-            width: 80px;
-            padding: 0.3rem;
-            border: 1px solid #cbd5e1;
-            border-radius: 30px;
-            text-align: center;
-        }
-        .toggle-switch {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            cursor: pointer;
-        }
-        .toggle-switch input {
-            display: none;
-        }
-        .toggle-slider {
-            width: 44px;
-            height: 24px;
-            background: #cbd5e1;
-            border-radius: 40px;
-            position: relative;
-            transition: 0.2s;
-        }
-        .toggle-slider:before {
-            content: "";
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            background: white;
-            border-radius: 50%;
-            top: 2px;
-            left: 2px;
-            transition: 0.2s;
-        }
-        input:checked + .toggle-slider {
-            background: var(--accent);
-        }
-        input:checked + .toggle-slider:before {
-            left: 22px;
-        }
-        /* Tags styling */
-        .tags-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            align-items: center;
-            margin-top: 0.5rem;
-        }
-        .tag-item {
-            background: var(--accent-2);
-            color: white;
-            padding: 0.3rem 1rem;
-            border-radius: 30px;
-            font-size: 0.85rem;
-            font-weight: 500;
-            display: inline-flex;
             align-items: center;
             gap: 0.5rem;
         }
-        .tag-item i {
-            cursor: pointer;
-            font-size: 0.8rem;
-            opacity: 0.8;
-        }
-        .tag-item i:hover {
-            opacity: 1;
-        }
-        .tag-input-wrapper {
-            display: flex;
-            gap: 0.5rem;
-            align-items: center;
-            background: white;
-            border: 1px solid #cbd5e1;
-            border-radius: 30px;
-            padding: 0.2rem 0.5rem 0.2rem 1rem;
-        }
-        .tag-input-wrapper input {
-            border: none;
-            outline: none;
-            padding: 0.3rem 0;
-            width: 120px;
-            background: transparent;
-        }
-        .tag-input-wrapper button {
-            background: var(--accent);
-            color: white;
-            border: none;
-            border-radius: 30px;
-            padding: 0.3rem 1rem;
-            cursor: pointer;
-            font-size: 0.8rem;
-        }
-        .edit-mode .tag-input-wrapper input:disabled {
-            background: #f1f5f9;
-            cursor: not-allowed;
-        }
-        /* Qualifications styling */
+
+        .section-label i { color: var(--accent); font-size: 0.9rem; }
+
+        /* Photo upload area */
+        .photo-upload-area { flex: 1; }
+        .photo-upload-area .btn-edit { margin-bottom: 0.375rem; }
+
+        /* Qualifications block */
         .qualification-item {
-            background: rgba(224,43,88,0.02);
-            border-radius: 20px;
-            padding: 1rem;
-            margin-bottom: 1rem;
+            background: var(--bg);
+            border-radius: var(--radius-md);
+            padding: 1.25rem;
+            border: 1px solid var(--border);
         }
-        /* Reviews section styling */
-        .reviews-section {
-            margin-top: 2rem;
-            border-top: 2px dashed var(--accent-2);
-            padding-top: 1.5rem;
+
+        /* Contact block inner */
+        .contact-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-bottom: 0.625rem;
         }
-        .review-item {
-            background: rgba(224,43,88,0.02);
-            border-radius: 20px;
-            padding: 1rem;
-            margin-bottom: 1rem;
+
+        .contact-details { font-size: 0.9rem; color: var(--ink-2); line-height: 1.7; }
+
+        /* Review items in client dashboard */
+        .reviews-section .review-item .rating-stars { margin-bottom: 0.375rem; }
+
+        .reviews-section .review-item .profile-value {
+            font-style: italic;
+            margin: 0;
         }
-        .rating-stars {
-            color: #f5b342;
-            letter-spacing: 2px;
-            font-size: 1.2rem;
+
+        /* Plan row */
+        .plan-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 1.75rem 0 0.75rem;
+            flex-wrap: wrap;
+            gap: 0.75rem;
         }
-        .badge-clearance {
-            background: #10b981;
-            color: white;
-            padding: 0.2rem 1rem;
-            border-radius: 30px;
-            font-size: 0.8rem;
-            display: inline-block;
-        }
-        /* Language display - comma separated in view mode */
-        .language-select {
-            width: 100%;
-            min-height: 100px;
-            border-radius: 16px;
-            padding: 0.5rem;
-            border: 1px solid #dee8f2;
-            background: #f2f6fb;
-        }
-        .edit-mode .language-select {
-            background: #fff9f0;
-            border: 1.5px solid var(--accent);
-        }
-        .language-select option {
-            padding: 0.3rem;
-        }
-        .language-display {
-            background: var(--glass);
-            padding: 0.7rem 1rem;
-            border-radius: 16px;
-            font-weight: 500;
-            color: #153753;
-            border: 1px solid rgba(15, 23, 42, 0.03);
-            word-break: break-word;
-        }
-        .edit-mode .language-display {
-            display: none;
-        }
-        .edit-mode .language-select-container {
-            display: block;
-        }
-        .language-select-container {
-            display: none;
-        }
-        .edit-mode .language-select {
-            display: block;
-        }
-        /* Profile preview badge */
-        .profile-preview-badge {
-            background: #f1f5f9;
-            border-radius: 30px;
-            padding: 0.3rem 1rem;
-            font-size: 0.8rem;
+
+        .public-indicator {
             display: inline-flex;
             align-items: center;
-            gap: 0.3rem;
-            color: #4b5563;
-            text-decoration: none;
-            transition: all 0.15s;
+            gap: 0.375rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--success);
         }
-        .profile-preview-badge:hover {
+
+        /* Footer row */
+        .card-footer {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: flex-end;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .last-edited {
+            color: var(--ink-4);
+            font-size: 0.82rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+        }
+
+        /* Edit mode badge state */
+        #editModeBadge {
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        #editModeBadge:hover { background: var(--success); color: white; }
+
+        #editModeBadge.active {
             background: var(--accent);
             color: white;
         }
+
+        /* Btn save */
+        .btn-save {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: var(--radius-full);
+            font-weight: 700;
+            font-size: 0.875rem;
+            cursor: pointer;
+            font-family: var(--font-sans);
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+        }
+
+        .btn-save:hover { background: var(--accent-hover); }
+
+        /* Welcome row */
+        .welcome-row {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Age group display - comma separated in view mode */
+        .agegroup-display {
+            background: var(--bg);
+            padding: 0.625rem 0.875rem;
+            border-radius: var(--radius);
+            font-weight: 500;
+            color: var(--ink);
+            border: 1.5px solid var(--border-light);
+            word-break: break-word;
+            font-size: 0.9rem;
+        }
+
+        .agegroup-select-container { display: none; }
+        .edit-mode .agegroup-display { display: none; }
+        .edit-mode .agegroup-select-container { display: block; }
     </style>
 </head>
 <body>
-    <!-- Header styled like homepage - removed SAH logo -->
+
+    <!-- ─── Header (only Home link) ────────────────────────────── -->
     <header class="top-header">
         <div class="logo-area">
-            <div class="trusted-text" style="border-left: none; padding-left: 0;">
+            <div class="trusted-text" style="border-left:none; padding-left:0;">
                 Trusted Homeschooling Directory
                 <span>SA Homeschooling</span>
             </div>
         </div>
-        <div class="nav-links">
+
+        <!-- Desktop nav - only Home link -->
+        <nav class="nav-links" aria-label="Main navigation">
             <a href="../homePage.html">Home</a>
-            <a href="../homePage.html#providers">Find Providers</a>
-            <a href="../homePage.html#list">List Services</a>
-            <a href="#">Join Directory</a>
-            <a href="#">About</a>
-            <a href="../homePage.html#list" class="cta-nav">List Your Service</a>
-        </div>
+        </nav>
+
+        <!-- Mobile hamburger -->
+        <button class="hamburger" id="hamburgerBtn" aria-label="Toggle navigation" aria-expanded="false">
+            <span></span><span></span><span></span>
+        </button>
     </header>
 
-    <div class="dash-wrapper">
+    <!-- Mobile nav - only Home link -->
+    <nav class="mobile-nav" id="mobileNav" aria-label="Mobile navigation">
+        <a href="../homePage.html">Home</a>
+    </nav>
+
+    <!-- ─── Main Content ───────────────────────────────────────── -->
+    <main class="dash-wrapper">
+        <!-- Page headline -->
         <div class="page-headline">
             <h1>My Provider Dashboard</h1>
-            <p>Welcome back, <span id="welcomeName">Khan Academy SA</span> · 
-                <a href="#" id="publicViewLink" class="profile-preview-badge">
-                    <i class="fas fa-eye"></i> switch to public view
+            <div class="welcome-row">
+                <p>Welcome back, <span id="welcomeName">Khan Academy SA</span></p>
+                <a href="#" id="publicViewLink" class="profile-preview-badge" aria-label="Switch to public view">
+                    <i class="fas fa-eye" aria-hidden="true"></i> public view
                 </a>
-            </p>
-            <div style="margin-top: 0.5rem; padding: 0.5rem 1rem; background: #fff3e0; border-radius: 30px; display: inline-block;">
-                <i class="fas fa-clock"></i> <strong>Status:</strong> <span class="pending-badge">Pending Approval</span> 
-                <span style="font-size: 0.85rem; margin-left: 0.5rem;">Your profile is awaiting admin verification</span>
             </div>
+            <span class="status-notice" role="status">
+                <i class="fas fa-clock" aria-hidden="true"></i>
+                <strong>Status:</strong>
+                <span class="pending-badge">Pending Approval</span>
+                <span>Your profile is awaiting admin verification</span>
+            </span>
         </div>
 
-        <!-- main client dashboard card -->
-        <div class="card client-dash" id="clientDashboard" data-user-email="contact@khanacademy.org.za" data-user-name="Khan Academy SA">
+        <!-- ─── Main Dashboard Card ────────────────────────────── -->
+        <div class="card client-dash" id="clientDashboard"
+             data-user-email="contact@khanacademy.org.za"
+             data-user-name="Khan Academy SA">
+
+            <!-- Card header -->
             <div class="card-header">
-                <i class="fas fa-user-circle"></i>
-                <h2>Profile information</h2>
-                <span class="badge" id="editModeBadge" onclick="toggleEditMode()">
-                    <i class="far fa-edit"></i>  activate edit mode
+                <i class="fas fa-user-circle" aria-hidden="true"></i>
+                <h2>Profile Information</h2>
+                <span class="badge" id="editModeBadge" onclick="toggleEditMode()" role="button" tabindex="0"
+                      aria-label="Toggle edit mode">
+                    <i class="far fa-edit" aria-hidden="true"></i> activate edit mode
                 </span>
             </div>
 
-            <!-- photo row -->
+            <!-- Photo upload row -->
             <div class="photo-placeholder">
-                <div class="photo-round" onclick="document.getElementById('photoUpload').click();">
-                    <i class="fas fa-camera" id="photoIcon"></i>
-                    <img id="photoImg" src="https://images.unsplash.com/photo-1560264280-88b68371db39?w=300&auto=format&fit=crop" alt="" style="display:block; width:100%; height:100%; object-fit:cover;">
+                <div class="photo-round" onclick="document.getElementById('photoUpload').click();"
+                     role="button" tabindex="0" aria-label="Upload profile photo"
+                     onkeydown="if(event.key==='Enter')this.click()">
+                    <i class="fas fa-camera" id="photoIcon" style="display:none;" aria-hidden="true"></i>
+                    <img id="photoImg"
+                         src="https://images.unsplash.com/photo-1560264280-88b68371db39?w=300&auto=format&fit=crop"
+                         alt="Khan Academy SA profile photo"
+                         style="display:block; width:100%; height:100%; object-fit:cover;">
                 </div>
-                <div>
-                    <button class="btn-edit" type="button" onclick="document.getElementById('photoUpload').click();"><i class="fas fa-pencil-alt"></i>  change photo / logo</button>
-                    <p class="hint">Click to upload (JPG, PNG)</p>
+                <div class="photo-upload-area">
+                    <button class="btn-edit" type="button"
+                            onclick="document.getElementById('photoUpload').click();"
+                            aria-label="Change photo or logo">
+                        <i class="fas fa-pencil-alt" aria-hidden="true"></i> Change photo / logo
+                    </button>
+                    <p class="hint">Click to upload (JPG, PNG — max 5MB)</p>
                 </div>
             </div>
-            <input type="file" id="photoUpload" class="hidden-file-input" accept="image/*" onchange="handlePhotoUpload(event)">
+            <input type="file" id="photoUpload" class="hidden-file-input" accept="image/*"
+                   onchange="handlePhotoUpload(event)" aria-hidden="true">
 
-            <!-- two column fields -->
+            <!-- ── Account information ────────────────────────── -->
+            <p class="section-label"><i class="fas fa-id-card" aria-hidden="true"></i> Account Information</p>
+
             <div class="two-col">
-                <div class="profile-field"><label>Full name / Business *</label><div class="profile-value" id="fieldBusiness">Khan Academy SA</div></div>
-                <div class="profile-field"><label>Email address *</label><div class="profile-value" id="fieldEmail">contact@khanacademy.org.za</div></div>
-                <div class="profile-field"><label>Account type *</label><div class="profile-value" id="fieldAccountType">Organization/Company</div></div>
-                
-                <!-- Years of Experience -->
-                <div class="profile-field"><label>Years of Experience</label>
-                    <div id="fieldYearsContainer">
-                        <select id="fieldYears" class="profile-value" disabled>
-                            <option value="0-1">0-1 Years</option>
-                            <option value="1-3">1-3 Years</option>
-                            <option value="3-5">3-5 Years</option>
-                            <option value="5-10">5-10 Years</option>
-                            <option value="10+" selected>10+ Years</option>
-                        </select>
-                    </div>
+                <div class="profile-field">
+                    <label for="fieldBusiness">Full name / Business <span aria-label="required">*</span></label>
+                    <div class="profile-value" id="fieldBusiness" role="textbox" aria-multiline="false">Khan Academy SA</div>
                 </div>
-
-                <!-- Languages spoken - comma separated in view mode, multi-select in edit mode -->
-                <div class="profile-field"><label>Languages spoken *</label>
-                    <!-- Display mode: comma separated list -->
+                <div class="profile-field">
+                    <label for="fieldEmail">Email address <span aria-label="required">*</span></label>
+                    <div class="profile-value" id="fieldEmail" role="textbox" aria-multiline="false">contact@khanacademy.org.za</div>
+                </div>
+                <div class="profile-field">
+                    <label for="fieldAccountType">Account type <span aria-label="required">*</span></label>
+                    <div class="profile-value" id="fieldAccountType" role="textbox" aria-multiline="false">Organization / Company</div>
+                </div>
+                <div class="profile-field">
+                    <label for="fieldYears">Years of experience</label>
+                    <select id="fieldYears" class="profile-value" disabled aria-label="Years of experience">
+                        <option value="0-1">0–1 Years</option>
+                        <option value="1-3">1–3 Years</option>
+                        <option value="3-5">3–5 Years</option>
+                        <option value="5-10">5–10 Years</option>
+                        <option value="10+" selected>10+ Years</option>
+                    </select>
+                </div>
+                <div class="profile-field">
+                    <label>Languages spoken <span aria-label="required">*</span></label>
+                    <!-- View mode -->
                     <div class="language-display" id="languagesDisplay">Afrikaans, English, isiXhosa, isiZulu</div>
-                    
-                    <!-- Edit mode: multi-select dropdown -->
+                    <!-- Edit mode -->
                     <div class="language-select-container">
-                        <select id="fieldLanguages" class="language-select" multiple size="4" disabled>
+                        <select id="fieldLanguages" class="language-select" multiple size="5" disabled
+                                aria-label="Select spoken languages (hold Ctrl/Cmd to select multiple)">
                             <option value="Afrikaans" selected>Afrikaans</option>
                             <option value="English" selected>English</option>
                             <option value="isiNdebele">isiNdebele</option>
                             <option value="isiXhosa" selected>isiXhosa</option>
                             <option value="isiZulu" selected>isiZulu</option>
                             <option value="Sesotho">Sesotho</option>
-                            <option value="Sesotho sa Leboa">Sesotho sa Leboa (Northern Sotho)</option>
+                            <option value="Sesotho sa Leboa">Sesotho sa Leboa</option>
                             <option value="Setswana">Setswana</option>
                             <option value="siSwati">siSwati</option>
                             <option value="Tshivenda">Tshivenda</option>
@@ -355,59 +300,86 @@
                         </select>
                     </div>
                 </div>
-
-                <div class="profile-field"><label>Primary category *</label><div class="profile-value" id="fieldCategory">Curriculum Provider</div></div>
+                <div class="profile-field">
+                    <label for="fieldCategory">Primary category <span aria-label="required">*</span></label>
+                    <div class="profile-value" id="fieldCategory" role="textbox" aria-multiline="false">Curriculum Provider</div>
+                </div>
             </div>
 
-            <!-- TAGS SECTION -->
-            <div class="profile-field"><label>Tags (e.g. mathematics, tutoring, therapy)</label>
-                <div id="tagsContainer" class="tags-container">
-                    <!-- Tags will be dynamically inserted here -->
-                </div>
+            <!-- ── Tags ─────────────────────────────────────────── -->
+            <div class="profile-field">
+                <label>Tags <span style="text-transform:none; font-weight:400; color:var(--ink-4);">(e.g. mathematics, tutoring, therapy)</span></label>
+                <div id="tagsContainer" class="tags-container" role="list" aria-label="Current tags"></div>
                 <div class="tag-input-wrapper" id="tagInputWrapper">
-                    <input type="text" id="newTagInput" placeholder="Add a tag..." disabled>
-                    <button id="addTagBtn" disabled onclick="addNewTag()">Add</button>
+                    <input type="text" id="newTagInput" placeholder="Add a tag…" disabled
+                           onkeydown="if(event.key==='Enter'){event.preventDefault();addNewTag();}"
+                           aria-label="New tag text">
+                    <button id="addTagBtn" disabled onclick="addNewTag()" aria-label="Add tag">Add</button>
                 </div>
             </div>
 
-            <!-- short bio -->
-            <div class="profile-field"><label>Short bio *</label><div class="profile-value" id="fieldBio">Free world-class education for anyone anywhere. Our curriculum covers mathematics, science, computing, humanities and more. We provide video lessons, practice exercises, and personalized learning dashboards for homeschoolers across South Africa. Completely free, forever.</div></div>
+            <!-- ── Bio ──────────────────────────────────────────── -->
+            <div class="profile-field">
+                <label for="fieldBio">Short bio <span aria-label="required">*</span></label>
+                <div class="profile-value" id="fieldBio" style="min-height: 80px;" role="textbox" aria-multiline="true">Free world-class education for anyone anywhere. Our curriculum covers mathematics, science, computing, humanities and more. We provide video lessons, practice exercises, and personalized learning dashboards for homeschoolers across South Africa. Completely free, forever.</div>
+            </div>
 
-            <!-- QUALIFICATIONS & EXPERIENCE SECTION -->
-            <div class="profile-field"><label style="font-size:1rem; margin-top:1rem;">Qualifications & Experience</label>
-                <div class="qualification-item">
-                    <div class="inline-group" style="margin-bottom:0.5rem;">
-                        <div class="profile-field"><label>Certifications</label><div class="profile-value" id="fieldCertifications" contenteditable="false">Khan Academy Certified Content Provider, Google for Education Partner</div></div>
-                        <div class="profile-field"><label>Degrees</label><div class="profile-value" id="fieldDegrees" contenteditable="false">BSc Computer Science (Stanford), MEd (Harvard)</div></div>
+            <!-- ── Qualifications ────────────────────────────────── -->
+            <p class="section-label"><i class="fas fa-graduation-cap" aria-hidden="true"></i> Qualifications &amp; Experience</p>
+
+            <div class="qualification-item">
+                <div class="inline-group">
+                    <div class="profile-field">
+                        <label for="fieldCertifications">Certifications</label>
+                        <div class="profile-value" id="fieldCertifications" contenteditable="false" role="textbox">Khan Academy Certified Content Provider, Google for Education Partner</div>
                     </div>
-                    <div class="inline-group">
-                        <div class="profile-field"><label>Professional memberships</label><div class="profile-value" id="fieldMemberships" contenteditable="false">SA Curriculum Association, Digital Learning Collective</div></div>
-                        <div class="profile-field"><label>Background clearance</label>
-                            <div id="fieldClearanceContainer">
-                                <span class="badge-clearance" id="clearanceBadge"><i class="fas fa-check-circle"></i> Verified (2025)</span>
-                            </div>
+                    <div class="profile-field">
+                        <label for="fieldDegrees">Degrees</label>
+                        <div class="profile-value" id="fieldDegrees" contenteditable="false" role="textbox">BSc Computer Science (Stanford), MEd (Harvard)</div>
+                    </div>
+                </div>
+                <div class="inline-group" style="margin-bottom:0;">
+                    <div class="profile-field">
+                        <label for="fieldMemberships">Professional memberships</label>
+                        <div class="profile-value" id="fieldMemberships" contenteditable="false" role="textbox">SA Curriculum Association, Digital Learning Collective</div>
+                    </div>
+                    <div class="profile-field">
+                        <label>Background clearance</label>
+                        <div>
+                            <span class="badge-clearance" id="clearanceBadge">
+                                <i class="fas fa-circle-check" aria-hidden="true"></i> Verified (2025)
+                            </span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- service details -->
-            <div class="inline-group">
-                <div class="profile-field"><label>Service title *</label><div class="profile-value" id="fieldServiceTitle">Math & Science Curriculum (Gr R-12)</div></div>
-                
-                <!-- Age group -->
-                <div class="profile-field"><label>Age group served</label>
-                    <select id="fieldAgeGroup" class="profile-value" disabled>
-                        <option value="5-7" selected>5-7 years</option>
-                        <option value="8-10" selected>8-10 years</option>
-                        <option value="11-13" selected>11-13 years</option>
-                        <option value="14-18" selected>14-18 years</option>
-                    </select>
-                </div>
+            <!-- ── Service Details ───────────────────────────────── -->
+            <p class="section-label"><i class="fas fa-briefcase" aria-hidden="true"></i> Service Details</p>
 
-                <!-- Mode of delivery -->
-                <div class="profile-field"><label>Mode of delivery</label>
-                    <select id="fieldMode" class="profile-value" disabled>
+            <div class="inline-group">
+                <div class="profile-field">
+                    <label for="fieldServiceTitle">Service title <span aria-label="required">*</span></label>
+                    <div class="profile-value" id="fieldServiceTitle" role="textbox" aria-multiline="false">Math &amp; Science Curriculum (Gr R–12)</div>
+                </div>
+                <div class="profile-field">
+                    <label for="fieldAgeGroup">Age group served</label>
+                    <!-- View mode: comma separated list -->
+                    <div class="agegroup-display" id="ageGroupDisplay">5–7 years, 8–10 years, 11–13 years, 14–18 years</div>
+                    <!-- Edit mode: multi-select dropdown -->
+                    <div class="agegroup-select-container">
+                        <select id="fieldAgeGroup" class="profile-value" multiple size="4" disabled
+                                aria-label="Select age groups served (hold Ctrl/Cmd to select multiple)">
+                            <option value="5–7 years" selected>5–7 years</option>
+                            <option value="8–10 years" selected>8–10 years</option>
+                            <option value="11–13 years" selected>11–13 years</option>
+                            <option value="14–18 years" selected>14–18 years</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="profile-field">
+                    <label for="fieldMode">Mode of delivery</label>
+                    <select id="fieldMode" class="profile-value" disabled aria-label="Mode of delivery">
                         <option value="online" selected>Online</option>
                         <option value="inperson">In Person</option>
                         <option value="hybrid">Hybrid</option>
@@ -415,10 +387,13 @@
                 </div>
             </div>
 
-            <!-- Province + city (editable city) -->
+            <!-- ── Location ──────────────────────────────────────── -->
+            <p class="section-label"><i class="fas fa-map-marker-alt" aria-hidden="true"></i> Location &amp; Reach</p>
+
             <div class="inline-group">
-                <div class="profile-field"><label>Province</label>
-                    <select id="fieldProvince" class="profile-value" disabled>
+                <div class="profile-field">
+                    <label for="fieldProvince">Province</label>
+                    <select id="fieldProvince" class="profile-value" disabled aria-label="Province">
                         <option value="EC">Eastern Cape</option>
                         <option value="FS">Free State</option>
                         <option value="GP" selected>Gauteng</option>
@@ -430,218 +405,274 @@
                         <option value="WC">Western Cape</option>
                     </select>
                 </div>
-                <div class="profile-field"><label>City / Town</label>
-                    <div class="profile-value" id="fieldCity" contenteditable="false">Johannesburg</div>
+                <div class="profile-field">
+                    <label for="fieldCity">City / Town</label>
+                    <div class="profile-value" id="fieldCity" contenteditable="false" role="textbox" aria-multiline="false">Johannesburg</div>
                 </div>
             </div>
 
-            <!-- Service area with conditional radius -->
-            <div class="profile-field"><label>Service area *</label>
+            <div class="profile-field">
+                <label for="fieldServiceAreaType">Service area <span aria-label="required">*</span></label>
                 <div class="inline-flex-row">
-                    <select id="fieldServiceAreaType" class="profile-value" style="width:auto;" disabled>
+                    <select id="fieldServiceAreaType" class="profile-value" style="width:auto;" disabled
+                            aria-label="Service area type">
                         <option value="local">Local (specify radius)</option>
                         <option value="national" selected>National</option>
                         <option value="online">Online only</option>
                     </select>
-                    <span id="radiusContainer" style="display:inline-flex; align-items:center; gap:0.3rem;">
-                        <input type="number" id="fieldRadius" class="radius-input" value="30" min="1" max="200" disabled> <span>km</span>
+                    <span id="radiusContainer" style="display:none; align-items:center; gap:0.375rem;">
+                        <input type="number" id="fieldRadius" class="radius-input" value="30" min="1" max="200"
+                               disabled aria-label="Service radius in km"> <span style="font-size:0.875rem; color:var(--ink-3);">km</span>
                     </span>
                 </div>
             </div>
 
-            <!-- Pricing model -->
+            <!-- ── Pricing ───────────────────────────────────────── -->
+            <p class="section-label"><i class="fas fa-tag" aria-hidden="true"></i> Pricing &amp; Availability</p>
+
             <div class="inline-group">
-                <div class="profile-field"><label>Pricing model *</label>
-                    <select id="fieldPricingModel" class="profile-value" disabled>
+                <div class="profile-field">
+                    <label for="fieldPricingModel">Pricing model <span aria-label="required">*</span></label>
+                    <select id="fieldPricingModel" class="profile-value" disabled aria-label="Pricing model">
                         <option value="hourly">Hourly</option>
                         <option value="package">Per package</option>
                         <option value="term">Per term</option>
                         <option value="custom" selected>Custom quote</option>
                     </select>
                 </div>
-                <div class="profile-field"><label>Starting price (optional)</label><div class="profile-value" id="fieldStartingPrice">Free</div></div>
-            </div>
-
-            <!-- Availability days -->
-            <div class="profile-field"><label>Availability — Days</label>
-                <div id="fieldAvailabilityDays" class="days-multi">
-                    <label class="day-checkbox"><input type="checkbox" value="Mon" checked disabled> Mon</label>
-                    <label class="day-checkbox"><input type="checkbox" value="Tue" checked disabled> Tue</label>
-                    <label class="day-checkbox"><input type="checkbox" value="Wed" checked disabled> Wed</label>
-                    <label class="day-checkbox"><input type="checkbox" value="Thu" checked disabled> Thu</label>
-                    <label class="day-checkbox"><input type="checkbox" value="Fri" checked disabled> Fri</label>
-                    <label class="day-checkbox"><input type="checkbox" value="Sat" checked disabled> Sat</label>
-                    <label class="day-checkbox"><input type="checkbox" value="Sun" disabled> Sun</label>
+                <div class="profile-field">
+                    <label for="fieldStartingPrice">Starting price (optional)</label>
+                    <div class="profile-value" id="fieldStartingPrice" role="textbox" aria-multiline="false">Free</div>
                 </div>
-                <div class="profile-value" id="fieldAvailabilityNotes" style="margin-top:0.5rem;">24/7 Online - Self-paced learning available anytime</div>
             </div>
 
-            <!-- Contact & social with public toggle -->
+            <div class="profile-field">
+                <label>Availability — Days</label>
+                <div id="fieldAvailabilityDays" class="days-multi" role="group" aria-label="Available days">
+                    <label class="day-checkbox"><input type="checkbox" value="Mon" checked disabled aria-label="Monday"> Mon</label>
+                    <label class="day-checkbox"><input type="checkbox" value="Tue" checked disabled aria-label="Tuesday"> Tue</label>
+                    <label class="day-checkbox"><input type="checkbox" value="Wed" checked disabled aria-label="Wednesday"> Wed</label>
+                    <label class="day-checkbox"><input type="checkbox" value="Thu" checked disabled aria-label="Thursday"> Thu</label>
+                    <label class="day-checkbox"><input type="checkbox" value="Fri" checked disabled aria-label="Friday"> Fri</label>
+                    <label class="day-checkbox"><input type="checkbox" value="Sat" checked disabled aria-label="Saturday"> Sat</label>
+                    <label class="day-checkbox"><input type="checkbox" value="Sun" disabled aria-label="Sunday"> Sun</label>
+                </div>
+                <div class="profile-value" id="fieldAvailabilityNotes" style="margin-top:0.5rem;" role="textbox" aria-multiline="false">24/7 Online — self-paced learning available anytime</div>
+            </div>
+
+            <!-- ── Contact & Social ──────────────────────────────── -->
+            <p class="section-label"><i class="fas fa-address-card" aria-hidden="true"></i> Contact &amp; Online Presence</p>
+
             <div class="contact-block">
-                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
-                    <span><i class="fas fa-address-card"></i> <strong>Primary contact:</strong></span>
+                <div class="contact-inner">
+                    <strong style="font-size:0.9rem;">Primary contact</strong>
                     <label class="toggle-switch">
-                        <input type="checkbox" id="publicToggle" checked disabled>
-                        <span class="toggle-slider"></span>
-                        <span>Display publicly <i class="fas fa-globe"></i></span>
+                        <input type="checkbox" id="publicToggle" checked disabled aria-label="Display contact publicly">
+                        <span class="toggle-slider" aria-hidden="true"></span>
+                        <span>Display publicly <i class="fas fa-globe" aria-hidden="true"></i></span>
                     </label>
                 </div>
-                <div style="margin-top:0.5rem;">
-                    <span id="fieldContactName">Support Team</span> · 
-                    <span id="fieldPhone">+27 11 555 1234</span> · 
+                <div class="contact-details">
+                    <span id="fieldContactName">Support Team</span> ·
+                    <span id="fieldPhone">+27 11 555 1234</span> ·
                     <span id="fieldContactEmail">support@khanacademy.org.za</span>
                 </div>
-                <!-- Social links preview (only visible if toggle on) -->
-                <div id="socialPreview" class="social-links-preview" style="margin-top:0.8rem;">
-                    <span id="fieldSocial"><i class="fab fa-facebook"></i> <i class="fab fa-twitter"></i> @khanacademySA  |  www.khanacademy.org.za  |  FB, Twitter, YouTube</span>
+                <div id="socialPreview" class="social-links-preview">
+                    <span id="fieldSocial"><i class="fab fa-facebook" aria-hidden="true"></i> <i class="fab fa-twitter" aria-hidden="true"></i> @khanacademySA &nbsp;|&nbsp; www.khanacademy.org.za &nbsp;|&nbsp; FB, Twitter, YouTube</span>
                 </div>
             </div>
 
-            <!-- listing plan -->
-            <div style="display: flex; align-items: center; justify-content: space-between; margin: 1.5rem 0 0.5rem;">
-                <div><span class="plan-badge"><i class="fas fa-crown" style="color:#f7d45a;"></i>  Free Listing</span></div>
-                <div><i class="fas fa-check-circle" style="color:var(--success);"></i> listing is public</div>
+            <!-- ── Plan & visibility ─────────────────────────────── -->
+            <div class="plan-row">
+                <span class="plan-badge"><i class="fas fa-crown" style="color:#f59e0b;" aria-hidden="true"></i> Free Listing</span>
+                <span class="public-indicator"><i class="fas fa-circle-check" aria-hidden="true"></i> listing is public</span>
             </div>
 
-            <!-- REVIEWS & TESTIMONIALS SECTION - AT THE BOTTOM -->
-            <div class="reviews-section">
-                <div class="profile-field"><label style="font-size:1.2rem; color:var(--accent);">Reviews & Testimonials (Paid tiers)</label></div>
-                <div class="review-item" id="reviewsContainer">
-                    <div class="rating-stars">★★★★★</div>
-                    <div class="profile-value" id="fieldReview1" contenteditable="false" style="margin:0.5rem 0;">"Excellent resource for our homeschool curriculum. The video lessons are clear and the practice exercises really help reinforce concepts." - Sarah J.</div>
-                    <div class="rating-stars">★★★★★</div>
-                    <div class="profile-value" id="fieldReview2" contenteditable="false" style="margin:0.5rem 0;">"My kids love the math challenges. It's made learning fun and independent." - Thabo M.</div>
-                    <div class="profile-value" id="fieldReview3" contenteditable="false" style="margin:0.5rem 0; font-style:italic;">Average rating: 4.9/5 (based on 156 reviews)</div>
+            <!-- ── Reviews & Testimonials ────────────────────────── -->
+            <div class="reviews-section" aria-label="Reviews and testimonials">
+                <div class="profile-field">
+                    <p class="section-label" style="border:none; margin:0 0 0.75rem;"><i class="fas fa-star" aria-hidden="true"></i> Reviews &amp; Testimonials <span style="font-family:var(--font-sans); font-size:0.75rem; font-weight:500; color:var(--ink-4);">(Paid tiers)</span></p>
+                </div>
+                <div class="review-item">
+                    <div class="rating-stars" aria-label="5 stars">★★★★★</div>
+                    <div class="profile-value" id="fieldReview1" contenteditable="false" role="textbox">"Excellent resource for our homeschool curriculum. The video lessons are clear and the practice exercises really help reinforce concepts." — Sarah J.</div>
+                </div>
+                <div class="review-item">
+                    <div class="rating-stars" aria-label="5 stars">★★★★★</div>
+                    <div class="profile-value" id="fieldReview2" contenteditable="false" role="textbox">"My kids love the math challenges. It's made learning fun and independent." — Thabo M.</div>
+                </div>
+                <div class="review-item">
+                    <div class="profile-value" id="fieldReview3" contenteditable="false" style="font-style:italic; color:var(--ink-3);" role="note">Average rating: 4.9/5 (based on 156 reviews)</div>
                 </div>
             </div>
 
             <hr>
-            <div style="display: flex; gap: 2rem; justify-content: flex-end; align-items: center;">
-                <span style="color:#4b5563;"><i class="far fa-clock"></i> last edited today</span>
-                <div id="editControls" style="display: none; gap: 1rem;">
-                    <button class="btn-edit" id="saveBtn" style="background: var(--accent); color: white; border: none;" onclick="saveChanges()"><i class="fas fa-save"></i>  save changes</button>
-                    <button class="btn-edit" id="cancelBtn" onclick="cancelEdit()">cancel</button>
+
+            <!-- Card footer -->
+            <div class="card-footer">
+                <span class="last-edited"><i class="far fa-clock" aria-hidden="true"></i> last edited today</span>
+                <div id="editControls" aria-live="polite">
+                    <button class="btn-save" id="saveBtn" onclick="saveChanges()">
+                        <i class="fas fa-floppy-disk" aria-hidden="true"></i> Save changes
+                    </button>
+                    <button class="btn-edit" id="cancelBtn" onclick="cancelEdit()">Cancel</button>
                 </div>
-                <span id="editModeHint" style="color: #64748b;"><i class="far fa-eye"></i> view only</span>
+                <span id="editModeHint" style="color:var(--ink-4); font-size:0.82rem; display:inline-flex; align-items:center; gap:0.375rem;">
+                    <i class="far fa-eye" aria-hidden="true"></i> view only
+                </span>
             </div>
         </div>
 
-        <div class="signup-mini">
-            <p><i class="fas fa-database"></i> <strong>Your profile is currently pending approval.</strong> Once verified by an admin, your listing will appear in search results. Preview your public profile <a href="#" id="previewLink" style="color: var(--accent); font-weight: 600;">here</a>.</p>
-        </div>
-    </div>
+        <!-- The signup-mini section has been removed as requested -->
 
-    <!-- Footer from shared component -->
+    </main>
+
+    <!-- Footer placeholder -->
     <div id="footer-placeholder"></div>
 
-    <!-- Load footer -->
     <script>
         fetch('../shared/footer.html')
-            .then(response => response.text())
-            .then(data => {
-                document.getElementById('footer-placeholder').innerHTML = data;
-            });
+            .then(r => r.text())
+            .then(d => document.getElementById('footer-placeholder').innerHTML = d)
+            .catch(() => {});
     </script>
 
-    <!-- Load shared dashboard JavaScript -->
     <script src="../../js/dashboards.js"></script>
     <script>
-        // Override the default tags for Khan Academy
-        document.addEventListener('DOMContentLoaded', function() {
+        // ─── Hamburger menu ──────────────────────────────────── //
+        (function () {
+            const btn = document.getElementById('hamburgerBtn');
+            const nav = document.getElementById('mobileNav');
+
+            btn.addEventListener('click', function () {
+                const open = nav.classList.toggle('open');
+                btn.classList.toggle('open', open);
+                btn.setAttribute('aria-expanded', String(open));
+            });
+
+            document.addEventListener('click', function (e) {
+                if (!btn.contains(e.target) && !nav.contains(e.target)) {
+                    nav.classList.remove('open');
+                    btn.classList.remove('open');
+                    btn.setAttribute('aria-expanded', 'false');
+                }
+            });
+        })();
+
+        // ─── Edit mode badge keyboard access ─────────────────── //
+        document.getElementById('editModeBadge').addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                toggleEditMode();
+            }
+        });
+
+        // ─── Override tags for Khan Academy ──────────────────── //
+        document.addEventListener('DOMContentLoaded', function () {
             if (typeof tags !== 'undefined') {
                 tags = ['mathematics', 'science', 'online learning', 'free curriculum', 'video lessons'];
                 renderTags();
             }
-            
-            // Update languages display
             updateLanguagesDisplay();
-        });
+            updateAgeGroupDisplay();
 
-        // Helper to update the languages display based on select options
-        function updateLanguagesDisplay() {
-            const languageSelect = document.getElementById('fieldLanguages');
-            const displayDiv = document.getElementById('languagesDisplay');
-            
-            if (languageSelect && displayDiv) {
-                const selected = [];
-                for (let option of languageSelect.options) {
-                    if (option.selected) {
-                        selected.push(option.value);
-                    }
-                }
-                displayDiv.textContent = selected.join(', ');
-            }
-        }
-
-        // Override toggleEditMode to handle language display
-        const originalToggleEditMode = window.toggleEditMode;
-        window.toggleEditMode = function() {
-            originalToggleEditMode();
-            
-            const languageSelect = document.getElementById('fieldLanguages');
-            const displayDiv = document.getElementById('languagesDisplay');
-            const languageContainer = document.querySelector('.language-select-container');
-            
-            if (editModeActive) {
-                // In edit mode: hide display, show select
-                if (displayDiv) displayDiv.style.display = 'none';
-                if (languageContainer) languageContainer.style.display = 'block';
-            } else {
-                // In view mode: show display, hide select
-                if (displayDiv) displayDiv.style.display = 'block';
-                if (languageContainer) languageContainer.style.display = 'none';
-                
-                // Update display text
-                updateLanguagesDisplay();
-            }
-        };
-
-        // Override cancelEdit to restore language display
-        const originalCancelEdit = window.cancelEdit;
-        window.cancelEdit = function() {
-            originalCancelEdit();
-            
-            const displayDiv = document.getElementById('languagesDisplay');
-            const languageContainer = document.querySelector('.language-select-container');
-            
-            if (!editModeActive) {
-                if (displayDiv) displayDiv.style.display = 'block';
-                if (languageContainer) languageContainer.style.display = 'none';
-                updateLanguagesDisplay();
-            }
-        };
-
-        // Override saveChanges to update display
-        const originalSaveChanges = window.saveChanges;
-        window.saveChanges = function() {
-            originalSaveChanges();
-            
-            const displayDiv = document.getElementById('languagesDisplay');
-            const languageContainer = document.querySelector('.language-select-container');
-            
-            if (!editModeActive) {
-                if (displayDiv) displayDiv.style.display = 'block';
-                if (languageContainer) languageContainer.style.display = 'none';
-                updateLanguagesDisplay();
-            }
-        };
-
-        // Set the public view link to include the user's email
-        document.addEventListener('DOMContentLoaded', function() {
+            // Set links
             const userEmail = document.getElementById('fieldEmail').innerText.trim();
             const userName = document.getElementById('fieldBusiness').innerText.trim();
-            
-            // Update welcome name
             document.getElementById('welcomeName').textContent = userName;
-            
-            // Set the public view links
-            const publicViewLink = document.getElementById('publicViewLink');
-            const previewLink = document.getElementById('previewLink');
-            
-            const profileUrl = `../profile.html?email=${encodeURIComponent(userEmail)}`;
-            publicViewLink.href = profileUrl;
-            previewLink.href = profileUrl;
+            const profileUrl = '../profile.html?email=' + encodeURIComponent(userEmail);
+            document.getElementById('publicViewLink').href = profileUrl;
+            document.getElementById('previewLink').href = profileUrl;
         });
+
+        // ─── Language helpers ─────────────────────────────────── //
+        function updateLanguagesDisplay() {
+            const sel = document.getElementById('fieldLanguages');
+            const display = document.getElementById('languagesDisplay');
+            if (!sel || !display) return;
+            const selected = Array.from(sel.options).filter(o => o.selected).map(o => o.value);
+            display.textContent = selected.join(', ');
+        }
+
+        // ─── Age group helpers ─────────────────────────────────── //
+        function updateAgeGroupDisplay() {
+            const sel = document.getElementById('fieldAgeGroup');
+            const display = document.getElementById('ageGroupDisplay');
+            if (!sel || !display) return;
+            const selected = Array.from(sel.options).filter(o => o.selected).map(o => o.value);
+            display.textContent = selected.join(', ');
+        }
+
+        // ─── Wrap toggleEditMode to handle language and age group display ───── //
+        const _origToggle = window.toggleEditMode;
+        window.toggleEditMode = function () {
+            _origToggle();
+            const langDisplay = document.getElementById('languagesDisplay');
+            const langContainer = document.querySelector('.language-select-container');
+            const ageDisplay = document.getElementById('ageGroupDisplay');
+            const ageContainer = document.querySelector('.agegroup-select-container');
+            const badge = document.getElementById('editModeBadge');
+            
+            if (editModeActive) {
+                if (langDisplay) langDisplay.style.display = 'none';
+                if (langContainer) langContainer.style.display = 'block';
+                if (ageDisplay) ageDisplay.style.display = 'none';
+                if (ageContainer) ageContainer.style.display = 'block';
+                badge.classList.add('active');
+                badge.innerHTML = '<i class="fas fa-pencil-alt" aria-hidden="true"></i> edit mode active';
+            } else {
+                if (langDisplay) langDisplay.style.display = 'block';
+                if (langContainer) langContainer.style.display = 'none';
+                if (ageDisplay) ageDisplay.style.display = 'block';
+                if (ageContainer) ageContainer.style.display = 'none';
+                updateLanguagesDisplay();
+                updateAgeGroupDisplay();
+                badge.classList.remove('active');
+                badge.innerHTML = '<i class="far fa-edit" aria-hidden="true"></i> activate edit mode';
+            }
+        };
+
+        const _origCancel = window.cancelEdit;
+        window.cancelEdit = function () {
+            _origCancel();
+            const langDisplay = document.getElementById('languagesDisplay');
+            const langContainer = document.querySelector('.language-select-container');
+            const ageDisplay = document.getElementById('ageGroupDisplay');
+            const ageContainer = document.querySelector('.agegroup-select-container');
+            const badge = document.getElementById('editModeBadge');
+            
+            if (!editModeActive) {
+                if (langDisplay) langDisplay.style.display = 'block';
+                if (langContainer) langContainer.style.display = 'none';
+                if (ageDisplay) ageDisplay.style.display = 'block';
+                if (ageContainer) ageContainer.style.display = 'none';
+                updateLanguagesDisplay();
+                updateAgeGroupDisplay();
+                badge.classList.remove('active');
+                badge.innerHTML = '<i class="far fa-edit" aria-hidden="true"></i> activate edit mode';
+            }
+        };
+
+        const _origSave = window.saveChanges;
+        window.saveChanges = function () {
+            _origSave();
+            const langDisplay = document.getElementById('languagesDisplay');
+            const langContainer = document.querySelector('.language-select-container');
+            const ageDisplay = document.getElementById('ageGroupDisplay');
+            const ageContainer = document.querySelector('.agegroup-select-container');
+            const badge = document.getElementById('editModeBadge');
+            
+            if (!editModeActive) {
+                if (langDisplay) langDisplay.style.display = 'block';
+                if (langContainer) langContainer.style.display = 'none';
+                if (ageDisplay) ageDisplay.style.display = 'block';
+                if (ageContainer) ageContainer.style.display = 'none';
+                updateLanguagesDisplay();
+                updateAgeGroupDisplay();
+                badge.classList.remove('active');
+                badge.innerHTML = '<i class="far fa-edit" aria-hidden="true"></i> activate edit mode';
+            }
+        };
     </script>
 </body>
 </html>
