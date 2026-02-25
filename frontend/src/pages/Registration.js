@@ -4,6 +4,7 @@ import Header from '../components/common/Header';
 import Footer from '../components/common/Footer';
 import { useAuth } from '../contexts/AuthContext';
 import { useNotification } from '../contexts/NotificationContext';
+import '../assets/css/registration.css'; // Import the CSS file
 
 // Step definitions (mirroring the HTML structure)
 const STEPS = [
@@ -104,7 +105,7 @@ const Registration = () => {
   const [formData, setFormData] = useState({});
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
-  const [showPassword, setShowPassword] = useState(false); // for step 2 password
+  const [showPassword, setShowPassword] = useState(false);
   const alertRef = useRef(null);
 
   // Helper to scroll to alert when shown
@@ -118,12 +119,10 @@ const Registration = () => {
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     if (type === 'checkbox' && name !== 'terms') {
-      // For multi-check we handle separately; but for single checkbox like terms
       setFormData(prev => ({ ...prev, [name]: checked }));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
-    // Clear alert on any change
     setShowAlert(false);
   };
 
@@ -160,7 +159,6 @@ const Registration = () => {
     if (digits.startsWith('0')) {
       digits = '27' + digits.substring(1);
     }
-    // Format as +27 XX XXX XXXX
     if (digits.length >= 2) {
       let formatted = '+' + digits.substring(0, 2);
       if (digits.length > 2) {
@@ -194,7 +192,6 @@ const Registration = () => {
       const value = formData[field.name];
       const label = field.label;
 
-      // Special validations
       if (field.name === 'timeSlots' && field.required) {
         if (!value || value.trim() === '') return `${label} is required.`;
         const timePattern = /^(\d{1,2}:\d{2})\s*[-–]\s*(\d{1,2}:\d{2})(\s*,\s*(\d{1,2}:\d{2})\s*[-–]\s*(\d{1,2}:\d{2}))*$/;
@@ -240,7 +237,6 @@ const Registration = () => {
         continue;
       }
 
-      // Default: check if value exists and not empty
       if (!value || value.toString().trim() === '') {
         return `${label} is required.`;
       }
@@ -271,7 +267,6 @@ const Registration = () => {
   };
 
   const handleSubmit = async () => {
-  // Final validation
   const error = validateStep(currentStep);
   if (error) {
     setAlertMessage(error);
@@ -280,16 +275,16 @@ const Registration = () => {
   }
 
   try {
-    // ✅ Await the register function since it's async
     const result = await register(formData);
     
     if (result && result.success) {
-      showNotification('Profile created successfully! Redirecting to your dashboard...', 'success');
+      // Show success message with redirect notification
+      showNotification('✅ Registration successful! Redirecting to your dashboard...', 'success');
       
-      // Redirect
+      // Redirect to client dashboard after 2 seconds
       setTimeout(() => {
-        window.location.href = '/dashboards/client-dashboard.html';
-      }, 1500);
+        window.location.href = '/client-dashboard'; // or the correct path to ClientDashboard
+      }, 2000);
     } else {
       showNotification(result?.error || 'Registration failed. Please try again.', 'error');
     }
@@ -298,18 +293,15 @@ const Registration = () => {
     showNotification('An error occurred during registration.', 'error');
   }
 };
-
   // Render fields for current step
   const renderField = (field) => {
     const { type, name, label, required, col, options, placeholder, accept, rows, dependsOn, dependsValue } = field;
-    const colClass = col === 'full' ? 'full-width' : '';
+    const colClass = col === 'full' ? 'sah-full-width' : '';
     const fieldValue = formData[name] || (type === 'multicheck' ? [] : '');
 
-    // Conditional hiding for local radius
     if (type === 'conditional-text') {
       const shouldShow = formData[dependsOn] === dependsValue;
       if (!shouldShow) {
-        // Clear value when hidden
         if (formData[name]) {
           setFormData(prev => ({ ...prev, [name]: '' }));
         }
@@ -317,12 +309,11 @@ const Registration = () => {
       }
     }
 
-    // "Other" language input appears separately inside multicheck group, handled later
     if (type === 'multicheck') {
       return (
-        <div className={`field ${colClass}`} key={name}>
-          <label><i className="fas fa-check-square"></i> {label} {required && <span style={{color:'var(--accent)'}}>*</span>}</label>
-          <div className="checkbox-group">
+        <div className={`sah-field ${colClass}`} key={name}>
+          <label><i className="fas fa-check-square"></i> {label} {required && <span className="sah-required-star">*</span>}</label>
+          <div className="sah-checkbox-group">
             {options.map(opt => (
               <label key={opt}>
                 <input
@@ -336,9 +327,8 @@ const Registration = () => {
               </label>
             ))}
           </div>
-          {/* Other language text field */}
           {name === 'languages' && fieldValue.includes('Other') && (
-            <div className="other-language-row full-width">
+            <div className="sah-other-language-row sah-full-width">
               <input
                 type="text"
                 placeholder="Specify other language"
@@ -353,9 +343,9 @@ const Registration = () => {
 
     if (type === 'radio-group') {
       return (
-        <div className={`field ${colClass}`} key={name}>
-          <label><i className="fas fa-dot-circle"></i> {label} {required && <span style={{color:'var(--accent)'}}>*</span>}</label>
-          <div className="checkbox-group" style={{gap:'20px'}}>
+        <div className={`sah-field ${colClass}`} key={name}>
+          <label><i className="fas fa-dot-circle"></i> {label} {required && <span className="sah-required-star">*</span>}</label>
+          <div className="sah-checkbox-group">
             {options.map(opt => (
               <label key={opt}>
                 <input
@@ -376,8 +366,8 @@ const Registration = () => {
 
     if (type === 'terms-check') {
       return (
-        <div className={`field ${colClass}`} key={name}>
-          <div className="terms-checkbox">
+        <div className={`sah-field ${colClass}`} key={name}>
+          <div className="sah-terms-checkbox">
             <input
               type="checkbox"
               name={name}
@@ -387,7 +377,7 @@ const Registration = () => {
               id="termsBox"
             />
             <label htmlFor="termsBox">
-              {label} – <a href="#" className="terms-link" onClick={(e) => { e.preventDefault(); window.open('/terms', '_blank'); }}>Read Terms & Guidelines</a>
+              {label} – <a href="#" className="sah-terms-link" onClick={(e) => { e.preventDefault(); window.open('/terms', '_blank'); }}>Read Terms & Guidelines</a>
             </label>
           </div>
         </div>
@@ -396,9 +386,9 @@ const Registration = () => {
 
     if (type === 'password') {
       return (
-        <div className={`field ${colClass}`} key={name}>
-          <label><i className="fas fa-lock"></i> {label} {required && <span style={{color:'var(--accent)'}}>*</span>}</label>
-          <div className="password-wrapper">
+        <div className={`sah-field ${colClass}`} key={name}>
+          <label><i className="fas fa-lock"></i> {label} {required && <span className="sah-required-star">*</span>}</label>
+          <div className="sah-password-wrapper">
             <input
               type={showPassword ? 'text' : 'password'}
               name={name}
@@ -409,7 +399,7 @@ const Registration = () => {
             />
             <button
               type="button"
-              className="toggle-pw"
+              className="sah-toggle-pw"
               onClick={() => setShowPassword(!showPassword)}
             >
               <i className={`far fa-eye${showPassword ? '-slash' : ''}`}></i>
@@ -421,8 +411,8 @@ const Registration = () => {
 
     if (type === 'file') {
       return (
-        <div className={`field ${colClass}`} key={name}>
-          <label><i className="fas fa-upload"></i> {label} {required && <span style={{color:'var(--accent)'}}>*</span>}</label>
+        <div className={`sah-field ${colClass}`} key={name}>
+          <label><i className="fas fa-upload"></i> {label} {required && <span className="sah-required-star">*</span>}</label>
           <input
             type="file"
             name={name}
@@ -436,8 +426,8 @@ const Registration = () => {
 
     if (type === 'select') {
       return (
-        <div className={`field ${colClass}`} key={name}>
-          <label><i className="fas fa-chevron-down"></i> {label} {required && <span style={{color:'var(--accent)'}}>*</span>}</label>
+        <div className={`sah-field ${colClass}`} key={name}>
+          <label><i className="fas fa-chevron-down"></i> {label} {required && <span className="sah-required-star">*</span>}</label>
           <select name={name} value={fieldValue} onChange={handleChange} required={required}>
             <option value="">-- Select --</option>
             {options.map(opt => (
@@ -450,8 +440,8 @@ const Registration = () => {
 
     if (type === 'textarea') {
       return (
-        <div className={`field ${colClass}`} key={name}>
-          <label><i className="fas fa-align-left"></i> {label} {required && <span style={{color:'var(--accent)'}}>*</span>}</label>
+        <div className={`sah-field ${colClass}`} key={name}>
+          <label><i className="fas fa-align-left"></i> {label} {required && <span className="sah-required-star">*</span>}</label>
           <textarea
             name={name}
             placeholder={placeholder}
@@ -464,10 +454,9 @@ const Registration = () => {
       );
     }
 
-    // Default input types: text, email, tel, url, number
     return (
-      <div className={`field ${colClass}`} key={name}>
-        <label><i className="fas fa-edit"></i> {label} {required && <span style={{color:'var(--accent)'}}>*</span>}</label>
+      <div className={`sah-field ${colClass}`} key={name}>
+        <label><i className="fas fa-edit"></i> {label} {required && <span className="sah-required-star">*</span>}</label>
         <input
           type={type}
           name={name}
@@ -492,48 +481,67 @@ const Registration = () => {
   const progressPercent = (currentStep / TOTAL_STEPS) * 100;
 
   return (
-    <>
-      <Header />
-      <section className="onboarding-lead">
-        <div className="container">
-          <h1>Become a trusted provider</h1>
-          <div className="step-indicator">
-            <span className="step-number" id="stepCounter">Step {currentStep} / {TOTAL_STEPS}</span>
-            <div className="step-progress"><div className="step-progress-fill" style={{ width: `${progressPercent}%` }}></div></div>
+    <div className="sah-wrap">
+      {/* <Header /> */}
+      
+      {/* Hero Section - Matching Home Page */}
+      <section className="sah-hero sah-registration-hero">
+        <div className="sah-hero-bg" />
+        <div className="sah-container">
+          <div className="sah-hero-inner">
+            <div className="sah-hero-top">
+              <h1 className="sah-hero-h1">
+                Become a <em>Trusted Provider</em>
+              </h1>
+              <div className="sah-step-indicator">
+                <span className="sah-step-number">Step {currentStep} / {TOTAL_STEPS}</span>
+                <div className="sah-step-progress">
+                  <div className="sah-step-progress-fill" style={{ width: `${progressPercent}%` }}></div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      <div className="form-panel">
+      {/* Form Panel */}
+      <div className="sah-form-panel">
         {showAlert && (
-          <div className="validation-alert" ref={alertRef}>
-            <i className="fas fa-exclamation-triangle"></i> <span>{alertMessage}</span>
+          <div className="sah-validation-alert" ref={alertRef}>
+            <i className="fas fa-exclamation-triangle"></i> 
+            <span>{alertMessage}</span>
           </div>
         )}
 
-        <div className="step-title">Step {currentStep}: {stepDef.title}</div>
-        <div className="step-desc">{stepDef.desc}</div>
+        <div className="sah-step-title">Step {currentStep}: {stepDef.title}</div>
+        <div className="sah-step-desc">{stepDef.desc}</div>
 
-        <div className="form-grid">
+        <div className="sah-form-grid">
           {stepDef.fields.map(field => renderField(field))}
         </div>
 
-        <div className="form-nav">
+        <div className="sah-form-nav">
           {currentStep > 1 ? (
-            <button className="btn-prev" onClick={prevStep}><i className="fas fa-arrow-left"></i> Previous</button>
+            <button className="sah-btn-prev" onClick={prevStep}>
+              <i className="fas fa-arrow-left"></i> Previous
+            </button>
           ) : (
             <div></div>
           )}
           {currentStep < TOTAL_STEPS ? (
-            <button className="btn-next" onClick={nextStep}>Next <i className="fas fa-arrow-right"></i></button>
+            <button className="sah-btn-next" onClick={nextStep}>
+              Next <i className="fas fa-arrow-right"></i>
+            </button>
           ) : (
-            <button className="btn-submit" onClick={nextStep}><i className="fas fa-check-circle"></i> Create My Profile</button>
+            <button className="sah-btn-submit" onClick={nextStep}>
+              <i className="fas fa-check-circle"></i> Create My Profile
+            </button>
           )}
         </div>
       </div>
 
-      <Footer />
-    </>
+      {/* <Footer /> */}
+    </div>
   );
 };
 
