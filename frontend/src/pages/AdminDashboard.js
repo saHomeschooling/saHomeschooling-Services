@@ -13,7 +13,7 @@ import ReviewCard from '../components/admin/ReviewCard';
 import { api } from '../services/api';
 import { providerData, featuredSlotsMock, reviewsMock, providersList } from '../utils/constants';
 import { escapeHtml } from '../utils/helpers';
-import '../../assets/css/dashboard.css';
+import '../assets/css/dashboard.css';   // ← FIXED PATH
 
 const AdminDashboard = () => {
   const { user } = useAuth();
@@ -341,7 +341,7 @@ const AdminDashboard = () => {
             <div id="all-tab" className="tab-pane active" role="tabpanel">
               <p className="section-heading">
                 <i className="fas fa-list"></i>
-                All Providers — Promote/Demote &amp; Manage Badges
+                All Providers — Promote/Demote & Manage Badges
               </p>
 
               {allProviders.filter(p => p.status === 'approved').map(provider => (
