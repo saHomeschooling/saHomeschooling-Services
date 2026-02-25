@@ -4,7 +4,7 @@ import Header from '../components/common/Header';
 import Footer from '../components/common/Footer';
 import { providerData } from '../utils/constants';
 import { escapeHtml } from '../utils/helpers';
-import '../../assets/css/profile.css';
+import '../assets/css/profile.css'; // Fixed import path
 
 const Profile = () => {
   const [searchParams] = useSearchParams();

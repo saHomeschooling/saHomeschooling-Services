@@ -27,25 +27,24 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  // ✅ NEW: Register function - preserves your existing mock data structure
   const register = async (userData) => {
     return new Promise((resolve, reject) => {
       setTimeout(() => {
         try {
-          // Get existing providers from localStorage (using your existing key)
+          // Get existing providers from localStorage
           const existingProviders = JSON.parse(localStorage.getItem('sah_providers') || '[]');
-          console.log(existingProviders);
+          
           // Check if email already exists
           const emailExists = existingProviders.some(p => 
             p.email?.toLowerCase() === userData.email?.toLowerCase()
           );
           
           if (emailExists) {
-            reject(new Error('Email already registered'));
+            resolve({ success: false, error: 'Email already registered' });
             return;
           }
 
-          // Create new provider object following your existing data structure
+          // Create new provider object
           const newProvider = {
             id: 'client-' + Date.now(),
             email: userData.email,
@@ -84,22 +83,20 @@ export const AuthProvider = ({ children }) => {
             startingPrice: userData.startingPrice,
             daysAvailable: userData.daysAvailable,
             timeSlots: userData.timeSlots,
-            // Plan selection
             listingPlan: userData.listingPlan,
             tier: userData.listingPlan?.includes('Featured') ? 'featured' : 
                   userData.listingPlan?.includes('Professional') ? 'pro' : 'free',
-            // Metadata
             status: 'pending',
             registered: new Date().toISOString(),
             rating: 0,
             reviewCount: 0
           };
 
-          // Save to localStorage (using your existing key)
+          // Save to localStorage
           existingProviders.push(newProvider);
           localStorage.setItem('sah_providers', JSON.stringify(existingProviders));
           
-          // Create user session (following your existing user object structure)
+          // Create user session
           const userSession = {
             email: userData.email,
             role: 'client',
@@ -112,24 +109,24 @@ export const AuthProvider = ({ children }) => {
           setUser(userSession);
           localStorage.setItem('sah_user', JSON.stringify(userSession));
           
-          resolve(userSession);
+          resolve({ success: true, user: userSession });
         } catch (error) {
-          reject(error);
+          resolve({ success: false, error: 'Registration failed' });
         }
-      }, 500); // Match your existing timeout pattern
+      }, 500);
     });
   };
 
   const login = (email, password) => {
-    return new Promise((resolve, reject) => {
-      // Mock login - in real app would call API
+    return new Promise((resolve) => {
       setTimeout(() => {
-        // Check in providers list first (for registered users)
+        // Check in providers list first
         const existingProviders = JSON.parse(localStorage.getItem('sah_providers') || '[]');
         const providerMatch = existingProviders.find(p => 
           p.email?.toLowerCase() === email.toLowerCase()
         );
 
+        // Admin login
         if (email === 'admin@sahomeschooling.co.za' && password === 'admin123') {
           const userData = {
             email,
@@ -139,9 +136,14 @@ export const AuthProvider = ({ children }) => {
           };
           setUser(userData);
           localStorage.setItem('sah_user', JSON.stringify(userData));
-          resolve(userData);
-        } else if (providerMatch && password.length >= 8) {
-          // Provider found in registered list
+          resolve({ 
+            success: true, 
+            user: userData,
+            message: 'Admin login successful!'
+          });
+        } 
+        // Provider found in registered list
+        else if (providerMatch && password.length >= 6) {
           const userData = {
             email,
             role: 'client',
@@ -152,9 +154,14 @@ export const AuthProvider = ({ children }) => {
           };
           setUser(userData);
           localStorage.setItem('sah_user', JSON.stringify(userData));
-          resolve(userData);
-        } else if (email === 'contact@khanacademy.org.za' && password.length >= 8) {
-          // Your existing demo user
+          resolve({ 
+            success: true, 
+            user: userData,
+            message: `Welcome back, ${userData.name}!`
+          });
+        }
+        // Demo user
+        else if (email === 'contact@khanacademy.org.za' && password.length >= 6) {
           const userData = {
             email,
             role: 'client',
@@ -165,9 +172,14 @@ export const AuthProvider = ({ children }) => {
           };
           setUser(userData);
           localStorage.setItem('sah_user', JSON.stringify(userData));
-          resolve(userData);
-        } else if (password.length >= 8) {
-          // Allow any email with 8+ char password for demo
+          resolve({ 
+            success: true, 
+            user: userData,
+            message: 'Welcome back!'
+          });
+        } 
+        // Allow any email with 6+ char password for demo
+        else if (password.length >= 6) {
           const userData = {
             email,
             role: 'client',
@@ -178,9 +190,18 @@ export const AuthProvider = ({ children }) => {
           };
           setUser(userData);
           localStorage.setItem('sah_user', JSON.stringify(userData));
-          resolve(userData);
-        } else {
-          reject(new Error('Invalid credentials'));
+          resolve({ 
+            success: true, 
+            user: userData,
+            message: 'Login successful!'
+          });
+        } 
+        // Invalid credentials
+        else {
+          resolve({ 
+            success: false, 
+            error: 'Invalid credentials. Try admin@sahomeschooling.co.za / admin123'
+          });
         }
       }, 500);
     });
@@ -210,7 +231,7 @@ export const AuthProvider = ({ children }) => {
   const value = {
     user,
     loading,
-    register, // ✅ Added register function
+    register,
     login,
     logout,
     updateUserPlan
