@@ -12,7 +12,7 @@ import TagsInput from '../components/client/TagsInput';
 import { PLAN_LIMITS, DAYS_OF_WEEK, PRICING_MODELS, PROVINCES } from '../utils/constants';
 import { getMultiSelectValues, setMultiSelectValues, getPlanLimits } from '../utils/helpers';
 import { api } from '../services/api';
-import '../../assets/css/dashboard.css';
+import '../assets/css/dashboard.css';   // ← FIXED PATH
 
 const ClientDashboard = () => {
   const { user, updateUserPlan } = useAuth();

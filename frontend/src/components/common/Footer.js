@@ -1,14 +1,19 @@
 import React from 'react';
-// import '../../../assets/css/footer.css';
+import { Link } from 'react-router-dom';
+import '../../assets/css/footer.css';  // Correct path: from src/components/common/ → up to src → assets/css/footer.css
 
 const Footer = () => {
+  // Optional: Real newsletter handler (can connect to backend later)
   const handleNewsletter = (e) => {
     e.preventDefault();
-    const email = document.getElementById('nlEmail')?.value;
-    if (email && email.includes('@')) {
-      alert('Thank you for subscribing! (Demo)');
+    const emailInput = document.getElementById('nlEmail');
+    const email = emailInput?.value.trim();
+
+    if (email && /\S+@\S+\.\S+/.test(email)) {
+      alert('Thank you for subscribing! We\'ll send updates soon. (Demo mode)');
+      emailInput.value = ''; // Clear field
     } else {
-      alert('Please enter a valid email');
+      alert('Please enter a valid email address');
     }
   };
 
@@ -18,27 +23,35 @@ const Footer = () => {
         <div className="sah-footer-grid">
           {/* Brand + newsletter */}
           <div className="sah-footer-brand">
-            <span className="sah-footer-logo">SA Homeschooling Directory</span>
+            <Link to="/" className="sah-footer-logo">
+              SA Homeschooling Directory
+            </Link>
             <p>
               Connecting South African homeschooling families with verified tutors,
               therapists, curriculum providers and education specialists nationwide.
             </p>
-            <div className="sah-footer-newsletter">
-              <input type="email" id="nlEmail" placeholder="Subscribe to newsletter…" aria-label="Email address" />
-              <button type="button" onClick={handleNewsletter}>Subscribe</button>
-            </div>
+            <form className="sah-footer-newsletter" onSubmit={handleNewsletter}>
+              <input
+                type="email"
+                id="nlEmail"
+                placeholder="Subscribe to newsletter…"
+                aria-label="Email address for newsletter"
+                required
+              />
+              <button type="submit">Subscribe</button>
+            </form>
           </div>
 
           {/* For families */}
           <div className="sah-footer-col">
             <h4>For Families</h4>
             <ul>
-              <li><a href="/#providers">Find a Tutor</a></li>
-              <li><a href="/#providers">Browse Curriculum</a></li>
-              <li><a href="/#providers">Therapists</a></li>
-              <li><a href="/#providers">Online Schools</a></li>
-              <li><a href="/#providers">Consultants</a></li>
-              <li><a href="/#providers">Enrichment</a></li>
+              <li><Link to="/providers">Find a Tutor</Link></li>
+              <li><Link to="/curriculum">Browse Curriculum</Link></li>
+              <li><Link to="/therapists">Therapists</Link></li>
+              <li><Link to="/online-schools">Online Schools</Link></li>
+              <li><Link to="/consultants">Consultants</Link></li>
+              <li><Link to="/enrichment">Enrichment</Link></li>
             </ul>
           </div>
 
@@ -46,11 +59,11 @@ const Footer = () => {
           <div className="sah-footer-col">
             <h4>For Providers</h4>
             <ul>
-              <li><a href="/#list">List a Service</a></li>
-              <li><a href="/#list">Pricing Plans</a></li>
-              <li><a href="/login">Provider Login</a></li>
-              <li><a href="#">Verification Process</a></li>
-              <li><a href="#">Provider Resources</a></li>
+              <li><Link to="/list-service">List a Service</Link></li>
+              <li><Link to="/pricing">Pricing Plans</Link></li>
+              <li><Link to="/provider/login">Provider Login</Link></li>
+              <li><Link to="/verification">Verification Process</Link></li>
+              <li><Link to="/provider/resources">Provider Resources</Link></li>
             </ul>
           </div>
 
@@ -58,11 +71,19 @@ const Footer = () => {
           <div className="sah-footer-col">
             <h4>SA Homeschooling</h4>
             <ul>
-              <li><a href="https://sahomeschooling.com" target="_blank" rel="noopener">Magazine</a></li>
-              <li><a href="#">About the Directory</a></li>
-              <li><a href="#">Contact Us</a></li>
-              <li><a href="#">Privacy Policy</a></li>
-              <li><a href="#">Terms of Service</a></li>
+              <li>
+                <a
+                  href="https://sahomeschooling.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Magazine
+                </a>
+              </li>
+              <li><Link to="/about">About the Directory</Link></li>
+              <li><Link to="/contact">Contact Us</Link></li>
+              <li><Link to="/privacy">Privacy Policy</Link></li>
+              <li><Link to="/terms">Terms of Service</Link></li>
             </ul>
           </div>
         </div>
@@ -73,7 +94,7 @@ const Footer = () => {
             <i className="fas fa-shield-alt"></i> All providers manually verified
           </div>
           <div className="sah-footer-trust-item">
-            <i className="fas fa-lock"></i> Secure &amp; private enquiries
+            <i className="fas fa-lock"></i> Secure & private enquiries
           </div>
           <div className="sah-footer-trust-item">
             <i className="fas fa-star"></i> 4.9 average provider rating
@@ -87,16 +108,48 @@ const Footer = () => {
         <div className="sah-footer-bottom">
           <p>© 2025 SA Homeschooling Directory. A publication of SA Homeschooling Magazine. All rights reserved.</p>
           <div className="sah-footer-bottom-links">
-            <a href="#">Privacy</a>
-            <a href="#">Terms</a>
-            <a href="#">Cookies</a>
-            <a href="#">Sitemap</a>
+            <Link to="/privacy">Privacy</Link>
+            <Link to="/terms">Terms</Link>
+            <Link to="/cookies">Cookies</Link>
+            <Link to="/sitemap">Sitemap</Link>
           </div>
           <div className="sah-footer-socials">
-            <a href="#" className="sah-footer-soc" aria-label="Facebook"><i className="fab fa-facebook-f"></i></a>
-            <a href="#" className="sah-footer-soc" aria-label="Instagram"><i className="fab fa-instagram"></i></a>
-            <a href="#" className="sah-footer-soc" aria-label="Pinterest"><i className="fab fa-pinterest-p"></i></a>
-            <a href="#" className="sah-footer-soc" aria-label="YouTube"><i className="fab fa-youtube"></i></a>
+            <a
+              href="https://facebook.com/sahomeschooling"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="sah-footer-soc"
+              aria-label="Facebook"
+            >
+              <i className="fab fa-facebook-f"></i>
+            </a>
+            <a
+              href="https://instagram.com/sahomeschooling"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="sah-footer-soc"
+              aria-label="Instagram"
+            >
+              <i className="fab fa-instagram"></i>
+            </a>
+            <a
+              href="https://pinterest.com/sahomeschooling"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="sah-footer-soc"
+              aria-label="Pinterest"
+            >
+              <i className="fab fa-pinterest-p"></i>
+            </a>
+            <a
+              href="https://youtube.com/@sahomeschooling"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="sah-footer-soc"
+              aria-label="YouTube"
+            >
+              <i className="fab fa-youtube"></i>
+            </a>
           </div>
         </div>
       </div>
