@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from 'react-router-dom';
 
 /* ─── Google Fonts + FA injected once ─────────────────────────────────────── */
 const injectHead = () => {
@@ -20,7 +21,7 @@ const injectHead = () => {
 /* ─── CSS injected as a <style> tag (exact same CSS from the HTML) ─────────── */
 const CSS = `
   :root {
-    --accent:#c9621a; --accent-dark:#a84e12; --accent-light:#f5e0cc;
+    --accent:#c0234a; --accent-dark:#96183a; --accent-light:#f5d0d8;
     --red:#c0234a; --red-dark:#96183a; --red-light:#f5d0d8;
     --dark:#3a3a3a; --mid:#555; --muted:#888;
     --grey:#b5b5b5; --grey-dark:#7a7a7a;
@@ -39,7 +40,7 @@ const CSS = `
   .sah-container{max-width:1280px;margin:0 auto;padding:0 32px;}
 
   /* HEADER */
-  .sah-header{position:sticky;top:0;z-index:1000;height:var(--header-h);background:#5a5a5a;}
+  .sah-header{position:sticky;top:0;z-index:1000;height:var(--header-h);background:var(--accent);}
   .sah-nav-inner{height:100%;display:flex;justify-content:space-between;align-items:center;}
   .sah-brand{display:flex;align-items:center;gap:12px;}
   .sah-brand-divider{width:2px;height:30px;background:rgba(255,255,255,0.5);border-radius:1px;}
@@ -52,13 +53,13 @@ const CSS = `
   .sah-nav-ctas{display:flex;align-items:center;gap:8px;}
   .sah-btn-ghost-nav{padding:7px 16px;border-radius:5px;border:1.5px solid rgba(255,255,255,0.6);background:transparent;color:#fff;font-weight:600;font-size:0.85rem;transition:all 0.15s;}
   .sah-btn-ghost-nav:hover{border-color:#fff;background:rgba(255,255,255,0.2);}
-  .sah-btn-solid-nav{padding:7px 18px;border-radius:5px;background:var(--accent);color:#fff;font-weight:700;font-size:0.85rem;border:none;transition:all 0.15s;}
-  .sah-btn-solid-nav:hover{background:var(--accent-dark);}
+  .sah-btn-solid-nav{padding:7px 18px;border-radius:5px;background:#fff;color:var(--accent);font-weight:700;font-size:0.85rem;border:none;transition:all 0.15s;}
+  .sah-btn-solid-nav:hover{background:var(--accent-light);}
 
   /* HERO */
   .sah-hero{position:relative;min-height:88vh;display:flex;align-items:center;overflow:hidden;background:#c8c8c8;}
   .sah-hero-bg{position:absolute;inset:0;z-index:0;background-image:url('https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=1600&auto=format&fit=crop&q=80');background-size:cover;background-position:center 30%;}
-  .sah-hero-bg::after{content:'';position:absolute;inset:0;background:linear-gradient(100deg,rgba(90,90,90,0.87) 0%,rgba(110,110,110,0.76) 45%,rgba(70,70,70,0.52) 100%);}
+  .sah-hero-bg::after{content:'';position:absolute;inset:0;background:linear-gradient(100deg,rgba(192,35,74,0.87) 0%,rgba(150,24,58,0.76) 45%,rgba(70,70,70,0.52) 100%);}
   .sah-hero-inner{position:relative;z-index:2;padding:60px 0;width:100%;}
   .sah-hero-top{text-align:center;margin-bottom:36px;}
   .sah-hero-h1{font-family:'Playfair Display',serif;font-size:clamp(2.5rem,5.5vw,4.4rem);font-weight:900;line-height:1.07;color:#fff;margin-bottom:22px;letter-spacing:-0.3px;}
@@ -83,7 +84,7 @@ const CSS = `
   .sah-hero-plans-wrap{margin-top:0;}
   .sah-hero-plans-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
   .sah-plan-item{border:1px solid rgba(255,255,255,0.28);border-radius:var(--radius-lg);background:rgba(255,255,255,0.13);transition:border-color 0.2s,background 0.2s;cursor:pointer;overflow:hidden;user-select:none;backdrop-filter:blur(6px);display:flex;flex-direction:column;}
-  .sah-plan-item:hover{border-color:rgba(201,98,26,0.65);background:rgba(255,255,255,0.18);}
+  .sah-plan-item:hover{border-color:rgba(192,35,74,0.65);background:rgba(255,255,255,0.18);}
   .sah-plan-item.highlight{border-color:var(--accent);background:rgba(255,255,255,0.20);box-shadow:0 0 0 1px var(--accent);}
   .sah-plan-header{display:flex;align-items:flex-start;justify-content:space-between;padding:18px 18px 12px;}
   .sah-plan-info{flex:1;}
@@ -115,7 +116,7 @@ const CSS = `
   .sah-filter-label{font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);white-space:nowrap;margin-right:6px;flex-shrink:0;}
   .sah-fpill{display:inline-flex;align-items:center;gap:6px;padding:10px 22px;border-radius:6px;border:1px solid var(--border);background:var(--white);color:var(--muted);font-size:1rem;font-weight:600;transition:all 0.15s;cursor:pointer;white-space:nowrap;flex-shrink:0;}
   .sah-fpill:hover{border-color:var(--accent);color:var(--accent);}
-  .sah-fpill.active{background:var(--grey);color:#fff;border-color:var(--grey);}
+  .sah-fpill.active{background:var(--accent);color:#fff;border-color:var(--accent);}
   .sah-fpill i{font-size:0.95rem;}
 
   /* PROVIDERS */
@@ -131,10 +132,10 @@ const CSS = `
   .sah-card-thumb{position:relative;height:165px;overflow:hidden;background:var(--accent-light);flex-shrink:0;}
   .sah-card-thumb img{width:100%;height:100%;object-fit:cover;transition:transform 0.35s;}
   .sah-provider-card:hover .sah-card-thumb img{transform:scale(1.04);}
-  .sah-card-thumb-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:2.8rem;color:var(--accent);background:linear-gradient(135deg,#f0e8df,#f5e0cc);}
+  .sah-card-thumb-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:2.8rem;color:var(--accent);background:linear-gradient(135deg,#f0e8df,#f5d0d8);}
   .sah-card-badges{position:absolute;top:9px;left:9px;display:flex;gap:4px;}
   .sah-cbadge{padding:3px 9px;border-radius:3px;font-size:0.67rem;font-weight:700;text-transform:uppercase;letter-spacing:0.3px;}
-  .sah-cbadge-featured{background:var(--red);color:#fff;}
+  .sah-cbadge-featured{background:var(--accent);color:#fff;}
   .sah-cbadge-new{background:#0d7d6c;color:#fff;}
   .sah-cbadge-verified{background:#3a3a3a;color:#fff;}
   .sah-card-save{position:absolute;top:9px;right:9px;width:28px;height:28px;border-radius:4px;background:rgba(255,255,255,0.9);border:none;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:0.8rem;transition:color 0.15s;}
@@ -155,8 +156,8 @@ const CSS = `
   .sah-card-foot{display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:10px;border-top:1px solid var(--border);}
   .sah-from-label{font-size:0.65rem;color:var(--muted);line-height:1;}
   .sah-card-price{font-family:'Playfair Display',serif;font-size:1.08rem;font-weight:800;color:var(--accent);}
-  .sah-card-cta{padding:6px 13px;background:var(--grey);color:#fff;border:none;border-radius:5px;font-size:0.77rem;font-weight:700;transition:background 0.15s;}
-  .sah-card-cta:hover{background:var(--accent);}
+  .sah-card-cta{padding:6px 13px;background:var(--accent);color:#fff;border:none;border-radius:5px;font-size:0.77rem;font-weight:700;transition:background 0.15s;}
+  .sah-card-cta:hover{background:var(--accent-dark);}
   .sah-grid-empty{grid-column:1/-1;text-align:center;padding:70px 20px;color:var(--muted);}
   .sah-grid-empty i{font-size:2.2rem;margin-bottom:12px;opacity:0.3;display:block;}
   .sah-grid-empty h3{font-family:'Playfair Display',serif;font-size:1.25rem;color:var(--dark);margin-bottom:7px;}
@@ -204,7 +205,7 @@ const CSS = `
   .sah-modal-overlay.open{opacity:1;pointer-events:all;}
   .sah-modal-box{background:var(--white);width:460px;max-width:93vw;border-radius:var(--radius-lg);box-shadow:0 28px 72px rgba(0,0,0,0.28);overflow:hidden;transform:translateY(14px);transition:transform 0.22s ease;}
   .sah-modal-overlay.open .sah-modal-box{transform:translateY(0);}
-  .sah-modal-head{background:#5a5a5a;padding:26px 28px 20px;position:relative;}
+  .sah-modal-head{background:var(--accent);padding:26px 28px 20px;position:relative;}
   .sah-modal-head h2{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:800;color:#fff;}
   .sah-modal-head p{font-size:0.86rem;color:rgba(255,255,255,0.65);margin-top:3px;}
   .sah-modal-close{position:absolute;top:14px;right:14px;width:28px;height:28px;border-radius:4px;background:rgba(255,255,255,0.12);border:none;color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.88rem;transition:background 0.15s;}
@@ -220,7 +221,7 @@ const CSS = `
   .sah-modal-switch a{color:var(--accent);font-weight:600;}
 
   /* TOAST */
-  .sah-toast{position:fixed;bottom:22px;right:22px;background:var(--grey);color:#fff;padding:11px 18px;border-radius:var(--radius);font-size:0.88rem;font-weight:600;box-shadow:var(--shadow-lg);transform:translateY(60px);opacity:0;transition:all 0.26s;z-index:9999;display:flex;align-items:center;gap:8px;pointer-events:none;}
+  .sah-toast{position:fixed;bottom:22px;right:22px;background:var(--accent-dark);color:#fff;padding:11px 18px;border-radius:var(--radius);font-size:0.88rem;font-weight:600;box-shadow:var(--shadow-lg);transform:translateY(60px);opacity:0;transition:all 0.26s;z-index:9999;display:flex;align-items:center;gap:8px;pointer-events:none;}
   .sah-toast.show{transform:translateY(0);opacity:1;}
   .sah-toast i{color:#4ade80;}
 
@@ -373,7 +374,7 @@ function PlanCard({ plan, openId, onToggle }) {
                 </li>
               ))}
             </ul>
-            <a href="registration.html" className="sah-plan-cta-link" onClick={e => e.stopPropagation()}>
+            <a href="/register" className="sah-plan-cta-link" onClick={e => e.stopPropagation()}>
               {plan.cta}
             </a>
           </div>
@@ -385,6 +386,7 @@ function PlanCard({ plan, openId, onToggle }) {
 
 /* ─── MAIN COMPONENT ────────────────────────────────────────────────────────── */
 export default function HomePage() {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [searchCat, setSearchCat] = useState("");
   const [activeCat, setActiveCat] = useState("all");
@@ -445,8 +447,7 @@ export default function HomePage() {
     const all = [...(JSON.parse(localStorage.getItem("sah_providers") || "[]")), ...SEED];
     const p = all.find(x => x.id === id);
     if (!p) { showToast("Profile not found.", true); return; }
-    const params = new URLSearchParams({ id: p.id, name: p.name, tagline: p.tagline || "", cat: (p.category || "").charAt(0).toUpperCase() + (p.category || "").slice(1), location: p.location || "", delivery: p.delivery || "", tier: p.tier || "free", price: p.priceFrom || "Contact", rating: p.rating || "", reviews: p.reviewCount || 0, badge: p.badge || "", img: p.image || "" });
-    window.location.href = "profile.html?" + params.toString();
+    navigate(`/profile?id=${p.id}`);
   };
 
   const handleLogin = () => {
@@ -455,19 +456,22 @@ export default function HomePage() {
     if (email === "admin@sahomeschooling.co.za" && loginPass === "admin123") {
       localStorage.setItem("sah_current_user", JSON.stringify({ role: "admin", email }));
       setLoginModal(false); showToast("Admin login! Redirecting...");
-      setTimeout(() => window.location.href = "dashboards/admin-dashboard.html", 1000); return;
+      setTimeout(() => navigate("/admin-dashboard"), 1000);
+      return;
     }
     const stored = JSON.parse(localStorage.getItem("sah_providers") || "[]");
     const match = stored.find(p => (p.email || "").toLowerCase() === email);
     if (match) {
       localStorage.setItem("sah_current_user", JSON.stringify({ role: "client", email, id: match.id, name: match.name }));
       setLoginModal(false); showToast("Welcome back, " + match.name + "!");
-      setTimeout(() => window.location.href = "dashboards/client-dashboard.html", 1000); return;
+      setTimeout(() => navigate("/client-dashboard"), 1000);
+      return;
     }
     if (loginPass && loginPass.length >= 6) {
       localStorage.setItem("sah_current_user", JSON.stringify({ role: "client", email }));
       setLoginModal(false); showToast("Login successful!");
-      setTimeout(() => window.location.href = "dashboards/client-dashboard.html", 1000); return;
+      setTimeout(() => navigate("/client-dashboard"), 1000);
+      return;
     }
     showToast("Invalid credentials. Try again.", true);
   };
@@ -495,7 +499,7 @@ export default function HomePage() {
       {/* ── HEADER ─────────────────────────────────────────────────────────── */}
       <header className="sah-header">
         <div className="sah-container sah-nav-inner">
-          <a href="#" className="sah-brand">
+          <a href="/" className="sah-brand">
             <div className="sah-brand-divider" />
             <div className="sah-brand-text">
               <span className="sah-brand-name">SA Homeschooling</span>
@@ -511,8 +515,8 @@ export default function HomePage() {
             </a>
           </nav>
           <div className="sah-nav-ctas">
-            <button className="sah-btn-ghost-nav" onClick={() => setLoginModal(true)}>Log In</button>
-            <a href="registration.html" className="sah-btn-solid-nav">Register</a>
+            <button className="sah-btn-ghost-nav" onClick={() => navigate("/login")}>Log In</button>
+            <button className="sah-btn-solid-nav" onClick={() => navigate("/register")}>Register</button>
           </div>
         </div>
       </header>
@@ -609,9 +613,9 @@ export default function HomePage() {
                 <h3>No providers found</h3>
                 <p>Be the first to list — it's free.</p>
                 <br />
-                <a href="registration.html" className="sah-hero-cta-btn" style={{ fontSize: "0.88rem" }}>
+                <button className="sah-hero-cta-btn" style={{ fontSize: "0.88rem" }} onClick={() => navigate("/register")}>
                   <i className="fas fa-plus" /> Add Your Listing
-                </a>
+                </button>
               </div>
             ) : (
               providers.slice(0, 8).map(p => (
@@ -670,9 +674,9 @@ export default function HomePage() {
               <li><a href="#sah-providers">Online Schools</a></li>
             </ul></div>
             <div className="sah-footer-col"><h4>For Providers</h4><ul>
-              <li><a href="#sah-list">List a Service</a></li>
+              <li><a href="/register">List a Service</a></li>
               <li><a href="#sah-list">Pricing Plans</a></li>
-              <li><a href="Login.html">Provider Login</a></li>
+              <li><a href="/login">Provider Login</a></li>
               <li><a href="#sah-how">Verification Process</a></li>
             </ul></div>
             <div className="sah-footer-col"><h4>SA Homeschooling</h4><ul>
@@ -714,13 +718,13 @@ export default function HomePage() {
             <div className="sah-fld"><label>Password</label><input type="password" value={loginPass} onChange={e => setLoginPass(e.target.value)} placeholder="Your password" /></div>
             <div style={{ textAlign: "right", marginBottom: 6 }}><a href="#" style={{ fontSize: "0.8rem", color: "var(--accent)", fontWeight: 600 }}>Forgot password?</a></div>
             <button className="sah-modal-btn" onClick={handleLogin}>Log In</button>
-            <div className="sah-modal-switch">New here? <a href="registration.html">Create a free account</a></div>
+            <div className="sah-modal-switch">New here? <a href="/register">Create a free account</a></div>
           </div>
         </div>
       </div>
 
       {/* ── TOAST ──────────────────────────────────────────────────────────── */}
-      <div className={`sah-toast${toast.show ? " show" : ""}`} style={{ background: toast.err ? "#b91c1c" : "var(--grey)" }}>
+      <div className={`sah-toast${toast.show ? " show" : ""}`} style={{ background: toast.err ? "#b91c1c" : "var(--accent-dark)" }}>
         <i className="fas fa-check-circle" />
         <span>{toast.msg}</span>
       </div>
