@@ -1,10 +1,162 @@
 import React, { useEffect, useState } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
+import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import Header from '../components/common/Header';
 import Footer from '../components/common/Footer';
-import { providerData } from '../utils/constants';
-import { escapeHtml } from '../utils/helpers';
-import '../assets/css/profile.css'; // Fixed import path
+import '../assets/css/profile.css';
+
+const SEED_PROVIDERS = [
+  {
+    id: "s1", name: "STEM Mastery Tutors", category: "tutor", location: "Johannesburg, Gauteng",
+    delivery: "Online & In-person",
+    image: "https://images.unsplash.com/photo-1522202176988-66273c2b033f?w=600&auto=format&fit=crop&q=75",
+    priceFrom: "R280/hr", badge: "featured", rating: 4.9, reviewCount: 62, tier: "featured",
+    registered: "2025-01-10T08:00:00Z", status: "approved",
+    primaryCategory: "Tutor", city: "Johannesburg", province: "Gauteng", deliveryMode: "Online & In-person",
+    bio: "Specialist STEM tutors for Grades 8–12. We focus on Mathematics, Physical Sciences and Life Sciences with a proven track record of improving results.",
+    tags: ["Mathematics", "Physical Sciences", "Life Sciences", "Grades 8–12"],
+    ageGroups: ["11–13", "14–18"], startingPrice: "R280/hr",
+    availabilityDays: ["Mon", "Tue", "Wed", "Thu", "Fri"],
+    availabilityNotes: "Weekday afternoons & Saturdays",
+    phone: "+27 11 000 1111", contactEmail: "info@stemmastery.co.za",
+    certifications: "SACE Registered, Honours in Mathematics Education",
+    listingPlan: "featured",
+    reviews: { average: 4.9, count: 62, items: [{ reviewer: "Nomsa P.", rating: 5, text: "My son went from 40% to 82% in Maths. Incredible tutors." }] }
+  },
+  {
+    id: "s2", name: "Creative Minds Curriculum", category: "curriculum", location: "Cape Town, Western Cape",
+    delivery: "Online",
+    image: "https://images.unsplash.com/photo-1509062522246-3755977927d7?w=600&auto=format&fit=crop&q=75",
+    priceFrom: "R4 200/term", badge: "verified", rating: 5.0, reviewCount: 34, tier: "pro",
+    registered: "2025-01-12T09:00:00Z", status: "approved",
+    primaryCategory: "Curriculum Provider", city: "Cape Town", province: "Western Cape", deliveryMode: "Online",
+    bio: "Award-winning home education curriculum aligned with CAPS and internationally accredited. Full Gr R–12 offerings with parent support included.",
+    tags: ["CAPS Aligned", "Full Curriculum", "Gr R–12", "Parent Support"],
+    ageGroups: ["5–7", "8–10", "11–13", "14–18"], startingPrice: "R4 200/term",
+    availabilityDays: ["Mon", "Tue", "Wed", "Thu", "Fri"],
+    availabilityNotes: "Online resources available 24/7",
+    phone: "+27 21 000 2222", contactEmail: "hello@creativeminds.co.za",
+    certifications: "Umalusi Accredited, Cambridge Affiliated",
+    listingPlan: "pro",
+    reviews: { average: 5.0, count: 34, items: [{ reviewer: "Riana V.", rating: 5, text: "The best investment we made for our homeschool journey." }] }
+  },
+  {
+    id: "s3", name: "EduTherapy SA", category: "therapist", location: "Durban, KwaZulu-Natal",
+    delivery: "Hybrid",
+    image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=600&auto=format&fit=crop&q=75",
+    priceFrom: "R650/session", badge: "featured", rating: 4.8, reviewCount: 47, tier: "featured",
+    registered: "2025-01-14T10:00:00Z", status: "approved",
+    primaryCategory: "Therapist", city: "Durban", province: "KwaZulu-Natal", deliveryMode: "Hybrid",
+    bio: "Educational therapists specialising in learning differences, ADHD, dyslexia, and occupational therapy for homeschooled children.",
+    tags: ["OT", "ADHD", "Dyslexia", "Learning Support", "Educational Therapy"],
+    ageGroups: ["5–7", "8–10", "11–13"], startingPrice: "R650/session",
+    availabilityDays: ["Mon", "Tue", "Wed", "Thu"],
+    availabilityNotes: "By appointment — contact to book",
+    phone: "+27 31 000 3333", contactEmail: "bookings@edutherapy.co.za",
+    certifications: "HPCSA Registered, BEd Honours (Learning Support)",
+    listingPlan: "featured",
+    reviews: { average: 4.8, count: 47, items: [{ reviewer: "Lerato M.", rating: 5, text: "Transformed our daughter's confidence and love of learning." }] }
+  },
+  {
+    id: "s4", name: "Future Leaders Academy", category: "school", location: "Online — National",
+    delivery: "Online",
+    image: "https://images.unsplash.com/photo-1529390079861-591de3547d13?w=600&auto=format&fit=crop&q=75",
+    priceFrom: "Custom quote", badge: "new", rating: 4.7, reviewCount: 18, tier: "pro",
+    registered: "2025-01-16T11:00:00Z", status: "approved",
+    primaryCategory: "Online / Hybrid School", city: "Online", province: "Gauteng", deliveryMode: "Online",
+    bio: "A fully accredited online school delivering quality education to homeschoolers across all 9 provinces. Live classes, recorded lessons and dedicated academic support.",
+    tags: ["Online School", "Live Classes", "National", "Accredited"],
+    ageGroups: ["8–10", "11–13", "14–18"], startingPrice: "Contact for quote",
+    availabilityDays: ["Mon", "Tue", "Wed", "Thu", "Fri"],
+    availabilityNotes: "Live classes Mon–Fri, 8:00–14:00",
+    phone: "+27 10 000 4444", contactEmail: "enrol@futureleaders.co.za",
+    certifications: "Umalusi Registered, ISASA Member",
+    listingPlan: "pro",
+    reviews: { average: 4.7, count: 18, items: [{ reviewer: "Sipho K.", rating: 5, text: "Our kids thrive in the structured online environment." }] }
+  },
+  {
+    id: "khan", name: "Khan Academy SA", category: "curriculum", location: "Johannesburg, Gauteng",
+    delivery: "Online",
+    image: "https://images.unsplash.com/photo-1501504905252-473c47e087f8?w=600&auto=format&fit=crop&q=75",
+    priceFrom: "Free", badge: "featured", rating: 4.9, reviewCount: 156, tier: "featured",
+    registered: "2025-01-01T00:00:00Z", status: "approved",
+    primaryCategory: "Curriculum Provider", city: "Johannesburg", province: "Gauteng", deliveryMode: "Online",
+    bio: "Free world-class education for anyone, anywhere. Our curriculum covers mathematics, science, computing, humanities and more. We provide video lessons, practice exercises, and personalised learning dashboards for homeschoolers across South Africa. Completely free, forever.",
+    tags: ["Mathematics", "Science", "Online Learning", "Free Curriculum", "Video Lessons", "All Ages"],
+    ageGroups: ["5–7", "8–10", "11–13", "14–18"], startingPrice: "Free",
+    availabilityDays: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+    availabilityNotes: "24/7 Online — self-paced learning available anytime",
+    phone: "+27 11 555 1234", contactEmail: "support@khanacademy.org.za",
+    email: "contact@khanacademy.org.za",
+    certifications: "Khan Academy Certified Content Provider, Google for Education Partner",
+    degrees: "BSc Computer Science (Stanford), MEd (Harvard)",
+    memberships: "SA Curriculum Association, Digital Learning Collective",
+    clearance: "Verified (2025)",
+    social: "https://www.khanacademy.org",
+    listingPlan: "featured",
+    reviews: {
+      average: 4.9, count: 156,
+      items: [
+        { reviewer: "Sarah J.", rating: 5, text: "Excellent resource for our homeschool curriculum." },
+        { reviewer: "Thabo M.", rating: 5, text: "My kids love the math challenges." }
+      ]
+    }
+  },
+];
+
+function findProvider(id, email) {
+  try {
+    const stored = JSON.parse(localStorage.getItem('sah_providers') || '[]');
+    const all = [...stored, ...SEED_PROVIDERS];
+    if (id) return all.find(p => p.id === id) || null;
+    if (email) return all.find(p => p.email === email || p.contactEmail === email) || null;
+    return null;
+  } catch { return null; }
+}
+
+const DAYS_OF_WEEK = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const ORANGE = '#c2510a';
+
+/* ── Card style tokens ── */
+const S = {
+  /* Hero — fully transparent, sits on top of bg image + overlay */
+  hero: {
+    background: 'rgba(255, 255, 255, 0.06)',
+    backdropFilter: 'blur(2px)',
+    WebkitBackdropFilter: 'blur(2px)',
+    border: 'none',
+    borderRadius: '0',
+    marginBottom: '0',
+    overflow: 'hidden',
+    position: 'relative',
+    zIndex: 1,
+  },
+  /* Gray card — warm matte, matches Login/Registration card-gray */
+  gray: {
+    background: '#d6d0c8',
+    border: '1px solid #c8c2ba',
+    borderRadius: '12px',
+    marginBottom: '20px',
+    overflow: 'hidden',
+  },
+  /* "White" card — matte off-white, matches Login/Registration card-white */
+  white: {
+    background: '#ede9e3',
+    border: '1px solid #dedad4',
+    borderRadius: '12px',
+    marginBottom: '20px',
+    overflow: 'hidden',
+  },
+};
+
+/* Reusable orange-accent typography helpers */
+const Eyebrow = ({ children }) => (
+  <span className="sec-eyebrow" style={{ color: ORANGE, fontWeight: 700, textTransform: 'uppercase', fontSize: '0.68rem', letterSpacing: '0.9px' }}>
+    {children}
+  </span>
+);
+const Heading = ({ children, style = {}, as: Tag = 'h2' }) => (
+  <Tag className="card-heading" style={{ color: '#1a1a1a', ...style }}>{children}</Tag>
+);
 
 const Profile = () => {
   const [searchParams] = useSearchParams();
@@ -12,78 +164,37 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadProfile = () => {
-      const email = searchParams.get('email');
-      const id = searchParams.get('id');
-      
-      let foundProfile = null;
-      
-      if (email) {
-        // Find by email
-        foundProfile = Object.values(providerData).find(p => p.email === email);
-      } else if (id) {
-        // Find by id
-        foundProfile = providerData[id];
-      }
-      
-      if (!foundProfile) {
-        // Default to Khan Academy
-        foundProfile = providerData.khan;
-      }
-      
-      setProfile(foundProfile);
-      setLoading(false);
-    };
-
-    loadProfile();
+    const id = searchParams.get('id');
+    const email = searchParams.get('email');
+    let found = findProvider(id, email);
+    if (!found) {
+      try {
+        const cu = JSON.parse(localStorage.getItem('sah_current_user') || 'null');
+        if (cu?.id) found = findProvider(cu.id, null);
+      } catch {}
+    }
+    if (!found) found = SEED_PROVIDERS.find(p => p.id === 'khan');
+    setProfile(found);
+    setLoading(false);
   }, [searchParams]);
 
-  const showToast = (message) => {
-    alert(message); // Simple fallback
-  };
-
-  const scrollToContact = () => {
+  const scrollToContact = () =>
     document.getElementById('contactSection')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
 
   const shareProfile = () => {
     if (navigator.share) {
-      navigator.share({
-        title: profile?.name,
-        url: window.location.href
-      });
+      navigator.share({ title: profile?.name, url: window.location.href });
     } else {
       navigator.clipboard.writeText(window.location.href);
       alert('Link copied to clipboard!');
     }
   };
 
-  if (loading) {
-    return (
-      <>
-        <Header />
-        <main style={{ padding: '4rem', textAlign: 'center' }}>
-          <div className="loading">Loading profile...</div>
-        </main>
-        <Footer />
-      </>
-    );
-  }
+  if (loading) return <><Header /><main style={{ padding: '4rem', textAlign: 'center' }}><div className="loading">Loading profile...</div></main><Footer /></>;
+  if (!profile) return <><Header /><main style={{ padding: '4rem', textAlign: 'center' }}><h2>Profile not found</h2><Link to="/" className="btn btn-primary">Back to Home</Link></main><Footer /></>;
 
-  if (!profile) {
-    return (
-      <>
-        <Header />
-        <main style={{ padding: '4rem', textAlign: 'center' }}>
-          <h2>Profile not found</h2>
-          <Link to="/" className="btn btn-primary">Back to Home</Link>
-        </main>
-        <Footer />
-      </>
-    );
-  }
+  const tier = profile.listingPlan || profile.tier || 'free';
 
-  const tier = profile.listingPlan || 'free';
   const ratingStars = (rating) => {
     if (!rating) return '';
     const full = Math.floor(rating);
@@ -94,155 +205,147 @@ const Profile = () => {
   return (
     <>
       <Header />
-      
       <main className="page-wrap" id="profilePage" data-tier={tier}>
         <div className="main-content">
-          {/* Profile Head Card */}
-          <div className="profile-head-card">
-            <div className="profile-head-body">
-              <div className="profile-head-inner">
-                <div className="avatar-lg" id="profileAvatar">
-                  {profile.photo ? (
-                    <img src={profile.photo} alt={profile.name} />
-                  ) : (
-                    <i className="fas fa-user avatar-placeholder"></i>
-                  )}
-                </div>
-                
-                <div className="profile-info">
-                  <div className="badge-row" id="badgeRow">
-                    {tier === 'featured' && (
-                      <span className="badge badge-featured"><i className="fas fa-star"></i> Featured Partner</span>
-                    )}
-                    {(tier === 'pro' || tier === 'featured') && (
-                      <span className="badge badge-verified"><i className="fas fa-check"></i> Verified</span>
-                    )}
-                  </div>
-                  
-                  <h1 className="profile-name">{profile.name}</h1>
-                  <p className="profile-tagline">{profile.tagline || ''}</p>
-                  
-                  {profile.startingPrice && profile.startingPrice !== 'Contact' && (
-                    <div className="price-badge">
-                      <i className="fas fa-tag"></i> From {profile.startingPrice}
+
+          {/* ── HERO — provider image as bg, frosted glass overlay ── */}
+          <div style={{
+            position: 'relative',
+            borderRadius: '14px',
+            marginBottom: '20px',
+            overflow: 'hidden',
+            backgroundImage: profile.image ? `url(${profile.image})` : 'none',
+            backgroundColor: '#2a2a2a',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center 20%',
+            boxShadow: '0 12px 40px rgba(0,0,0,0.35)',
+          }}>
+            {/* dark overlay */}
+            <div style={{
+              position: 'absolute', inset: 0, zIndex: 0,
+              background: 'linear-gradient(120deg, rgba(15,15,15,0.82) 0%, rgba(40,40,40,0.68) 60%, rgba(15,15,15,0.76) 100%)',
+            }} />
+            {/* glass content layer */}
+            <div style={{ position: 'relative', zIndex: 1 }}>
+              <div className="profile-head-card" style={S.hero}>
+                <div className="profile-head-body">
+                  <div className="profile-head-inner">
+                    <div className="avatar-lg" id="profileAvatar">
+                      {profile.image
+                        ? <img src={profile.image} alt={profile.name} />
+                        : profile.photo
+                          ? <img src={profile.photo} alt={profile.name} />
+                          : <i className="fas fa-user avatar-placeholder"></i>}
                     </div>
-                  )}
-                  
-                  <div className="meta-strip">
-                    <div className="meta-item">
-                      <i className="fas fa-tag"></i>
-                      <strong>{profile.primaryCategory || 'Provider'}</strong>
-                    </div>
-                    <div className="meta-item">
-                      <i className="fas fa-map-marker-alt"></i>
-                      <span>{profile.city ? `${profile.city}, ${profile.province}` : profile.province || 'South Africa'}</span>
-                    </div>
-                    <div className="meta-item">
-                      <i className="fas fa-laptop-house"></i>
-                      <span>{profile.deliveryMode || 'Online'}</span>
-                    </div>
-                  </div>
-                  
-                  <div className="action-row">
-                    <button className="btn btn-primary" onClick={scrollToContact}>
-                      <i className="fas fa-envelope"></i> Contact Provider
-                    </button>
-                    {(tier === 'pro' || tier === 'featured') && (
-                      <button className="btn btn-whatsapp" onClick={() => showToast('WhatsApp link opens here')}>
-                        <i className="fab fa-whatsapp"></i> WhatsApp
-                      </button>
-                    )}
-                    <button className="btn btn-outline" onClick={() => showToast('Saved to favourites!')}>
-                      <i className="far fa-heart"></i> Save
-                    </button>
-                    <button className="btn btn-outline" onClick={shareProfile}>
-                      <i className="fas fa-share-alt"></i> Share
-                    </button>
-                  </div>
-                  
-                  {(tier === 'pro' || tier === 'featured') && profile.reviews && (
-                    <div className="rating-bar">
-                      <div className="rating-big">{profile.reviews.average}</div>
-                      <div>
-                        <div className="rating-stars">{ratingStars(profile.reviews.average)}</div>
-                        <div className="rating-sub">Based on {profile.reviews.count} verified reviews</div>
+                    <div className="profile-info">
+                      <div className="badge-row" id="badgeRow">
+                        {tier === 'featured' && <span className="badge badge-featured"><i className="fas fa-star"></i> Featured Partner</span>}
+                        {(tier === 'pro' || tier === 'featured') && <span className="badge badge-verified"><i className="fas fa-check"></i> Verified</span>}
                       </div>
+                      <h1 className="profile-name" style={{ color: '#fff' }}>{profile.name}</h1>
+                      <p className="profile-tagline" style={{ color: 'rgba(255,255,255,0.78)' }}>{profile.tagline || profile.primaryCategory || ''}</p>
+                      {profile.startingPrice && profile.startingPrice !== 'Contact' && (
+                        <div className="price-badge" style={{ background: ORANGE, color: '#fff', border: 'none' }}>
+                          <i className="fas fa-tag"></i> From {profile.startingPrice || profile.priceFrom}
+                        </div>
+                      )}
+                      <div className="meta-strip">
+                        <div className="meta-item" style={{ color: 'rgba(255,255,255,0.82)' }}><i className="fas fa-tag" style={{ color: ORANGE }}></i><strong>{profile.primaryCategory || profile.category || 'Provider'}</strong></div>
+                        <div className="meta-item" style={{ color: 'rgba(255,255,255,0.82)' }}><i className="fas fa-map-marker-alt" style={{ color: ORANGE }}></i><span>{profile.city ? `${profile.city}, ${profile.province}` : profile.location || 'South Africa'}</span></div>
+                        <div className="meta-item" style={{ color: 'rgba(255,255,255,0.82)' }}><i className="fas fa-laptop-house" style={{ color: ORANGE }}></i><span>{profile.deliveryMode || profile.delivery || 'Online'}</span></div>
+                      </div>
+                      <div className="action-row">
+                        <button className="btn btn-primary" onClick={scrollToContact}><i className="fas fa-envelope"></i> Contact Provider</button>
+                        {(tier === 'pro' || tier === 'featured') && (
+                          <button className="btn btn-whatsapp" onClick={() => window.open(`https://wa.me/${(profile.phone || '').replace(/\D/g, '')}`, '_blank')}>
+                            <i className="fab fa-whatsapp"></i> WhatsApp
+                          </button>
+                        )}
+                        <button className="btn btn-outline" style={{ borderColor: 'rgba(255,255,255,0.50)', color: '#fff' }} onClick={() => alert('Saved to favourites!')}><i className="far fa-heart"></i> Save</button>
+                        <button className="btn btn-outline" style={{ borderColor: 'rgba(255,255,255,0.50)', color: '#fff' }} onClick={shareProfile}><i className="fas fa-share-alt"></i> Share</button>
+                      </div>
+                      {(tier === 'pro' || tier === 'featured') && profile.reviews?.average > 0 && (
+                        <div className="rating-bar" style={{ background: 'rgba(255,255,255,0.10)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px' }}>
+                          <div className="rating-big" style={{ color: ORANGE }}>{profile.reviews.average}</div>
+                          <div>
+                            <div className="rating-stars" style={{ color: ORANGE }}>{ratingStars(profile.reviews.average)}</div>
+                            <div className="rating-sub" style={{ color: 'rgba(255,255,255,0.68)' }}>Based on {profile.reviews.count} verified reviews</div>
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  )}
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* About */}
-          <div className="card">
+          {/* ── About — white ── */}
+          <div className="card" style={S.white}>
             <div className="card-pad">
-              <span className="sec-eyebrow">About the Provider</span>
-              <h2 className="card-heading">About Us</h2>
+              <Eyebrow>About the Provider</Eyebrow>
+              <Heading>About Us</Heading>
               <div className="content-body">
                 <p>{profile.bio || 'This provider has not yet added a description.'}</p>
               </div>
             </div>
           </div>
 
-          {/* Services */}
-          <div className="card">
+          {/* ── Services — gray ── */}
+          <div className="card" style={S.gray}>
             <div className="card-pad">
-              <span className="sec-eyebrow">Services</span>
-              <h2 className="card-heading">What We Offer</h2>
+              <Eyebrow>Services</Eyebrow>
+              <Heading>What We Offer</Heading>
               <div className="tag-cloud">
-                {profile.tags && profile.tags.map((tag, idx) => (
-                  <span key={idx} className="tag">{tag}</span>
+                {profile.tags?.map((tag, idx) => (
+                  <span key={idx} className="tag" style={{ background: '#ede9e3', color: ORANGE, border: `1px solid ${ORANGE}`, fontWeight: 600 }}>{tag}</span>
                 ))}
-                {profile.services && profile.services.map((service, idx) => (
-                  <span key={`service-${idx}`} className="tag">{service.title}</span>
-                ))}
-              </div>
-              
-              <div className="section-divider"></div>
-              
-              <span className="sec-eyebrow" style={{ marginTop: '16px', display: 'block' }}>Grades Covered</span>
-              <div className="grade-pills">
-                {profile.ageGroups && profile.ageGroups.map((age, idx) => (
-                  <div key={idx} className="grade-pill">{age.replace(/[^0-9–-]/g, '')}</div>
+                {profile.services?.map((service, idx) => (
+                  <span key={`svc-${idx}`} className="tag" style={{ background: '#ede9e3', color: ORANGE, border: `1px solid ${ORANGE}`, fontWeight: 600 }}>{service.title || service}</span>
                 ))}
               </div>
+              {profile.ageGroups?.length > 0 && (
+                <>
+                  <div className="section-divider"></div>
+                  <Eyebrow><span style={{ marginTop: '16px', display: 'block' }}>Age Groups / Grades</span></Eyebrow>
+                  <div className="grade-pills">
+                    {profile.ageGroups.map((age, idx) => (
+                      <div key={idx} className="grade-pill" style={{ background: '#ede9e3', color: ORANGE, border: `1px solid ${ORANGE}`, fontWeight: 600 }}>{age}</div>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
-          {/* Qualifications */}
-          <div className="card">
+          {/* ── Qualifications — white ── */}
+          <div className="card" style={S.white}>
             <div className="card-pad">
-              <span className="sec-eyebrow">Credentials</span>
-              <h2 className="card-heading">Qualifications</h2>
+              <Eyebrow>Credentials</Eyebrow>
+              <Heading>Qualifications</Heading>
               <ul className="qual-list">
-                {profile.certifications && (
-                  <li><i className="fas fa-certificate"></i> {profile.certifications}</li>
-                )}
-                {profile.degrees && (
-                  <li><i className="fas fa-graduation-cap"></i> {profile.degrees}</li>
-                )}
-                {profile.memberships && (
-                  <li><i className="fas fa-check-circle"></i> {profile.memberships}</li>
-                )}
-                {profile.clearance && (
-                  <li><i className="fas fa-shield-alt"></i> {profile.clearance}</li>
+                {profile.certifications && <li><i className="fas fa-certificate" style={{ color: ORANGE }}></i> {profile.certifications}</li>}
+                {profile.degrees && <li><i className="fas fa-graduation-cap" style={{ color: ORANGE }}></i> {profile.degrees}</li>}
+                {profile.memberships && <li><i className="fas fa-check-circle" style={{ color: ORANGE }}></i> {profile.memberships}</li>}
+                {profile.clearance && <li><i className="fas fa-shield-alt" style={{ color: ORANGE }}></i> {profile.clearance}</li>}
+                {!profile.certifications && !profile.degrees && !profile.memberships && !profile.clearance && (
+                  <li style={{ color: 'var(--muted)', fontStyle: 'italic' }}>No qualifications listed yet.</li>
                 )}
               </ul>
             </div>
           </div>
 
-          {/* Reviews */}
-          {(tier === 'pro' || tier === 'featured') && profile.reviews && profile.reviews.items && profile.reviews.items.length > 0 && (
-            <div className="card paid-only">
+          {/* ── Reviews — gray (paid only) ── */}
+          {(tier === 'pro' || tier === 'featured') && profile.reviews?.items?.length > 0 && (
+            <div className="card paid-only" style={S.gray}>
               <div className="card-pad">
-                <span className="sec-eyebrow">Testimonials</span>
-                <h2 className="card-heading">Parent Reviews</h2>
+                <Eyebrow>Testimonials</Eyebrow>
+                <Heading>Parent Reviews</Heading>
                 {profile.reviews.items.map((review, idx) => (
-                  <div key={idx} className="review-card">
+                  <div key={idx} className="review-card" style={{ background: '#ede9e3' }}>
                     <div className="review-header">
-                      <span className="reviewer-name">{review.reviewer}</span>
-                      <span className="review-stars">{'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}</span>
+                      <span className="reviewer-name" style={{ color: '#1a1a1a' }}>{review.reviewer}</span>
+                      <span className="review-stars" style={{ color: ORANGE }}>{'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}</span>
                     </div>
                     <div className="review-text">"{review.text}"</div>
                   </div>
@@ -252,14 +355,16 @@ const Profile = () => {
           )}
         </div>
 
+        {/* ─────────── SIDEBAR ─────────── */}
         <aside className="sidebar" id="contactSection">
-          {/* Upgrade Card */}
+
+          {/* Upgrade (free tier) — gray */}
           {tier === 'free' && (
-            <div className="card" id="upgradeCard">
+            <div className="card" id="upgradeCard" style={S.gray}>
               <div className="card-pad" style={{ textAlign: 'center' }}>
-                <i className="fas fa-lock" style={{ fontSize: '1.4rem', color: 'var(--muted)', marginBottom: '10px' }}></i>
-                <p style={{ fontSize: '0.85rem', color: 'var(--muted)', marginBottom: '14px' }}>
-                  Upgrade to <strong>Trusted Provider</strong> to show your phone, WhatsApp and website to families.
+                <i className="fas fa-lock" style={{ fontSize: '1.4rem', color: ORANGE, marginBottom: '10px' }}></i>
+                <p style={{ fontSize: '0.85rem', color: '#555', marginBottom: '14px' }}>
+                  Upgrade to <strong style={{ color: ORANGE }}>Trusted Provider</strong> to show your phone, WhatsApp and website to families.
                 </p>
                 <Link to="/" className="btn btn-primary" style={{ display: 'inline-flex', width: '100%', justifyContent: 'center' }}>
                   <i className="fas fa-arrow-up"></i> Upgrade Plan
@@ -268,11 +373,11 @@ const Profile = () => {
             </div>
           )}
 
-          {/* Enquiry Form */}
-          <div className="card">
+          {/* Enquiry Form — white */}
+          <div className="card" style={S.white}>
             <div className="card-pad">
-              <span className="sec-eyebrow">Get in Touch</span>
-              <h3 className="card-heading" style={{ fontSize: '1rem' }}>Send an Enquiry</h3>
+              <Eyebrow>Get in Touch</Eyebrow>
+              <Heading as="h3" style={{ fontSize: '1rem' }}>Send an Enquiry</Heading>
               <div className="form-group">
                 <div className="form-row">
                   <div className="field">
@@ -312,102 +417,99 @@ const Profile = () => {
             </div>
           </div>
 
-          {/* Direct Contact (paid tiers) */}
+          {/* Direct Contact — gray (paid only) */}
           {(tier === 'pro' || tier === 'featured') && (
-            <div className="card paid-only">
+            <div className="card paid-only" style={S.gray}>
               <div className="card-pad">
-                <span className="sec-eyebrow">Direct Contact</span>
-                <h3 className="card-heading" style={{ fontSize: '1rem' }}>Contact Details</h3>
+                <Eyebrow>Direct Contact</Eyebrow>
+                <Heading as="h3" style={{ fontSize: '1rem' }}>Contact Details</Heading>
                 <div className="dc-item">
-                  <div className="dc-icon"><i className="fas fa-phone"></i></div>
+                  <div className="dc-icon"><i className="fas fa-phone" style={{ color: ORANGE }}></i></div>
                   <div className="dc-meta">
                     <div className="dc-label">Phone</div>
-                    <div className="dc-value">{profile.phone || '-'}</div>
+                    <div className="dc-value">{profile.phone || '—'}</div>
                   </div>
                 </div>
                 <div className="dc-item dc-whatsapp">
                   <div className="dc-icon wa"><i className="fab fa-whatsapp"></i></div>
                   <div className="dc-meta">
                     <div className="dc-label">WhatsApp</div>
-                    <div className="dc-value">{profile.phone || '-'}</div>
+                    <div className="dc-value">{profile.phone || '—'}</div>
                   </div>
                 </div>
                 <div className="dc-item">
-                  <div className="dc-icon"><i className="fas fa-envelope"></i></div>
+                  <div className="dc-icon"><i className="fas fa-envelope" style={{ color: ORANGE }}></i></div>
                   <div className="dc-meta">
                     <div className="dc-label">Email</div>
                     <div className="dc-value">{profile.contactEmail || profile.email || 'Contact for details'}</div>
                   </div>
                 </div>
-                <div className="dc-item">
-                  <div className="dc-icon"><i className="fas fa-globe"></i></div>
-                  <div className="dc-meta">
-                    <div className="dc-label">Website</div>
-                    <div className="dc-value">
-                      {profile.social ? (
-                        <a href={profile.social} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)' }}>
-                          {profile.social}
-                        </a>
-                      ) : 'Contact for details'}
+                {profile.social && (
+                  <div className="dc-item">
+                    <div className="dc-icon"><i className="fas fa-globe" style={{ color: ORANGE }}></i></div>
+                    <div className="dc-meta">
+                      <div className="dc-label">Website</div>
+                      <div className="dc-value">
+                        <a href={profile.social} target="_blank" rel="noopener noreferrer" style={{ color: ORANGE }}>{profile.social}</a>
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div className="dc-socials">
-                  <a href="#" className="dc-soc"><i className="fab fa-facebook-f"></i></a>
-                  <a href="#" className="dc-soc"><i className="fab fa-instagram"></i></a>
-                  <a href="#" className="dc-soc"><i className="fab fa-youtube"></i></a>
-                  <a href="#" className="dc-soc"><i className="fab fa-linkedin-in"></i></a>
-                </div>
+                )}
               </div>
             </div>
           )}
 
-          {/* Availability */}
-          <div className="card">
+          {/* Availability — white */}
+          <div className="card" style={S.white}>
             <div className="card-pad">
-              <span className="sec-eyebrow">Schedule</span>
-              <h3 className="card-heading" style={{ fontSize: '1rem' }}>Availability</h3>
+              <Eyebrow>Schedule</Eyebrow>
+              <Heading as="h3" style={{ fontSize: '1rem' }}>Availability</Heading>
               <div className="avail-grid" id="availGrid">
-                {DAYS_OF_WEEK.map(day => (
-                  <div key={day} className={`avail-pill ${profile.availabilityDays?.includes(day) ? 'on' : ''}`}>
-                    {day}
-                  </div>
-                ))}
+                {DAYS_OF_WEEK.map(day => {
+                  const active = (profile.availabilityDays || []).includes(day);
+                  return (
+                    <div key={day} className={`avail-pill ${active ? 'on' : ''}`} style={active
+                      ? { background: ORANGE, color: '#fff', fontWeight: 700, border: 'none' }
+                      : { background: '#d6d0c8', color: '#aaa', border: '1px solid #c0bab2' }
+                    }>
+                      {day}
+                    </div>
+                  );
+                })}
               </div>
-              <p style={{ fontSize: '0.82rem', color: 'var(--muted)' }}>
+              <p style={{ fontSize: '0.82rem', color: '#777', marginTop: '8px' }}>
                 {profile.availabilityNotes || 'Contact for availability'}
               </p>
             </div>
           </div>
 
-          {/* Location */}
-          <div className="card">
+          {/* Location — gray */}
+          <div className="card" style={S.gray}>
             <div className="card-pad">
-              <span className="sec-eyebrow">Location</span>
-              <h3 className="card-heading" style={{ fontSize: '1rem' }}>Where We Operate</h3>
+              <Eyebrow>Location</Eyebrow>
+              <Heading as="h3" style={{ fontSize: '1rem' }}>Where We Operate</Heading>
               <div className="map-ph">
-                <i className="fas fa-map-marker-alt"></i>
-                <span>{profile.city ? `${profile.city}, ${profile.province}` : profile.province || 'South Africa'}</span>
+                <i className="fas fa-map-marker-alt" style={{ color: ORANGE }}></i>
+                <span>{profile.city ? `${profile.city}, ${profile.province}` : profile.location || 'South Africa'}</span>
                 <span style={{ fontSize: '0.75rem' }}>
-                  {profile.serviceAreaType === 'national' ? 'National' : 
-                   profile.serviceAreaType === 'local' ? `Local (${profile.radius} km radius)` : 'Online only'}
+                  {profile.serviceAreaType === 'national' ? 'National'
+                    : profile.serviceAreaType === 'local' ? `Local (${profile.radius} km radius)`
+                    : 'Online only'}
                 </span>
               </div>
-              <p style={{ fontSize: '0.82rem', color: 'var(--muted)', marginTop: '10px' }}>
-                <i className="fas fa-laptop" style={{ color: 'var(--accent)', marginRight: '5px' }}></i>
-                {profile.deliveryMode === 'Online' ? 'Online sessions available nationwide' : 'In-person sessions available'}
+              <p style={{ fontSize: '0.82rem', color: '#777', marginTop: '10px' }}>
+                <i className="fas fa-laptop" style={{ color: ORANGE, marginRight: '5px' }}></i>
+                {(profile.deliveryMode || profile.delivery || '').includes('Online')
+                  ? 'Online sessions available nationwide'
+                  : 'In-person sessions available'}
               </p>
             </div>
           </div>
         </aside>
       </main>
-
       <Footer />
     </>
   );
 };
-
-// Add DAYS_OF_WEEK if not imported
-const DAYS_OF_WEEK = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 export default Profile;
