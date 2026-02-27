@@ -435,12 +435,63 @@ const SEED = [
 ];
 
 const CAT_ICON = { tutor: "fa-chalkboard-teacher", therapist: "fa-heart", curriculum: "fa-book-open", school: "fa-school", consultant: "fa-user-tie", extracurricular: "fa-palette" };
-const TIER_LBL = { featured: "Featured Partner", pro: "Trusted Provider", free: "Community Member" };
+const TIER_LBL = { featured: "Deluxe Package", pro: "Trusted Provider", free: "Community Member" };
 
+// ── UPDATED PLANS — Deluxe Package (formerly Featured Partner) ──
 const PLANS = [
-  { id: "community", name: "Community Member", desc: "Basic profile — always free", price: "R0", highlight: false, features: [{ text: "Public profile listing", yes: true }, { text: "1 service category", yes: true }, { text: "Basic contact form", yes: true }, { text: "No direct contact details", yes: false }, { text: "No featured placement", yes: false }], cta: "Get Started Free", planParam: "Free Listing – basic profile" },
-  { id: "trusted", name: "Trusted Provider", desc: "Full profile + direct contact details", price: "R149", highlight: true, features: [{ text: "Everything in Community", yes: true }, { text: "Direct phone & email visible", yes: true }, { text: "Up to 3 service categories", yes: true }, { text: "Verified badge on profile", yes: true }, { text: "Priority in search results", yes: true }], cta: "Start Trusted Plan", planParam: "Professional Listing – R149/month (full contact, direct enquiries)" },
-  { id: "featured", name: "Featured Partner", desc: "Homepage placement + analytics", price: "R399", highlight: false, features: [{ text: "Everything in Trusted Provider", yes: true }, { text: "Homepage featured card slot", yes: true }, { text: "Full analytics dashboard", yes: true }, { text: "Monthly newsletter feature", yes: true }, { text: "Dedicated account support", yes: true }], cta: "Become a Featured Partner", planParam: "Featured Partner – R399/month (homepage placement, analytics)" },
+  {
+    id: "community",
+    name: "Community Member",
+    desc: "Basic profile — always free",
+    price: "R0",
+    highlight: false,
+    features: [
+      { text: "Public profile listing", yes: true },
+      { text: "1 service category", yes: true },
+      { text: "Basic contact form", yes: true },
+      { text: "No direct contact details", yes: false },
+      { text: "No featured placement", yes: false },
+    ],
+    cta: "Get Started Free",
+    planParam: "Free Listing – basic profile",
+  },
+  {
+    id: "trusted",
+    name: "Trusted Provider",
+    desc: "Full profile + direct contact details",
+    price: "R149",
+    highlight: true,
+    features: [
+      { text: "Everything in Community", yes: true },
+      { text: "Direct phone & email visible", yes: true },
+      { text: "Up to 3 service categories", yes: true },
+      { text: "Verified badge on profile", yes: true },
+      { text: "Priority in search results", yes: true },
+    ],
+    cta: "Start Trusted Plan",
+    planParam: "Professional Listing – R149/month (full contact, direct enquiries)",
+  },
+  {
+    id: "featured",
+    name: "Deluxe Package",
+    desc: "3-month campaign · maximum exposure",
+    price: "R399",
+    highlight: false,
+    features: [
+      { text: "24x Billboard banners", yes: true },
+      { text: "24x Leaderboard banners", yes: true },
+      { text: "24x Skyscrapers / side panels", yes: true },
+      { text: "1x Business listing", yes: true },
+      { text: "6x Newsletter banner ads", yes: true },
+      { text: "6x Facebook post / reel", yes: true },
+      { text: "6x Instagram posts / reels", yes: true },
+      { text: "4x Newsletter ad posting", yes: true },
+      { text: "2x Full page ad in PDF per magazine", yes: true },
+      { text: "1x Native article per month", yes: true },
+    ],
+    cta: "Get the Deluxe Package",
+    planParam: "Deluxe Package – R399/month (3-month campaign, max exposure)",
+  },
 ];
 
 /* ─── HELPERS ───────────────────────────────────────────────────────────────── */
@@ -563,6 +614,7 @@ export default function HomePage() {
   const [searchCat, setSearchCat] = useState("");
   const [activeCat, setActiveCat] = useState("all");
   const [providers, setProviders] = useState([]);
+  const [showAllProviders, setShowAllProviders] = useState(false);
   const [openPlanId, setOpenPlanId] = useState(null);
   const [allPlansOpen, setAllPlansOpen] = useState(false);
   const [loginModal, setLoginModal] = useState(false);
@@ -604,11 +656,13 @@ export default function HomePage() {
     if (searchCat) list = list.filter(p => p.category === searchCat);
     if (term) list = list.filter(p => p.name.toLowerCase().includes(term) || (p.location || "").toLowerCase().includes(term));
     setProviders(list.slice(0, 8));
+    setShowAllProviders(false);
     document.getElementById("sah-providers")?.scrollIntoView({ behavior: "smooth" });
   };
 
   const filterCat = (cat) => {
     setActiveCat(cat);
+    setShowAllProviders(false);
     let list = getAll();
     if (cat !== "all") list = list.filter(p => p.category === cat);
     setProviders(list.slice(0, 8));
@@ -694,7 +748,7 @@ export default function HomePage() {
             </a>
           </nav>
           <div className="sah-nav-ctas">
-            <button className="sah-btn-ghost-nav" onClick={() => setLoginModal(true)}>Log In</button>
+            <button className="sah-btn-ghost-nav" onClick={() => navigate('/login')}>Log In</button>
             <Link to="/register" className="sah-btn-solid-nav">Register</Link>
           </div>
         </div>
@@ -780,8 +834,15 @@ export default function HomePage() {
               <h2>Recently Added Providers</h2>
             </div>
             <div className="sah-sec-right">
-              {providers.length > 0 && (
-                <button className="sah-link-btn" onClick={() => {}}>View all {getAll().length} providers →</button>
+              {providers.length > 4 && !showAllProviders && (
+                <button className="sah-link-btn" onClick={() => setShowAllProviders(true)}>
+                  Show all {providers.length} providers →
+                </button>
+              )}
+              {showAllProviders && providers.length > 4 && (
+                <button className="sah-link-btn" onClick={() => setShowAllProviders(false)}>
+                  ← Show fewer
+                </button>
               )}
             </div>
           </div>
@@ -797,7 +858,7 @@ export default function HomePage() {
                 </Link>
               </div>
             ) : (
-              providers.slice(0, 8).map(p => (
+              (showAllProviders ? providers : providers.slice(0, 4)).map(p => (
                 <ProviderCard key={p.id} p={p} onView={viewProfile} />
               ))
             )}
@@ -819,7 +880,7 @@ export default function HomePage() {
               { n: "01", t: "Create Your Profile", d: "Complete our registration: your details, services, location, qualifications, pricing and availability." },
               { n: "02", t: "Get Verified", d: "Our team reviews your credentials to ensure quality and trust for all homeschooling families on the platform." },
               { n: "03", t: "Appear in Search", d: "Your listing goes live. Families searching your area and subject will find and contact you directly." },
-              { n: "04", t: "Grow Your Reach", d: "Upgrade to Featured Partner for homepage placement, analytics dashboard and newsletter exposure." },
+              { n: "04", t: "Grow Your Reach", d: "Upgrade to the Deluxe Package for homepage placement, a 3-month campaign, analytics dashboard and newsletter exposure." },
             ].map(s => (
               <div key={s.n} className="sah-step">
                 <span className="sah-step-num">{s.n}</span>
