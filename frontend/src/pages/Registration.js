@@ -677,79 +677,139 @@ const Registration = () => {
       'Online / Hybrid School': 'school', 'Educational Consultant': 'consultant',
       'Extracurricular / Enrichment': 'extracurricular',
     };
+
     const tier = planMap[data.listingPlan] || 'free';
-    const fullPhone = '+27' + (data.phoneLocal || '').replace(/\D/g, '');
+
+    // Phone numbers
+    const fullPhone = data.phoneLocal ? '+27' + data.phoneLocal.replace(/\D/g, '') : '';
+    const fullWhatsapp = data.whatsappLocal ? '+27' + data.whatsappLocal.replace(/\D/g, '') : fullPhone;
+
+    // Pricing display
     const priceUnit = PRICING_UNIT_MAP[data.pricingModel] || '';
     const priceDisplay = data.startingPrice ? `R${data.startingPrice}${priceUnit}` : 'Contact';
-    
-    // Determine service area type
-    let serviceAreaType = 'online';
-    if (data.serviceAreas) {
-      if (data.serviceAreas.includes('Local')) serviceAreaType = 'local';
-      else if (data.serviceAreas.includes('National')) serviceAreaType = 'national';
-      else serviceAreaType = 'online';
-    }
 
-    // Create services array with proper structure
-    const services = (data.services && data.services.length > 0) ? data.services : [
-      {
-        title: data.serviceTitle || '',
-        ageGroups: data.ageGroups || [],
-        deliveryMode: data.deliveryMode || 'Online'
-      }
-    ];
+    // Qualifications — keep individual fields AND a combined string for the profile page
+    const qualDegree = data.qualDegree || '';
+    const qualCerts = data.qualCerts || '';
+    const qualMemberships = data.qualMemberships || '';
+    const certificationsCombined = [qualDegree, qualCerts].filter(Boolean).join(' | ');
+
+    // Service area type — derive from serviceAreas array
+    let serviceAreaType = 'national';
+    const svcAreas = data.serviceAreas || [];
+    if (svcAreas.includes('Local') && svcAreas.length === 1) serviceAreaType = 'local';
+    else if (svcAreas.includes('Online only') && svcAreas.length === 1) serviceAreaType = 'online';
+    else if (svcAreas.includes('Local')) serviceAreaType = 'local';
+
+    // Services array — matches ClientDashboard ServiceItem shape
+    const services = [{
+      title: data.serviceTitle || '',
+      description: data.serviceDesc || '',
+      ageGroups: data.ageGroups || [],
+      deliveryMode: data.deliveryMode || 'Online',
+      subjects: data.subjects || '',
+    }];
+
+    // Social links object
+    const socialLinks = {
+      website: data.website || '',
+      facebook: data.facebook || '',
+    };
 
     const newProvider = {
-      id: 'prov_' + Date.now(), 
-      name: data.fullName || '', 
+      // ── Identity ──
+      id: 'prov_' + Date.now(),
+      name: data.fullName || '',
       email: data.email || '',
       accountType: data.accountType || 'Individual Provider',
-      yearsExperience: data.experience || '',
-      languages: data.languages || [],
-      primaryCategory: data.primaryCat || '',
-      primaryCat: data.primaryCat || '', // Keep for backward compatibility
-      tags: data.subjects ? data.subjects.split(',').map(s => s.trim()) : [],
-      bio: data.bio || '',
-      certifications: data.qualCerts || '',
-      degrees: data.qualDegree || '',
-      memberships: data.qualMemberships || '',
-      clearance: data.clearanceText || '',
-      services: services,
-      province: data.province || '',
-      city: data.city || '',
-      serviceAreaType: serviceAreaType,
-      radius: data.localRadiusNum || '',
-      pricingModel: data.pricingModel || '',
-      startingPrice: data.startingPrice || '',
-      availabilityDays: data.daysAvailable || [],
-      availabilityNotes: data.timeSlots || '',
-      contactName: data.fullName || '',
-      phone: fullPhone,
-      contactEmail: data.inquiryEmail || data.email || '',
-      social: data.website || '',
-      publicToggle: true,
+
+      // ── Plan & status ──
       plan: tier,
       listingPlan: tier,
+      tier,
       badge: tier === 'featured' ? 'featured' : tier === 'pro' ? 'verified' : null,
-      status: 'pending', 
+      status: 'pending',
       registered: new Date().toISOString(),
       listingPublic: true,
+      publicToggle: true,
+
+      // ── Profile photo ──
+      // profilePhoto is a base64 data URL (converted by FileReader on upload)
+      image: data.profilePhoto || null,
+      photo: data.profilePhoto || null,
+
+      // ── Category ──
+      category: catMap[data.primaryCat] || 'tutor',
+      primaryCategory: data.primaryCat || '',
+      secondaryCategories: data.secondaryCats || [],
+
+      // ── Bio & experience ──
+      bio: data.bio || '',
+      yearsExperience: data.experience || '',
+
+      // ── Qualifications ──
+      degrees: qualDegree,
+      certifications: certificationsCombined,
+      qualCerts: qualCerts,
+      memberships: qualMemberships,
+      clearance: data.clearanceText || '',
+
+      // ── Tags / subjects ──
+      tags: data.subjects ? data.subjects.split(',').map(s => s.trim()).filter(Boolean) : [],
+      languages: data.languages || [],
+
+      // ── Services ──
+      services,
+      serviceTitle: data.serviceTitle || '',
+      serviceDesc: data.serviceDesc || '',
+      subjects: data.subjects || '',
+      ageGroups: data.ageGroups || [],
+
+      // ── Location ──
+      location: data.city ? `${data.city}, ${data.province}` : '',
+      city: data.city || '',
+      province: data.province || '',
+      delivery: data.deliveryMode || '',
+      deliveryMode: data.deliveryMode || '',
+      serviceAreas: svcAreas,
+      serviceAreaType,
+      radius: data.localRadiusNum ? `${data.localRadiusNum} ${data.localRadiusUnit || 'km'}` : '',
+
+      // ── Pricing ──
+      pricingModel: data.pricingModel || '',
+      startingPrice: priceDisplay,
+      priceFrom: priceDisplay,
+
+      // ── Availability ──
+      availabilityDays: (data.daysAvailable || []).map(d => d.slice(0, 3)),
+      availabilityNotes: data.timeSlots || '',
+
+      // ── Contact ──
+      contactName: data.fullName || '',
+      phone: fullPhone,
+      whatsapp: fullWhatsapp,
+      contactEmail: data.inquiryEmail || data.email || '',
+
+      // ── Social / online presence ──
+      social: data.website || '',
+      website: data.website || '',
+      facebook: data.facebook || '',
+
+      // ── Reviews ──
+      rating: null,
+      reviewCount: 0,
       reviews: { average: 0, count: 0, items: [] },
-      // Store uploaded files as base64 strings
-      profilePhoto: data.profilePhoto || null,
-      certsFile: data.certsFile || null,
-      clearanceFile: data.clearanceFile || null,
     };
-    
+
     try {
       const existing = JSON.parse(localStorage.getItem('sah_providers') || '[]');
       existing.push(newProvider);
       localStorage.setItem('sah_providers', JSON.stringify(existing));
       localStorage.setItem('sah_current_user', JSON.stringify({
-        role: 'client', 
-        email: newProvider.email, 
-        id: newProvider.id, 
-        name: newProvider.name, 
+        role: 'client',
+        email: newProvider.email,
+        id: newProvider.id,
+        name: newProvider.name,
         plan: tier,
       }));
       showNotification?.('✅ Registration successful! Your profile is pending approval.', 'success');
@@ -868,8 +928,42 @@ const Registration = () => {
     <div className="sah-form-grid">
       <div className="sah-field">
         <label><i className="fas fa-upload" /> Profile Photo / Logo</label>
-        <input type="file" accept="image/*" onChange={e => handleFileUpload('profilePhoto', e.target.files[0])} />
-        {data.profilePhoto && <div className="sah-field-hint"><i className="fas fa-check-circle" style={{color: 'green'}} /> Photo uploaded</div>}
+        <input
+          type="file"
+          accept="image/*"
+          onChange={e => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+              // Store the base64 data URL — this is what gets saved to localStorage
+              set('profilePhoto', ev.target.result);
+            };
+            reader.readAsDataURL(file);
+          }}
+        />
+        {/* Live preview once a photo is selected */}
+        {data.profilePhoto && (
+          <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 12 }}>
+            <img
+              src={data.profilePhoto}
+              alt="Profile preview"
+              style={{ width: 64, height: 64, borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--accent)' }}
+            />
+            <div>
+              <div style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--accent)' }}>
+                <i className="fas fa-check-circle" /> Photo selected
+              </div>
+              <button
+                type="button"
+                onClick={() => set('profilePhoto', null)}
+                style={{ fontSize: '0.72rem', color: 'var(--muted)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginTop: 2 }}
+              >
+                Remove
+              </button>
+            </div>
+          </div>
+        )}
       </div>
       <div className="sah-field">
         <label><i className="fas fa-hashtag" /> Years of Experience <em className="sah-req">*</em></label>

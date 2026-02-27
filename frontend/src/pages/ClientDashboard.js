@@ -137,29 +137,51 @@ const EMPTY_PROFILE = {
   yearsExperience: '',
   languages: [],
   primaryCategory: '',
+  secondaryCategories: [],
   tags: [],
   bio: '',
-  certifications: '',
+  // Qualifications — stored individually so dashboard can display each field separately
   degrees: '',
+  certifications: '',
   memberships: '',
   clearance: '',
-  services: [{ title: '', ageGroups: [], deliveryMode: 'Online' }],
+  // Services
+  services: [{ title: '', description: '', ageGroups: [], deliveryMode: 'Online', subjects: '' }],
+  serviceTitle: '',
+  serviceDesc: '',
+  subjects: '',
+  ageGroups: [],
+  // Location
   province: '',
   city: '',
+  serviceAreas: [],
   serviceAreaType: 'national',
   radius: '',
+  deliveryMode: '',
+  // Pricing
   pricingModel: '',
   startingPrice: '',
+  // Availability
   availabilityDays: [],
   availabilityNotes: '',
+  // Contact
   contactName: '',
   phone: '',
+  whatsapp: '',
   contactEmail: '',
+  // Social
   social: '',
+  website: '',
+  facebook: '',
   publicToggle: true,
+  // Plan & status
   plan: 'free',
   listingPublic: true,
   status: 'pending',
+  // Photo
+  image: null,
+  photo: null,
+  // Reviews
   reviews: { average: 0, count: 0, items: [] },
   profilePhoto: null,
   certsFile: null,
@@ -239,7 +261,9 @@ const ClientDashboard = () => {
   const saveChanges = () => {
     setLoading(true);
     try {
-      saveProviderById(profileData);
+      // Keep `social` in sync with `website` so Profile.js always finds the link
+      const toSave = { ...profileData, social: profileData.website || profileData.social || '' };
+      saveProviderById(toSave);
       // Also update currentUser name in storage
       const currentUser = getCurrentUser();
       if (currentUser) {
@@ -260,9 +284,24 @@ const ClientDashboard = () => {
   };
 
   const handlePhotoUpload = (photoData) => {
-    setPhotoPreview(photoData);
-    setProfileData(prev => ({ ...prev, profilePhoto: photoData }));
-    showNotification('Photo updated successfully!', 'success');
+    // ProfileSection may pass either a base64 string or a raw File object.
+    // We always need base64 so it can be stored in localStorage.
+    if (typeof photoData === 'string') {
+      // Already a base64 data URL — use directly
+      setPhotoPreview(photoData);
+      setProfileData(prev => ({ ...prev, photo: photoData, image: photoData }));
+      showNotification('Photo updated successfully!', 'success');
+    } else if (photoData instanceof File || photoData instanceof Blob) {
+      // Raw file — convert to base64 first
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const base64 = ev.target.result;
+        setPhotoPreview(base64);
+        setProfileData(prev => ({ ...prev, photo: base64, image: base64 }));
+        showNotification('Photo updated successfully!', 'success');
+      };
+      reader.readAsDataURL(photoData);
+    }
   };
 
   const handleAddTag = (newTag) => {
@@ -321,8 +360,15 @@ const ClientDashboard = () => {
     featured: 'Featured Partner (R399/month)',
   }[profileData.plan] || 'Community Member (Free)');
 
-  // Public view URL — links to Profile page with this provider's id
-  const publicViewUrl = profileData.id ? `/profile?id=${profileData.id}` : '/profile';
+  // Public view URL — stays within the same app, passes from=dashboard so
+  // the Profile page can show a "Back to Dashboard" button instead of "Back to Directory"
+  const publicViewUrl = profileData.id
+    ? `/profile?id=${profileData.id}&from=dashboard`
+    : '/profile?from=dashboard';
+
+  const handlePublicView = () => {
+    navigate(publicViewUrl);
+  };
 
   return (
     <>
@@ -333,15 +379,14 @@ const ClientDashboard = () => {
           <h1>My Provider Dashboard</h1>
           <div className="welcome-row">
             <p>Welcome back, <span id="welcomeName">{profileData.name || 'Provider'}</span></p>
-            <a
-              href={publicViewUrl}
+            {/* Use a button + navigate() so it stays in the same React app */}
+            <button
               className="profile-preview-badge"
               aria-label="Switch to public view"
-              target="_blank"
-              rel="noopener noreferrer"
+              onClick={handlePublicView}
             >
               <i className="fas fa-eye"></i> public view
-            </a>
+            </button>
           </div>
           <span className="status-notice" role="status">
             <i className="fas fa-clock"></i>
@@ -420,19 +465,19 @@ const ClientDashboard = () => {
           <div className="qualification-item">
             <div className="inline-group">
               <div className="profile-field">
-                <label>Certifications</label>
+                <label>Degrees / Diplomas</label>
                 {editModeActive ? (
-                  <input type="text" value={profileData.certifications} onChange={(e) => handleUpdateProfile({ certifications: e.target.value })} className="profile-value" style={{ width: '100%', padding: '10px' }} />
+                  <input type="text" value={profileData.degrees} onChange={(e) => handleUpdateProfile({ degrees: e.target.value })} className="profile-value" placeholder="e.g. BEd Honours, Mathematics Education" />
                 ) : (
-                  <div className="profile-value" style={{ padding: '10px', background: '#f5f5f5', borderRadius: '8px' }}>{profileData.certifications || '—'}</div>
+                  <div className="profile-value">{profileData.degrees || '—'}</div>
                 )}
               </div>
               <div className="profile-field">
-                <label>Degrees</label>
+                <label>Certifications</label>
                 {editModeActive ? (
-                  <input type="text" value={profileData.degrees} onChange={(e) => handleUpdateProfile({ degrees: e.target.value })} className="profile-value" style={{ width: '100%', padding: '10px' }} />
+                  <input type="text" value={profileData.certifications} onChange={(e) => handleUpdateProfile({ certifications: e.target.value })} className="profile-value" placeholder="e.g. SACE Registered, Umalusi Accredited" />
                 ) : (
-                  <div className="profile-value" style={{ padding: '10px', background: '#f5f5f5', borderRadius: '8px' }}>{profileData.degrees || '—'}</div>
+                  <div className="profile-value">{profileData.certifications || '—'}</div>
                 )}
               </div>
             </div>
@@ -440,7 +485,7 @@ const ClientDashboard = () => {
               <div className="profile-field">
                 <label>Professional memberships</label>
                 {editModeActive ? (
-                  <input type="text" value={profileData.memberships} onChange={(e) => handleUpdateProfile({ memberships: e.target.value })} className="profile-value" style={{ width: '100%', padding: '10px' }} />
+                  <input type="text" value={profileData.memberships} onChange={(e) => handleUpdateProfile({ memberships: e.target.value })} className="profile-value" placeholder="e.g. SA Curriculum Association" />
                 ) : (
                   <div className="profile-value" style={{ padding: '10px', background: '#f5f5f5', borderRadius: '8px' }}>{profileData.memberships || '—'}</div>
                 )}
@@ -451,6 +496,9 @@ const ClientDashboard = () => {
                   <span className="badge-clearance" id="clearanceBadge" style={{ display: 'inline-block', padding: '8px 12px', background: '#f5f5f5', borderRadius: '8px' }}>
                     <i className="fas fa-circle-check"></i> {profileData.clearance || 'Not provided'}
                   </span>
+                  {editModeActive && (
+                    <input type="text" value={profileData.clearance} onChange={(e) => handleUpdateProfile({ clearance: e.target.value })} className="profile-value" style={{ marginTop: '6px' }} placeholder="e.g. Verified 2024 — Cert No. 12345678" />
+                  )}
                 </div>
               </div>
             </div>
@@ -615,9 +663,9 @@ const ClientDashboard = () => {
             <div className="contact-details" style={{ display: 'flex', gap: '16px', marginTop: '12px' }}>
               {editModeActive ? (
                 <>
-                  <input type="text" value={profileData.contactName} onChange={(e) => handleUpdateProfile({ contactName: e.target.value })} placeholder="Contact name" style={{ flex: 1, padding: '10px' }} />
-                  <input type="text" value={profileData.phone} onChange={(e) => handleUpdateProfile({ phone: e.target.value })} placeholder="Phone" style={{ flex: 1, padding: '10px' }} />
-                  <input type="email" value={profileData.contactEmail} onChange={(e) => handleUpdateProfile({ contactEmail: e.target.value })} placeholder="Email" style={{ flex: 1, padding: '10px' }} />
+                  <input type="text" value={profileData.contactName} onChange={(e) => handleUpdateProfile({ contactName: e.target.value })} placeholder="Contact name" style={{ width: 'auto', marginRight: '0.5rem' }} /> ·
+                  <input type="text" value={profileData.phone} onChange={(e) => handleUpdateProfile({ phone: e.target.value })} placeholder="Phone" style={{ width: 'auto', margin: '0 0.5rem' }} /> ·
+                  <input type="email" value={profileData.contactEmail} onChange={(e) => handleUpdateProfile({ contactEmail: e.target.value })} placeholder="Enquiry email" style={{ width: 'auto', marginLeft: '0.5rem' }} />
                 </>
               ) : (
                 <>
@@ -627,13 +675,34 @@ const ClientDashboard = () => {
                 </>
               )}
             </div>
-            <div className="social-links-preview" style={{ marginTop: '12px' }}>
+            {/* WhatsApp */}
+            <div className="social-links-preview" style={{ marginTop: '6px' }}>
               {editModeActive ? (
-                <input type="text" value={profileData.social} onChange={(e) => handleUpdateProfile({ social: e.target.value })} className="profile-value" style={{ width: '100%', padding: '10px' }} placeholder="Website / social link" />
+                <input type="text" value={profileData.whatsapp || ''} onChange={(e) => handleUpdateProfile({ whatsapp: e.target.value })} className="profile-value" style={{ width: '100%' }} placeholder="WhatsApp number (e.g. +27 82 000 0000)" />
               ) : (
-                <div style={{ padding: '10px', background: '#f5f5f5', borderRadius: '8px' }}>{profileData.social || '—'}</div>
+                profileData.whatsapp ? <span><i className="fab fa-whatsapp" style={{ color: '#25d366', marginRight: 5 }} />{profileData.whatsapp}</span> : null
               )}
             </div>
+            {/* Website */}
+            <div className="social-links-preview" style={{ marginTop: '6px' }}>
+              {editModeActive ? (
+                <input type="url" value={profileData.website || profileData.social || ''} onChange={(e) => handleUpdateProfile({ website: e.target.value, social: e.target.value })} className="profile-value" style={{ width: '100%' }} placeholder="Website (https://yoursite.co.za)" />
+              ) : (
+                (profileData.website || profileData.social)
+                  ? <span><i className="fas fa-globe" style={{ marginRight: 5 }} />{profileData.website || profileData.social}</span>
+                  : <span>—</span>
+              )}
+            </div>
+            {/* Facebook */}
+            {(profileData.facebook || editModeActive) && (
+              <div className="social-links-preview" style={{ marginTop: '6px' }}>
+                {editModeActive ? (
+                  <input type="url" value={profileData.facebook || ''} onChange={(e) => handleUpdateProfile({ facebook: e.target.value })} className="profile-value" style={{ width: '100%' }} placeholder="Facebook page URL" />
+                ) : (
+                  profileData.facebook ? <span><i className="fab fa-facebook" style={{ color: '#1877f2', marginRight: 5 }} />{profileData.facebook}</span> : null
+                )}
+              </div>
+            )}
           </div>
 
           {/* Plan row */}

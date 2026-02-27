@@ -107,8 +107,40 @@ function findProvider(id, email) {
   try {
     const stored = JSON.parse(localStorage.getItem('sah_providers') || '[]');
     const all = [...stored, ...SEED_PROVIDERS];
-    if (id) return all.find(p => p.id === id) || null;
-    if (email) return all.find(p => p.email === email || p.contactEmail === email) || null;
+    let found = null;
+    if (id) found = all.find(p => p.id === id) || null;
+    else if (email) found = all.find(p => p.email === email || p.contactEmail === email) || null;
+    // Normalize so no field is undefined/object when rendered as text
+    if (found) {
+      return {
+        ...found,
+        // Ensure string fields are always strings
+        name: found.name || '',
+        bio: found.bio || '',
+        primaryCategory: found.primaryCategory || found.category || '',
+        city: found.city || '',
+        province: found.province || '',
+        phone: found.phone || '',
+        whatsapp: found.whatsapp || '',
+        contactEmail: found.contactEmail || found.email || '',
+        website: found.website || found.social || '',
+        facebook: found.facebook || '',
+        social: found.social || found.website || '',
+        startingPrice: typeof found.startingPrice === 'string' ? found.startingPrice : (found.priceFrom || ''),
+        deliveryMode: found.deliveryMode || found.delivery || '',
+        degrees: found.degrees || '',
+        certifications: found.certifications || '',
+        memberships: found.memberships || '',
+        clearance: found.clearance || '',
+        availabilityNotes: found.availabilityNotes || '',
+        // Ensure array fields are always arrays
+        tags: Array.isArray(found.tags) ? found.tags : [],
+        ageGroups: Array.isArray(found.ageGroups) ? found.ageGroups : [],
+        availabilityDays: Array.isArray(found.availabilityDays) ? found.availabilityDays : [],
+        services: Array.isArray(found.services) ? found.services : [],
+        reviews: found.reviews || { average: 0, count: 0, items: [] },
+      };
+    }
     return null;
   } catch { return null; }
 }
@@ -118,7 +150,6 @@ const ORANGE = '#c2510a';
 
 /* ── Card style tokens ── */
 const S = {
-  /* Hero — fully transparent, sits on top of bg image + overlay */
   hero: {
     background: 'rgba(255, 255, 255, 0.06)',
     backdropFilter: 'blur(2px)',
@@ -130,7 +161,6 @@ const S = {
     position: 'relative',
     zIndex: 1,
   },
-  /* Gray card — warm matte, matches Login/Registration card-gray */
   gray: {
     background: '#d6d0c8',
     border: '1px solid #c8c2ba',
@@ -138,7 +168,6 @@ const S = {
     marginBottom: '20px',
     overflow: 'hidden',
   },
-  /* "White" card — matte off-white, matches Login/Registration card-white */
   white: {
     background: '#ede9e3',
     border: '1px solid #dedad4',
@@ -148,7 +177,6 @@ const S = {
   },
 };
 
-/* Reusable orange-accent typography helpers */
 const Eyebrow = ({ children }) => (
   <span className="sec-eyebrow" style={{ color: ORANGE, fontWeight: 700, textTransform: 'uppercase', fontSize: '0.68rem', letterSpacing: '0.9px' }}>
     {children}
@@ -162,6 +190,10 @@ const Profile = () => {
   const [searchParams] = useSearchParams();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  // Detect if we arrived here from the client dashboard
+  const fromDashboard = searchParams.get('from') === 'dashboard';
 
   useEffect(() => {
     const id = searchParams.get('id');
@@ -190,8 +222,34 @@ const Profile = () => {
     }
   };
 
-  if (loading) return <><Header /><main style={{ padding: '4rem', textAlign: 'center' }}><div className="loading">Loading profile...</div></main><Footer /></>;
-  if (!profile) return <><Header /><main style={{ padding: '4rem', textAlign: 'center' }}><h2>Profile not found</h2><Link to="/" className="btn btn-primary">Back to Home</Link></main><Footer /></>;
+  const handleBack = () => {
+    if (fromDashboard) {
+      navigate('/client-dashboard');
+    } else {
+      navigate('/');
+    }
+  };
+
+  if (loading) return (
+    <>
+      <Header />
+      <main style={{ padding: '4rem', textAlign: 'center' }}>
+        <div className="loading">Loading profile...</div>
+      </main>
+      <Footer />
+    </>
+  );
+
+  if (!profile) return (
+    <>
+      <Header />
+      <main style={{ padding: '4rem', textAlign: 'center' }}>
+        <h2>Profile not found</h2>
+        <Link to="/" className="btn btn-primary">Back to Home</Link>
+      </main>
+      <Footer />
+    </>
+  );
 
   const tier = profile.listingPlan || profile.tier || 'free';
 
@@ -204,11 +262,75 @@ const Profile = () => {
 
   return (
     <>
-      <Header />
+      {fromDashboard ? (
+        /* ── Slim nav shown when previewing from dashboard — single bar, no double header ── */
+        <header style={{
+          position: 'sticky', top: 0, zIndex: 1000,
+          height: '68px', background: '#5a5a5a',
+          boxShadow: '0 2px 12px rgba(0,0,0,0.22)',
+          display: 'flex', alignItems: 'center',
+          flexShrink: 0,
+        }}>
+          <div style={{
+            maxWidth: 1280, margin: '0 auto', padding: '0 32px',
+            width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
+              <button
+                onClick={handleBack}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 8,
+                  background: 'none', border: 'none', color: 'rgba(255,255,255,0.88)',
+                  fontSize: '0.88rem', fontWeight: 600, cursor: 'pointer',
+                  padding: '6px 0', fontFamily: 'inherit', whiteSpace: 'nowrap',
+                }}
+              >
+                <i className="fas fa-arrow-left" /> Back to Dashboard
+              </button>
+              <span style={{ width: 1, height: 28, background: 'rgba(255,255,255,0.28)', margin: '0 16px' }} />
+              <div style={{ textDecoration: 'none' }}>
+                <span style={{ fontFamily: "'Playfair Display', serif", fontWeight: 800, fontSize: '1.02rem', color: '#fff', display: 'block' }}>SA Homeschooling</span>
+                <span style={{ fontSize: '0.66rem', color: 'rgba(255,255,255,0.68)', fontWeight: 500, letterSpacing: '0.45px', display: 'block' }}>Education Services Directory</span>
+              </div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <button style={{
+                display: 'inline-flex', alignItems: 'center', gap: 7,
+                padding: '7px 16px', borderRadius: 6,
+                border: '1.5px solid rgba(255,255,255,0.55)', background: 'transparent',
+                color: '#fff', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer',
+                fontFamily: 'inherit', whiteSpace: 'nowrap',
+              }}>
+                <i className="fas fa-user-circle" />
+                {profile?.name || 'Provider'}
+              </button>
+              <button
+                onClick={() => {
+                  localStorage.removeItem('sah_current_user');
+                  navigate('/');
+                }}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 7,
+                  padding: '7px 18px', borderRadius: 6,
+                  border: 'none', background: ORANGE,
+                  color: '#fff', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer',
+                  fontFamily: 'inherit', whiteSpace: 'nowrap',
+                }}
+              >
+                <i className="fas fa-right-from-bracket" />
+                Log Out
+              </button>
+            </div>
+          </div>
+        </header>
+      ) : (
+        <Header />
+      )}
+
       <main className="page-wrap" id="profilePage" data-tier={tier}>
         <div className="main-content">
 
-          {/* ── HERO — provider image as bg, frosted glass overlay ── */}
+          {/* ── HERO ── */}
           <div style={{
             position: 'relative',
             borderRadius: '14px',
@@ -220,12 +342,10 @@ const Profile = () => {
             backgroundPosition: 'center 20%',
             boxShadow: '0 12px 40px rgba(0,0,0,0.35)',
           }}>
-            {/* dark overlay */}
             <div style={{
               position: 'absolute', inset: 0, zIndex: 0,
               background: 'linear-gradient(120deg, rgba(15,15,15,0.82) 0%, rgba(40,40,40,0.68) 60%, rgba(15,15,15,0.76) 100%)',
             }} />
-            {/* glass content layer */}
             <div style={{ position: 'relative', zIndex: 1 }}>
               <div className="profile-head-card" style={S.hero}>
                 <div className="profile-head-body">
@@ -280,7 +400,7 @@ const Profile = () => {
             </div>
           </div>
 
-          {/* ── About — white ── */}
+          {/* ── About ── */}
           <div className="card" style={S.white}>
             <div className="card-pad">
               <Eyebrow>About the Provider</Eyebrow>
@@ -291,19 +411,60 @@ const Profile = () => {
             </div>
           </div>
 
-          {/* ── Services — gray ── */}
+          {/* ── Services ── */}
           <div className="card" style={S.gray}>
             <div className="card-pad">
               <Eyebrow>Services</Eyebrow>
               <Heading>What We Offer</Heading>
-              <div className="tag-cloud">
-                {profile.tags?.map((tag, idx) => (
-                  <span key={idx} className="tag" style={{ background: '#ede9e3', color: ORANGE, border: `1px solid ${ORANGE}`, fontWeight: 600 }}>{tag}</span>
-                ))}
-                {profile.services?.map((service, idx) => (
-                  <span key={`svc-${idx}`} className="tag" style={{ background: '#ede9e3', color: ORANGE, border: `1px solid ${ORANGE}`, fontWeight: 600 }}>{service.title || service}</span>
-                ))}
-              </div>
+
+              {/* Tags / subjects */}
+              {profile.tags?.length > 0 && (
+                <div className="tag-cloud" style={{ marginBottom: '12px' }}>
+                  {profile.tags.map((tag, idx) => (
+                    <span key={idx} className="tag" style={{ background: '#ede9e3', color: ORANGE, border: `1px solid ${ORANGE}`, fontWeight: 600 }}>{tag}</span>
+                  ))}
+                </div>
+              )}
+
+              {/* Services list — each service is an object with title, description, subjects, ageGroups, deliveryMode */}
+              {profile.services?.length > 0 ? (
+                profile.services.map((service, idx) => {
+                  // service may be a string (old format) or object (new format)
+                  if (typeof service === 'string') {
+                    return <div key={idx} className="tag" style={{ background: '#ede9e3', color: ORANGE, border: `1px solid ${ORANGE}`, fontWeight: 600, display: 'inline-block', marginRight: 8, marginBottom: 8, padding: '4px 12px', borderRadius: 6 }}>{service}</div>;
+                  }
+                  const svcAgeGroups = service.ageGroups || [];
+                  const svcSubjects = service.subjects || '';
+                  return (
+                    <div key={idx} style={{ background: '#ede9e3', borderRadius: 10, padding: '14px 16px', marginBottom: 12, border: `1px solid ${ORANGE}22` }}>
+                      {service.title && <div style={{ fontWeight: 700, color: '#1a1a1a', fontSize: '0.98rem', marginBottom: 4 }}>{service.title}</div>}
+                      {service.description && <div style={{ color: '#555', fontSize: '0.87rem', marginBottom: 8 }}>{service.description}</div>}
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                        {svcSubjects && svcSubjects.split(',').map((s, i) => s.trim() && (
+                          <span key={i} style={{ background: '#d6d0c8', color: ORANGE, border: `1px solid ${ORANGE}`, fontWeight: 600, fontSize: '0.78rem', padding: '2px 10px', borderRadius: 20 }}>{s.trim()}</span>
+                        ))}
+                      </div>
+                      {svcAgeGroups.length > 0 && (
+                        <div style={{ marginTop: 8, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                          <span style={{ fontSize: '0.75rem', color: '#888', alignSelf: 'center' }}>Ages:</span>
+                          {svcAgeGroups.map((age, i) => (
+                            <span key={i} style={{ background: ORANGE, color: '#fff', fontSize: '0.75rem', padding: '2px 10px', borderRadius: 20, fontWeight: 600 }}>{age}</span>
+                          ))}
+                        </div>
+                      )}
+                      {service.deliveryMode && (
+                        <div style={{ marginTop: 6, fontSize: '0.76rem', color: '#777' }}>
+                          <i className="fas fa-laptop-house" style={{ marginRight: 4, color: ORANGE }} />{service.deliveryMode}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
+              ) : (
+                <p style={{ color: '#888', fontStyle: 'italic', fontSize: '0.88rem' }}>No services listed yet.</p>
+              )}
+
+              {/* Top-level ageGroups fallback (seed data & old format) */}
               {profile.ageGroups?.length > 0 && (
                 <>
                   <div className="section-divider"></div>
@@ -318,24 +479,24 @@ const Profile = () => {
             </div>
           </div>
 
-          {/* ── Qualifications — white ── */}
+          {/* ── Qualifications ── */}
           <div className="card" style={S.white}>
             <div className="card-pad">
               <Eyebrow>Credentials</Eyebrow>
               <Heading>Qualifications</Heading>
               <ul className="qual-list">
-                {profile.certifications && <li><i className="fas fa-certificate" style={{ color: ORANGE }}></i> {profile.certifications}</li>}
                 {profile.degrees && <li><i className="fas fa-graduation-cap" style={{ color: ORANGE }}></i> {profile.degrees}</li>}
+                {profile.certifications && <li><i className="fas fa-certificate" style={{ color: ORANGE }}></i> {profile.certifications}</li>}
                 {profile.memberships && <li><i className="fas fa-check-circle" style={{ color: ORANGE }}></i> {profile.memberships}</li>}
                 {profile.clearance && <li><i className="fas fa-shield-alt" style={{ color: ORANGE }}></i> {profile.clearance}</li>}
-                {!profile.certifications && !profile.degrees && !profile.memberships && !profile.clearance && (
+                {!profile.degrees && !profile.certifications && !profile.memberships && !profile.clearance && (
                   <li style={{ color: 'var(--muted)', fontStyle: 'italic' }}>No qualifications listed yet.</li>
                 )}
               </ul>
             </div>
           </div>
 
-          {/* ── Reviews — gray (paid only) ── */}
+          {/* ── Reviews (paid only) ── */}
           {(tier === 'pro' || tier === 'featured') && profile.reviews?.items?.length > 0 && (
             <div className="card paid-only" style={S.gray}>
               <div className="card-pad">
@@ -358,7 +519,7 @@ const Profile = () => {
         {/* ─────────── SIDEBAR ─────────── */}
         <aside className="sidebar" id="contactSection">
 
-          {/* Upgrade (free tier) — gray */}
+          {/* Upgrade (free tier) */}
           {tier === 'free' && (
             <div className="card" id="upgradeCard" style={S.gray}>
               <div className="card-pad" style={{ textAlign: 'center' }}>
@@ -373,7 +534,7 @@ const Profile = () => {
             </div>
           )}
 
-          {/* Enquiry Form — white */}
+          {/* Enquiry Form */}
           <div className="card" style={S.white}>
             <div className="card-pad">
               <Eyebrow>Get in Touch</Eyebrow>
@@ -417,7 +578,7 @@ const Profile = () => {
             </div>
           </div>
 
-          {/* Direct Contact — gray (paid only) */}
+          {/* Direct Contact (paid only) */}
           {(tier === 'pro' || tier === 'featured') && (
             <div className="card paid-only" style={S.gray}>
               <div className="card-pad">
@@ -434,7 +595,8 @@ const Profile = () => {
                   <div className="dc-icon wa"><i className="fab fa-whatsapp"></i></div>
                   <div className="dc-meta">
                     <div className="dc-label">WhatsApp</div>
-                    <div className="dc-value">{profile.phone || '—'}</div>
+                    {/* Use dedicated whatsapp field, fall back to phone */}
+                    <div className="dc-value">{profile.whatsapp || profile.phone || '—'}</div>
                   </div>
                 </div>
                 <div className="dc-item">
@@ -444,13 +606,24 @@ const Profile = () => {
                     <div className="dc-value">{profile.contactEmail || profile.email || 'Contact for details'}</div>
                   </div>
                 </div>
-                {profile.social && (
+                {(profile.website || profile.social) && (
                   <div className="dc-item">
                     <div className="dc-icon"><i className="fas fa-globe" style={{ color: ORANGE }}></i></div>
                     <div className="dc-meta">
                       <div className="dc-label">Website</div>
                       <div className="dc-value">
-                        <a href={profile.social} target="_blank" rel="noopener noreferrer" style={{ color: ORANGE }}>{profile.social}</a>
+                        <a href={profile.website || profile.social} target="_blank" rel="noopener noreferrer" style={{ color: ORANGE }}>{profile.website || profile.social}</a>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {profile.facebook && (
+                  <div className="dc-item">
+                    <div className="dc-icon"><i className="fab fa-facebook" style={{ color: '#1877f2' }}></i></div>
+                    <div className="dc-meta">
+                      <div className="dc-label">Facebook</div>
+                      <div className="dc-value">
+                        <a href={profile.facebook} target="_blank" rel="noopener noreferrer" style={{ color: ORANGE }}>{profile.facebook}</a>
                       </div>
                     </div>
                   </div>
@@ -459,7 +632,7 @@ const Profile = () => {
             </div>
           )}
 
-          {/* Availability — white */}
+          {/* Availability */}
           <div className="card" style={S.white}>
             <div className="card-pad">
               <Eyebrow>Schedule</Eyebrow>
@@ -483,7 +656,7 @@ const Profile = () => {
             </div>
           </div>
 
-          {/* Location — gray */}
+          {/* Location */}
           <div className="card" style={S.gray}>
             <div className="card-pad">
               <Eyebrow>Location</Eyebrow>
