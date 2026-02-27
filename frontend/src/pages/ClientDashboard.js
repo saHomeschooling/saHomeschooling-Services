@@ -15,9 +15,8 @@ import '../assets/css/dashboard.css';
 
 // ── Read/write the logged-in provider's data from localStorage ──
 function getCurrentUser() {
-  try {
-    return JSON.parse(localStorage.getItem('sah_current_user') || 'null');
-  } catch { return null; }
+  try { return JSON.parse(localStorage.getItem('sah_current_user') || 'null'); }
+  catch { return null; }
 }
 
 function getProviderById(id) {
@@ -31,71 +30,304 @@ function saveProviderById(updatedProvider) {
   try {
     const all = JSON.parse(localStorage.getItem('sah_providers') || '[]');
     const idx = all.findIndex(p => p.id === updatedProvider.id);
-    if (idx !== -1) {
-      all[idx] = updatedProvider;
-    } else {
-      all.push(updatedProvider);
-    }
+    if (idx !== -1) { all[idx] = updatedProvider; } else { all.push(updatedProvider); }
     localStorage.setItem('sah_providers', JSON.stringify(all));
   } catch {}
 }
 
-// Default empty profile shape for a new provider
 const EMPTY_PROFILE = {
-  id: '',
-  name: '',
-  email: '',
-  accountType: 'Individual Provider',
-  yearsExperience: '',
-  languages: [],
-  primaryCategory: '',
-  secondaryCategories: [],
-  tags: [],
-  bio: '',
-  // Qualifications — stored individually so dashboard can display each field separately
-  degrees: '',
-  certifications: '',
-  memberships: '',
-  clearance: '',
-  // Services
+  id: '', name: '', email: '', accountType: 'Individual Provider',
+  yearsExperience: '', languages: [], primaryCategory: '', secondaryCategories: [],
+  tags: [], bio: '', degrees: '', certifications: '', memberships: '', clearance: '',
   services: [{ title: '', description: '', ageGroups: [], deliveryMode: 'Online', subjects: '' }],
-  serviceTitle: '',
-  serviceDesc: '',
-  subjects: '',
-  ageGroups: [],
-  // Location
-  province: '',
-  city: '',
-  serviceAreas: [],
-  serviceAreaType: 'national',
-  radius: '',
-  deliveryMode: '',
-  // Pricing
-  pricingModel: '',
-  startingPrice: '',
-  // Availability
-  availabilityDays: [],
-  availabilityNotes: '',
-  // Contact
-  contactName: '',
-  phone: '',
-  whatsapp: '',
-  contactEmail: '',
-  // Social
-  social: '',
-  website: '',
-  facebook: '',
-  publicToggle: true,
-  // Plan & status
-  plan: 'free',
-  listingPublic: true,
-  status: 'pending',
-  // Photo
-  image: null,
-  photo: null,
-  // Reviews
+  serviceTitle: '', serviceDesc: '', subjects: '', ageGroups: [],
+  province: '', city: '', serviceAreas: [], serviceAreaType: 'national', radius: '',
+  deliveryMode: '', pricingModel: '', startingPrice: '',
+  availabilityDays: [], availabilityNotes: '',
+  contactName: '', phone: '', whatsapp: '', contactEmail: '',
+  social: '', website: '', facebook: '', publicToggle: true,
+  plan: 'free', listingPublic: true, status: 'pending',
+  image: null, photo: null,
   reviews: { average: 0, count: 0, items: [] },
 };
+
+/* ── Inline CSS for professional look ── */
+const DASH_CSS = `
+  .cd-wrap {
+    font-family: 'DM Sans', 'Segoe UI', sans-serif;
+    background: #f4f1ec;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+  .cd-hero {
+    background: linear-gradient(135deg, #3a3a3a 0%, #5a5a5a 60%, #c9621a 100%);
+    padding: 48px 0 36px;
+    position: relative;
+    overflow: hidden;
+  }
+  .cd-hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+  .cd-hero-inner {
+    max-width: 1200px; margin: 0 auto; padding: 0 32px;
+    position: relative; z-index: 1;
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 24px;
+    flex-wrap: wrap;
+  }
+  .cd-hero-left { flex: 1; min-width: 0; }
+  .cd-hero-eyebrow {
+    font-size: 0.7rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+    color: rgba(255,255,255,0.55); margin-bottom: 8px; display: flex; align-items: center; gap: 8px;
+  }
+  .cd-hero-eyebrow span { width: 24px; height: 1px; background: rgba(255,255,255,0.35); display: inline-block; }
+  .cd-hero-title {
+    font-size: clamp(1.6rem, 3vw, 2.2rem); font-weight: 800; color: #fff;
+    margin: 0 0 12px; line-height: 1.15;
+    font-family: 'Playfair Display', Georgia, serif;
+  }
+  .cd-hero-title em { font-style: italic; color: #f0c89a; }
+  .cd-hero-meta { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .cd-status-pill {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 6px 16px; border-radius: 50px; font-size: 0.78rem; font-weight: 700;
+  }
+  .cd-status-pill.pending { background: rgba(245,158,11,0.2); color: #fbbf24; border: 1px solid rgba(245,158,11,0.35); }
+  .cd-status-pill.approved { background: rgba(16,185,129,0.2); color: #34d399; border: 1px solid rgba(16,185,129,0.35); }
+  .cd-status-pill.rejected { background: rgba(239,68,68,0.2); color: #f87171; border: 1px solid rgba(239,68,68,0.35); }
+  .cd-hero-right { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .cd-btn-ghost {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 9px 20px; border-radius: 8px;
+    border: 1.5px solid rgba(255,255,255,0.4); background: rgba(255,255,255,0.08);
+    color: #fff; font-size: 0.85rem; font-weight: 600; cursor: pointer;
+    font-family: inherit; transition: all 0.18s; text-decoration: none; white-space: nowrap;
+  }
+  .cd-btn-ghost:hover { background: rgba(255,255,255,0.18); border-color: rgba(255,255,255,0.7); }
+  .cd-btn-solid {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 9px 20px; border-radius: 8px;
+    border: none; background: #c9621a;
+    color: #fff; font-size: 0.85rem; font-weight: 700; cursor: pointer;
+    font-family: inherit; transition: all 0.18s; white-space: nowrap;
+    box-shadow: 0 4px 16px rgba(201,98,26,0.4);
+  }
+  .cd-btn-solid:hover { background: #a84e12; transform: translateY(-1px); }
+  .cd-btn-solid.cancel { background: #6b7280; box-shadow: none; }
+  .cd-btn-solid.cancel:hover { background: #4b5563; }
+
+  /* Main layout */
+  .cd-main { max-width: 1200px; margin: 0 auto; padding: 32px 32px 80px; }
+  .cd-grid { display: grid; grid-template-columns: 1fr 340px; gap: 24px; align-items: start; }
+
+  /* Cards */
+  .cd-card {
+    background: #fff; border-radius: 14px; overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.07), 0 1px 3px rgba(0,0,0,0.05);
+    margin-bottom: 20px; border: 1px solid rgba(0,0,0,0.06);
+  }
+  .cd-card-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 18px 24px; border-bottom: 1px solid #f0ece5;
+    background: #faf9f7;
+  }
+  .cd-card-header-icon {
+    width: 36px; height: 36px; border-radius: 9px;
+    background: linear-gradient(135deg, #c9621a, #e07a35);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 0.85rem; flex-shrink: 0;
+  }
+  .cd-card-title { font-size: 0.95rem; font-weight: 700; color: #1a1a1a; margin: 0; }
+  .cd-card-subtitle { font-size: 0.75rem; color: #888; margin: 1px 0 0; }
+  .cd-card-body { padding: 24px; }
+  .cd-card-body.tight { padding: 18px 24px; }
+
+  /* Edit mode toggle */
+  .cd-edit-toggle {
+    margin-left: auto; display: inline-flex; align-items: center; gap: 7px;
+    padding: 6px 14px; border-radius: 6px; cursor: pointer;
+    font-size: 0.78rem; font-weight: 700; border: 1.5px solid;
+    transition: all 0.15s; font-family: inherit;
+  }
+  .cd-edit-toggle.inactive { border-color: #d1d5db; background: transparent; color: #6b7280; }
+  .cd-edit-toggle.inactive:hover { border-color: #c9621a; color: #c9621a; }
+  .cd-edit-toggle.active { border-color: #c9621a; background: #fef3e8; color: #c9621a; }
+
+  /* Form fields */
+  .cd-field { margin-bottom: 18px; }
+  .cd-field:last-child { margin-bottom: 0; }
+  .cd-label {
+    display: block; font-size: 0.71rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.8px; color: #888; margin-bottom: 6px;
+  }
+  .cd-label .req { color: #c9621a; }
+  .cd-value {
+    font-size: 0.9rem; color: #1a1a1a; padding: 10px 0;
+    border-bottom: 1px solid #f0ece5; min-height: 38px;
+    display: flex; align-items: center;
+  }
+  .cd-value.empty { color: #bbb; font-style: italic; }
+  .cd-input {
+    width: 100%; padding: 10px 14px;
+    border: 1.5px solid #e5e0d8; border-radius: 8px;
+    background: #faf9f7; font-family: inherit;
+    font-size: 0.9rem; color: #1a1a1a; outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    -webkit-appearance: none; appearance: none;
+  }
+  .cd-input:focus { border-color: #c9621a; box-shadow: 0 0 0 3px rgba(201,98,26,0.12); }
+  .cd-textarea { resize: vertical; min-height: 90px; }
+  .cd-select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; cursor: pointer;
+  }
+
+  /* Grid helpers */
+  .cd-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .cd-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+  /* Section label */
+  .cd-sec-label {
+    font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+    color: #c9621a; display: flex; align-items: center; gap: 8px;
+    padding-bottom: 10px; border-bottom: 1px solid #f0ece5; margin: 20px 0 16px;
+  }
+  .cd-sec-label i { opacity: 0.85; }
+
+  /* Days grid */
+  .cd-days { display: flex; flex-wrap: wrap; gap: 8px; }
+  .cd-day-chip {
+    padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 600;
+    cursor: default; transition: all 0.15s;
+  }
+  .cd-day-chip.on { background: #c9621a; color: #fff; }
+  .cd-day-chip.off { background: #f0ece5; color: #bbb; border: 1px solid #e5e0d8; }
+  .cd-day-chip.editable { cursor: pointer; }
+  .cd-day-chip.editable.off:hover { border-color: #c9621a; color: #c9621a; }
+
+  /* Tags */
+  .cd-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+  .cd-tag {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 12px; border-radius: 20px;
+    background: #fef3e8; color: #c9621a; border: 1px solid #f0c89a;
+    font-size: 0.78rem; font-weight: 600;
+  }
+  .cd-tag button { background: none; border: none; cursor: pointer; color: #c9621a; font-size: 0.7rem; padding: 0; line-height: 1; }
+
+  /* Plan badge */
+  .cd-plan-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 18px; border-radius: 10px; font-size: 0.85rem; font-weight: 700;
+    border: 2px solid;
+  }
+  .cd-plan-badge.free { background: #f9f9f9; color: #666; border-color: #e5e5e5; }
+  .cd-plan-badge.pro { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+  .cd-plan-badge.featured { background: #fffbeb; color: #d97706; border-color: #fde68a; }
+
+  /* Review item */
+  .cd-review {
+    padding: 14px 16px; background: #faf9f7; border-radius: 10px;
+    border-left: 3px solid #c9621a; margin-bottom: 10px;
+  }
+  .cd-review-stars { color: #f59e0b; font-size: 0.85rem; margin-bottom: 4px; }
+  .cd-review-text { font-size: 0.87rem; color: #555; font-style: italic; }
+  .cd-review-author { font-size: 0.75rem; color: #888; margin-top: 4px; font-weight: 600; }
+
+  /* Contact block */
+  .cd-contact-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 0; border-bottom: 1px solid #f0ece5;
+  }
+  .cd-contact-item:last-child { border-bottom: none; }
+  .cd-contact-icon {
+    width: 34px; height: 34px; border-radius: 8px; background: #fef3e8;
+    display: flex; align-items: center; justify-content: center;
+    color: #c9621a; font-size: 0.85rem; flex-shrink: 0;
+  }
+  .cd-contact-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #aaa; }
+  .cd-contact-val { font-size: 0.88rem; color: #1a1a1a; font-weight: 500; }
+
+  /* Service card */
+  .cd-service-card {
+    background: #faf9f7; border: 1px solid #e5e0d8; border-radius: 10px;
+    padding: 16px 18px; margin-bottom: 12px; position: relative;
+  }
+  .cd-service-card.editing { border-color: #c9621a; background: #fff; }
+
+  /* Sidebar cards */
+  .cd-sidebar-card {
+    background: #fff; border-radius: 14px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.07); margin-bottom: 16px;
+    border: 1px solid rgba(0,0,0,0.06); overflow: hidden;
+  }
+  .cd-sidebar-header { padding: 14px 18px; background: #5a5a5a; }
+  .cd-sidebar-title { font-size: 0.8rem; font-weight: 700; color: #fff; text-transform: uppercase; letter-spacing: 0.7px; }
+  .cd-sidebar-body { padding: 16px 18px; }
+
+  /* Stat box */
+  .cd-stat { text-align: center; padding: 16px 8px; }
+  .cd-stat-val { font-size: 1.8rem; font-weight: 800; color: #c9621a; line-height: 1; }
+  .cd-stat-label { font-size: 0.72rem; color: #888; text-transform: uppercase; letter-spacing: 0.6px; margin-top: 4px; }
+
+  /* Toggle switch */
+  .cd-toggle-row { display: flex; align-items: center; justify-content: space-between; }
+  .cd-switch { position: relative; display: inline-block; width: 42px; height: 24px; }
+  .cd-switch input { opacity: 0; width: 0; height: 0; }
+  .cd-slider {
+    position: absolute; cursor: pointer; inset: 0;
+    background: #d1d5db; border-radius: 24px; transition: 0.2s;
+  }
+  .cd-slider::before {
+    content: ''; position: absolute;
+    height: 18px; width: 18px; left: 3px; bottom: 3px;
+    background: white; border-radius: 50%; transition: 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+  .cd-switch input:checked + .cd-slider { background: #c9621a; }
+  .cd-switch input:checked + .cd-slider::before { transform: translateX(18px); }
+
+  /* Footer bar */
+  .cd-footer-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 24px; background: #faf9f7; border-top: 1px solid #f0ece5;
+    gap: 12px; flex-wrap: wrap;
+  }
+  .cd-last-edit { font-size: 0.75rem; color: #aaa; display: flex; align-items: center; gap: 5px; }
+
+  /* Clearance badge */
+  .cd-clearance {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 12px; border-radius: 6px;
+    background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0;
+    font-size: 0.78rem; font-weight: 700;
+  }
+
+  /* Info note */
+  .cd-info-note {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 12px 16px; background: #fffbeb; border-radius: 8px;
+    border: 1px solid #fde68a; font-size: 0.8rem; color: #92400e;
+    margin: 0 0 16px;
+  }
+  .cd-info-note i { color: #f59e0b; margin-top: 1px; flex-shrink: 0; }
+
+  /* File qual upload note */
+  .cd-qual-parsed {
+    padding: 12px 16px; background: #ecfdf5; border-radius: 8px;
+    border: 1px solid #a7f3d0; font-size: 0.8rem; color: #065f46;
+    margin-top: 10px; display: flex; align-items: center; gap: 8px;
+  }
+
+  @media (max-width: 900px) {
+    .cd-grid { grid-template-columns: 1fr; }
+    .cd-main { padding: 20px 16px 60px; }
+    .cd-hero-inner { flex-direction: column; }
+    .cd-row { grid-template-columns: 1fr; }
+    .cd-row-3 { grid-template-columns: 1fr 1fr; }
+  }
+`;
 
 const ClientDashboard = () => {
   const { user, updateUserPlan } = useAuth();
@@ -108,20 +340,31 @@ const ClientDashboard = () => {
   const [photoPreview, setPhotoPreview] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // Load the logged-in user's provider data on mount
+  // Inject CSS
+  useEffect(() => {
+    if (!document.getElementById('cd-styles')) {
+      const style = document.createElement('style');
+      style.id = 'cd-styles';
+      style.textContent = DASH_CSS;
+      document.head.appendChild(style);
+    }
+    // Also load fonts if not already loaded
+    if (!document.getElementById('cd-fonts')) {
+      const link = document.createElement('link');
+      link.id = 'cd-fonts';
+      link.rel = 'stylesheet';
+      link.href = 'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700&family=DM+Sans:wght@400;500;600;700&display=swap';
+      document.head.appendChild(link);
+    }
+  }, []);
+
   useEffect(() => {
     const currentUser = getCurrentUser();
-    if (!currentUser) {
-      navigate('/login');
-      return;
-    }
-
+    if (!currentUser) { navigate('/login'); return; }
     const stored = currentUser.id ? getProviderById(currentUser.id) : null;
-
     if (stored) {
       setProfileData({ ...EMPTY_PROFILE, ...stored });
     } else {
-      // New user with no stored provider record yet — prefill from currentUser
       setProfileData(prev => ({
         ...prev,
         id: currentUser.id || prev.id,
@@ -146,9 +389,7 @@ const ClientDashboard = () => {
   };
 
   const cancelEdit = () => {
-    if (originalValues.profileData) {
-      setProfileData(originalValues.profileData);
-    }
+    if (originalValues.profileData) setProfileData(originalValues.profileData);
     setEditModeActive(false);
     showNotification('Changes discarded', 'info');
   };
@@ -156,38 +397,25 @@ const ClientDashboard = () => {
   const saveChanges = () => {
     setLoading(true);
     try {
-      // Keep `social` in sync with `website` so Profile.js always finds the link
       const toSave = { ...profileData, social: profileData.website || profileData.social || '' };
       saveProviderById(toSave);
-      // Also update currentUser name in storage
       const currentUser = getCurrentUser();
       if (currentUser) {
-        localStorage.setItem('sah_current_user', JSON.stringify({
-          ...currentUser,
-          name: profileData.name,
-          plan: profileData.plan,
-        }));
+        localStorage.setItem('sah_current_user', JSON.stringify({ ...currentUser, name: profileData.name, plan: profileData.plan }));
       }
       setOriginalValues({ profileData: { ...profileData } });
       setEditModeActive(false);
       showNotification('Changes saved successfully!', 'success');
-    } catch {
-      showNotification('Error saving changes', 'error');
-    } finally {
-      setLoading(false);
-    }
+    } catch { showNotification('Error saving changes', 'error'); }
+    finally { setLoading(false); }
   };
 
   const handlePhotoUpload = (photoData) => {
-    // ProfileSection may pass either a base64 string or a raw File object.
-    // We always need base64 so it can be stored in localStorage.
     if (typeof photoData === 'string') {
-      // Already a base64 data URL — use directly
       setPhotoPreview(photoData);
       setProfileData(prev => ({ ...prev, photo: photoData, image: photoData }));
       showNotification('Photo updated successfully!', 'success');
     } else if (photoData instanceof File || photoData instanceof Blob) {
-      // Raw file — convert to base64 first
       const reader = new FileReader();
       reader.onload = (ev) => {
         const base64 = ev.target.result;
@@ -249,422 +477,740 @@ const ClientDashboard = () => {
     setProfileData(prev => ({ ...prev, availabilityDays: newDays }));
   };
 
+  // ── Qualification file upload → parse text and auto-fill fields ──
+  const handleQualFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const fileName = file.name.toLowerCase();
+    // For PDF/image we can't read text easily in browser without a library,
+    // so we store the file reference and attempt basic name parsing
+    const nameWithoutExt = file.name.replace(/\.[^.]+$/, '');
+
+    // Try to extract meaningful info from the filename
+    // e.g. "BEd_Honours_Mathematics_SACE_2024.pdf" → parse segments
+    const segments = nameWithoutExt.replace(/[_\-\.]/g, ' ').replace(/\s+/g, ' ').trim();
+
+    // Simple heuristic: if filename contains cert/qual keywords, prefill
+    const lc = segments.toLowerCase();
+    let parsedDegree = profileData.degrees;
+    let parsedCerts = profileData.certifications;
+
+    const degreeKeywords = ['bed', 'bsc', 'ba ', 'honours', 'diploma', 'degree', 'masters', 'phd', 'med ', 'pgce'];
+    const certKeywords = ['sace', 'umalusi', 'cert', 'accredited', 'registered', 'clearance'];
+
+    const hasDegree = degreeKeywords.some(k => lc.includes(k));
+    const hasCert = certKeywords.some(k => lc.includes(k));
+
+    if (hasDegree && !parsedDegree) parsedDegree = segments;
+    if (hasCert && !parsedCerts) parsedCerts = segments;
+    if (!hasDegree && !hasCert && !parsedDegree) parsedDegree = segments;
+
+    // Read as text if it's a txt file, otherwise use the filename
+    if (fileName.endsWith('.txt')) {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const text = ev.target.result;
+        // Parse text: look for lines with keywords
+        const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+        const degLine = lines.find(l => degreeKeywords.some(k => l.toLowerCase().includes(k)));
+        const certLine = lines.find(l => certKeywords.some(k => l.toLowerCase().includes(k)));
+        const memberLine = lines.find(l => l.toLowerCase().includes('member'));
+
+        setProfileData(prev => ({
+          ...prev,
+          degrees: degLine || prev.degrees || segments,
+          certifications: certLine || prev.certifications || '',
+          memberships: memberLine || prev.memberships,
+          _qualFileName: file.name,
+        }));
+        showNotification('Qualification file parsed — please review and edit the fields below.', 'success');
+      };
+      reader.readAsText(file);
+    } else {
+      setProfileData(prev => ({
+        ...prev,
+        degrees: parsedDegree,
+        certifications: parsedCerts,
+        _qualFileName: file.name,
+      }));
+      showNotification('File attached. Fields pre-filled from filename — please review and edit.', 'info');
+    }
+  };
+
   const getPlanName = () => ({
     free: 'Community Member (Free)',
     pro: 'Trusted Provider (R149/month)',
     featured: 'Featured Partner (R399/month)',
   }[profileData.plan] || 'Community Member (Free)');
 
-  // Public view URL — stays within the same app, passes from=dashboard so
-  // the Profile page can show a "Back to Dashboard" button instead of "Back to Directory"
-  const publicViewUrl = profileData.id
-    ? `/profile?id=${profileData.id}&from=dashboard`
-    : '/profile?from=dashboard';
+  const publicViewUrl = profileData.id ? `/profile?id=${profileData.id}&from=dashboard` : '/profile?from=dashboard';
 
-  const handlePublicView = () => {
-    navigate(publicViewUrl);
-  };
+  const statusInfo = {
+    approved: { cls: 'approved', icon: 'fa-check-circle', label: 'Approved — Live' },
+    rejected: { cls: 'rejected', icon: 'fa-times-circle', label: 'Rejected' },
+    pending: { cls: 'pending', icon: 'fa-clock', label: 'Pending Approval' },
+  }[profileData.status] || { cls: 'pending', icon: 'fa-clock', label: 'Pending Approval' };
+
+  const days = DAYS_OF_WEEK || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
   return (
-    <>
+    <div className="cd-wrap">
       <Header userType="client" />
 
-      <main className="dash-wrapper">
-        <div className="page-headline">
-          <h1>My Provider Dashboard</h1>
-          <div className="welcome-row">
-            <p>Welcome back, <span id="welcomeName">{profileData.name || 'Provider'}</span></p>
-            {/* Use a button + navigate() so it stays in the same React app */}
-            <button
-              className="profile-preview-badge"
-              aria-label="Switch to public view"
-              onClick={handlePublicView}
-            >
-              <i className="fas fa-eye"></i> public view
+      {/* ── HERO ── */}
+      <section className="cd-hero">
+        <div className="cd-hero-inner">
+          <div className="cd-hero-left">
+            <div className="cd-hero-eyebrow">
+              <span></span> Provider Dashboard
+            </div>
+            <h1 className="cd-hero-title">
+              Welcome back, <em>{profileData.name || 'Provider'}</em>
+            </h1>
+            <div className="cd-hero-meta">
+              <div className={`cd-status-pill ${statusInfo.cls}`}>
+                <i className={`fas ${statusInfo.icon}`}></i>
+                {statusInfo.label}
+              </div>
+              {profileData.plan && (
+                <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.78rem', display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <i className="fas fa-crown" style={{ color: '#f59e0b' }}></i>
+                  {getPlanName()}
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="cd-hero-right">
+            {/* Back to directory — goes to homepage */}
+            <button className="cd-btn-ghost" onClick={() => navigate('/')}>
+              <i className="fas fa-arrow-left"></i> Back to Directory
             </button>
-          </div>
-          <span className="status-notice" role="status">
-            <i className="fas fa-clock"></i>
-            <strong>Status:</strong>
-            {profileData.status === 'approved' ? (
-              <span style={{ color: 'var(--success)', fontWeight: 700, marginLeft: '6px' }}>
-                <i className="fas fa-check-circle"></i> Approved — Live
-              </span>
-            ) : profileData.status === 'rejected' ? (
-              <span style={{ color: '#c0234a', fontWeight: 700, marginLeft: '6px' }}>
-                <i className="fas fa-times-circle"></i> Rejected
-              </span>
-            ) : (
+            <button className="cd-btn-ghost" onClick={() => navigate(publicViewUrl)}>
+              <i className="fas fa-eye"></i> Public View
+            </button>
+            {editModeActive ? (
               <>
-                <span className="pending-badge" style={{ marginLeft: '6px' }}>Pending Approval</span>
-                <span style={{ marginLeft: '6px' }}>Your profile is awaiting admin verification</span>
+                <button className="cd-btn-solid" onClick={saveChanges} disabled={loading}>
+                  <i className="fas fa-floppy-disk"></i> {loading ? 'Saving…' : 'Save Changes'}
+                </button>
+                <button className="cd-btn-solid cancel" onClick={cancelEdit} disabled={loading}>
+                  Cancel
+                </button>
               </>
-            )}
-          </span>
-        </div>
-
-        <div className={`card client-dash ${editModeActive ? 'edit-mode' : ''}`} id="clientDashboard">
-          <div className="card-header">
-            <i className="fas fa-user-circle"></i>
-            <h2>Profile Information</h2>
-            <span
-              className={`badge ${editModeActive ? 'active' : ''}`}
-              id="editModeBadge"
-              onClick={toggleEditMode}
-              role="button"
-              tabIndex="0"
-              aria-label="Toggle edit mode"
-            >
-              {editModeActive ? (
-                <><i className="fas fa-pencil-alt"></i> edit mode active</>
-              ) : (
-                <><i className="far fa-edit"></i> activate edit mode</>
-              )}
-            </span>
-          </div>
-
-          <ProfileSection
-            profileData={profileData}
-            isEditing={editModeActive}
-            onUpdate={handleUpdateProfile}
-            onPhotoUpload={handlePhotoUpload}
-          />
-
-          <TagsInput
-            tags={profileData.tags}
-            isEditing={editModeActive}
-            onAddTag={handleAddTag}
-            onRemoveTag={handleRemoveTag}
-          />
-
-          {/* Bio */}
-          <div className="profile-field">
-            <label htmlFor="fieldBio">Short bio <span>*</span></label>
-            {editModeActive ? (
-              <textarea
-                id="fieldBio"
-                value={profileData.bio}
-                onChange={(e) => handleUpdateProfile({ bio: e.target.value })}
-                className="profile-value"
-                rows="4"
-                style={{ minHeight: '80px' }}
-              />
             ) : (
-              <div className="profile-value" style={{ minHeight: '80px' }}>{profileData.bio || <em style={{ color: 'var(--ink-4)' }}>No bio added yet.</em>}</div>
-            )}
-          </div>
-
-          {/* Qualifications */}
-          <p className="section-label"><i className="fas fa-graduation-cap"></i> Qualifications &amp; Experience</p>
-
-          <div className="qualification-item">
-            <div className="inline-group">
-              <div className="profile-field">
-                <label>Degrees / Diplomas</label>
-                {editModeActive ? (
-                  <input type="text" value={profileData.degrees} onChange={(e) => handleUpdateProfile({ degrees: e.target.value })} className="profile-value" placeholder="e.g. BEd Honours, Mathematics Education" />
-                ) : (
-                  <div className="profile-value">{profileData.degrees || '—'}</div>
-                )}
-              </div>
-              <div className="profile-field">
-                <label>Certifications</label>
-                {editModeActive ? (
-                  <input type="text" value={profileData.certifications} onChange={(e) => handleUpdateProfile({ certifications: e.target.value })} className="profile-value" placeholder="e.g. SACE Registered, Umalusi Accredited" />
-                ) : (
-                  <div className="profile-value">{profileData.certifications || '—'}</div>
-                )}
-              </div>
-            </div>
-            <div className="inline-group" style={{ marginBottom: 0 }}>
-              <div className="profile-field">
-                <label>Professional memberships</label>
-                {editModeActive ? (
-                  <input type="text" value={profileData.memberships} onChange={(e) => handleUpdateProfile({ memberships: e.target.value })} className="profile-value" placeholder="e.g. SA Curriculum Association" />
-                ) : (
-                  <div className="profile-value">{profileData.memberships || '—'}</div>
-                )}
-              </div>
-              <div className="profile-field">
-                <label>Background clearance</label>
-                <div>
-                  <span className="badge-clearance" id="clearanceBadge">
-                    <i className="fas fa-circle-check"></i> {profileData.clearance || 'Not provided'}
-                  </span>
-                  {editModeActive && (
-                    <input type="text" value={profileData.clearance} onChange={(e) => handleUpdateProfile({ clearance: e.target.value })} className="profile-value" style={{ marginTop: '6px' }} placeholder="e.g. Verified 2024 — Cert No. 12345678" />
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Service Details */}
-          <p className="section-label"><i className="fas fa-briefcase"></i> Service Details</p>
-
-          <div className={`service-limit-note ${profileData.plan === 'free' ? 'free-limit' : 'paid-limit'}`} style={{ marginBottom: '1rem' }}>
-            <i className="fas fa-info-circle"></i>
-            <span>
-              {profileData.plan === 'free'
-                ? 'Free plan: You can add only 1 service. Upgrade to add more.'
-                : profileData.plan === 'pro'
-                  ? 'Trusted Provider: You can add up to 5 services.'
-                  : 'Featured Partner: You can add up to 10 services.'}
-            </span>
-          </div>
-
-          {profileData.services.map((service, index) => (
-            <ServiceItem
-              key={index}
-              service={service}
-              index={index}
-              isEditing={editModeActive}
-              onUpdate={handleUpdateService}
-              onRemove={handleRemoveService}
-              canRemove={profileData.services.length > 1 && profileData.plan !== 'free'}
-            />
-          ))}
-
-          {editModeActive && profileData.plan !== 'free' && (
-            <div style={{ margin: '1rem 0' }}>
-              <button className="add-service-btn" onClick={handleAddService} disabled={serviceCount >= maxServices}>
-                <i className="fas fa-plus-circle"></i> Add another service
+              <button className="cd-btn-solid" onClick={toggleEditMode}>
+                <i className="fas fa-pen"></i> Edit Profile
               </button>
-              <span className="service-counter">{serviceCount}/{maxServices} services used</span>
-            </div>
-          )}
-
-          {/* Location */}
-          <p className="section-label"><i className="fas fa-map-marker-alt"></i> Location &amp; Reach</p>
-
-          <div className="inline-group">
-            <div className="profile-field">
-              <label>Province</label>
-              {editModeActive ? (
-                <select value={profileData.province} onChange={(e) => handleUpdateProfile({ province: e.target.value })} className="profile-value">
-                  <option value="">-- Select --</option>
-                  {(PROVINCES || []).map(p => <option key={p} value={p}>{p}</option>)}
-                </select>
-              ) : (
-                <div className="profile-value">{profileData.province || '—'}</div>
-              )}
-            </div>
-            <div className="profile-field">
-              <label>City / Town</label>
-              {editModeActive ? (
-                <input type="text" value={profileData.city} onChange={(e) => handleUpdateProfile({ city: e.target.value })} className="profile-value" />
-              ) : (
-                <div className="profile-value">{profileData.city || '—'}</div>
-              )}
-            </div>
+            )}
           </div>
+        </div>
+      </section>
 
-          <div className="profile-field">
-            <label>Service area <span>*</span></label>
-            <div className="inline-flex-row">
-              {editModeActive ? (
-                <select value={profileData.serviceAreaType} onChange={(e) => handleUpdateProfile({ serviceAreaType: e.target.value })} className="profile-value" style={{ width: 'auto' }}>
-                  <option value="local">Local (specify radius)</option>
-                  <option value="national">National</option>
-                  <option value="online">Online only</option>
-                </select>
-              ) : (
-                <div className="profile-value" style={{ width: 'auto' }}>
-                  {profileData.serviceAreaType === 'local' ? 'Local' : profileData.serviceAreaType === 'national' ? 'National' : 'Online only'}
+      <main className="cd-main">
+        <div className="cd-grid">
+          {/* ─── LEFT COLUMN ─── */}
+          <div>
+
+            {/* ── PROFILE INFORMATION ── */}
+            <div className="cd-card">
+              <div className="cd-card-header">
+                <div className="cd-card-header-icon"><i className="fas fa-user"></i></div>
+                <div>
+                  <div className="cd-card-title">Profile Information</div>
+                  <div className="cd-card-subtitle">Your public-facing identity</div>
                 </div>
-              )}
-              {profileData.serviceAreaType === 'local' && (
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.375rem', marginLeft: '8px' }}>
-                  {editModeActive ? (
-                    <>
-                      <input type="number" value={profileData.radius} onChange={(e) => handleUpdateProfile({ radius: e.target.value })} className="radius-input" min="1" max="200" />
-                      <span style={{ fontSize: '0.875rem', color: 'var(--ink-3)' }}>km</span>
-                    </>
-                  ) : (
-                    <span style={{ fontSize: '0.875rem', color: 'var(--ink-3)' }}>{profileData.radius} km</span>
-                  )}
-                </span>
-              )}
-            </div>
-          </div>
-
-          {/* Pricing */}
-          <p className="section-label"><i className="fas fa-tag"></i> Pricing &amp; Availability</p>
-
-          <div className="inline-group">
-            <div className="profile-field">
-              <label>Pricing model <span>*</span></label>
-              {editModeActive ? (
-                <select value={profileData.pricingModel} onChange={(e) => handleUpdateProfile({ pricingModel: e.target.value })} className="profile-value">
-                  {(PRICING_MODELS || ['Hourly', 'Per package', 'Per term', 'Custom quote']).map(model => (
-                    <option key={model} value={model}>{model}</option>
-                  ))}
-                </select>
-              ) : (
-                <div className="profile-value">{profileData.pricingModel || '—'}</div>
-              )}
-            </div>
-            <div className="profile-field">
-              <label>Starting price (optional)</label>
-              {editModeActive ? (
-                <input type="text" value={profileData.startingPrice} onChange={(e) => handleUpdateProfile({ startingPrice: e.target.value })} className="profile-value" />
-              ) : (
-                <div className="profile-value">{profileData.startingPrice || '—'}</div>
-              )}
-            </div>
-          </div>
-
-          <div className="profile-field">
-            <label>Availability — Days</label>
-            <div className="days-multi" role="group" aria-label="Available days">
-              {(DAYS_OF_WEEK || ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']).map(day => (
-                <label key={day} className="day-checkbox">
-                  <input
-                    type="checkbox"
-                    value={day}
-                    checked={profileData.availabilityDays.includes(day)}
-                    onChange={() => handleToggleDay(day)}
-                    disabled={!editModeActive}
-                  />
-                  {day}
-                </label>
-              ))}
-            </div>
-            {editModeActive ? (
-              <input type="text" value={profileData.availabilityNotes} onChange={(e) => handleUpdateProfile({ availabilityNotes: e.target.value })} className="profile-value" style={{ marginTop: '0.5rem' }} />
-            ) : (
-              <div className="profile-value" style={{ marginTop: '0.5rem' }}>{profileData.availabilityNotes || '—'}</div>
-            )}
-          </div>
-
-          {/* Contact & Social */}
-          <p className="section-label"><i className="fas fa-address-card"></i> Contact &amp; Online Presence</p>
-
-          <div className="contact-block">
-            <div className="contact-inner">
-              <strong style={{ fontSize: '0.9rem' }}>Primary contact</strong>
-              <label className="toggle-switch">
-                <input
-                  type="checkbox"
-                  checked={profileData.publicToggle}
-                  onChange={(e) => handleUpdateProfile({ publicToggle: e.target.checked })}
-                  disabled={!editModeActive}
-                />
-                <span className="toggle-slider"></span>
-                <span>Display publicly <i className="fas fa-globe"></i></span>
-              </label>
-            </div>
-            <div className="contact-details">
-              {editModeActive ? (
-                <>
-                  <input type="text" value={profileData.contactName} onChange={(e) => handleUpdateProfile({ contactName: e.target.value })} placeholder="Contact name" style={{ width: 'auto', marginRight: '0.5rem' }} /> ·
-                  <input type="text" value={profileData.phone} onChange={(e) => handleUpdateProfile({ phone: e.target.value })} placeholder="Phone" style={{ width: 'auto', margin: '0 0.5rem' }} /> ·
-                  <input type="email" value={profileData.contactEmail} onChange={(e) => handleUpdateProfile({ contactEmail: e.target.value })} placeholder="Enquiry email" style={{ width: 'auto', marginLeft: '0.5rem' }} />
-                </>
-              ) : (
-                <>
-                  <span>{profileData.contactName || '—'}</span> ·
-                  <span>{profileData.phone || '—'}</span> ·
-                  <span>{profileData.contactEmail || '—'}</span>
-                </>
-              )}
-            </div>
-            {/* WhatsApp */}
-            <div className="social-links-preview" style={{ marginTop: '6px' }}>
-              {editModeActive ? (
-                <input type="text" value={profileData.whatsapp || ''} onChange={(e) => handleUpdateProfile({ whatsapp: e.target.value })} className="profile-value" style={{ width: '100%' }} placeholder="WhatsApp number (e.g. +27 82 000 0000)" />
-              ) : (
-                profileData.whatsapp ? <span><i className="fab fa-whatsapp" style={{ color: '#25d366', marginRight: 5 }} />{profileData.whatsapp}</span> : null
-              )}
-            </div>
-            {/* Website */}
-            <div className="social-links-preview" style={{ marginTop: '6px' }}>
-              {editModeActive ? (
-                <input type="url" value={profileData.website || profileData.social || ''} onChange={(e) => handleUpdateProfile({ website: e.target.value, social: e.target.value })} className="profile-value" style={{ width: '100%' }} placeholder="Website (https://yoursite.co.za)" />
-              ) : (
-                (profileData.website || profileData.social)
-                  ? <span><i className="fas fa-globe" style={{ marginRight: 5 }} />{profileData.website || profileData.social}</span>
-                  : <span>—</span>
-              )}
-            </div>
-            {/* Facebook */}
-            {(profileData.facebook || editModeActive) && (
-              <div className="social-links-preview" style={{ marginTop: '6px' }}>
-                {editModeActive ? (
-                  <input type="url" value={profileData.facebook || ''} onChange={(e) => handleUpdateProfile({ facebook: e.target.value })} className="profile-value" style={{ width: '100%' }} placeholder="Facebook page URL" />
-                ) : (
-                  profileData.facebook ? <span><i className="fab fa-facebook" style={{ color: '#1877f2', marginRight: 5 }} />{profileData.facebook}</span> : null
-                )}
+                <button
+                  className={`cd-edit-toggle ${editModeActive ? 'active' : 'inactive'}`}
+                  onClick={toggleEditMode}
+                >
+                  <i className={`fas ${editModeActive ? 'fa-pencil-alt' : 'fa-edit'}`}></i>
+                  {editModeActive ? 'Editing' : 'Edit'}
+                </button>
               </div>
-            )}
-          </div>
+              <div className="cd-card-body">
+                {/* Photo + basic info via ProfileSection component */}
+                <ProfileSection
+                  profileData={profileData}
+                  isEditing={editModeActive}
+                  onUpdate={handleUpdateProfile}
+                  onPhotoUpload={handlePhotoUpload}
+                />
 
-          {/* Plan row */}
-          <div className="plan-row">
-            <span className="plan-badge"><i className="fas fa-crown" style={{ color: '#f59e0b' }}></i> {getPlanName()}</span>
-            <span className="public-indicator">
-              <i className="fas fa-circle-check"></i> listing is {profileData.status === 'approved' ? 'live' : profileData.status}
-            </span>
-          </div>
+                {/* Tags */}
+                <div className="cd-field" style={{ marginTop: 16 }}>
+                  <label className="cd-label">Tags / Subjects</label>
+                  {editModeActive ? (
+                    <TagsInput
+                      tags={profileData.tags}
+                      isEditing={editModeActive}
+                      onAddTag={handleAddTag}
+                      onRemoveTag={handleRemoveTag}
+                    />
+                  ) : (
+                    <div className="cd-tags">
+                      {profileData.tags.length > 0
+                        ? profileData.tags.map((t, i) => <span key={i} className="cd-tag">{t}</span>)
+                        : <span className="cd-value empty">No tags added yet</span>}
+                    </div>
+                  )}
+                </div>
 
-          <PlanSelector currentPlan={profileData.plan} onSelectPlan={handlePlanChange} />
-
-          {/* Reviews */}
-          <div className="reviews-section" aria-label="Reviews and testimonials">
-            <div className="profile-field">
-              <p className="section-label" style={{ border: 'none', margin: '0 0 0.75rem' }}>
-                <i className="fas fa-star"></i> Reviews &amp; Testimonials
-                <span style={{ fontFamily: 'var(--font-sans)', fontSize: '0.75rem', fontWeight: 500, color: 'var(--ink-4)' }}> (Paid tiers)</span>
-              </p>
+                {/* Bio */}
+                <div className="cd-field">
+                  <label className="cd-label">Short Bio <span className="req">*</span></label>
+                  {editModeActive ? (
+                    <textarea
+                      className="cd-input cd-textarea"
+                      value={profileData.bio}
+                      onChange={e => handleUpdateProfile({ bio: e.target.value })}
+                      placeholder="Tell families about your experience and approach..."
+                    />
+                  ) : (
+                    <div className={`cd-value ${!profileData.bio ? 'empty' : ''}`} style={{ display: 'block', lineHeight: 1.6, padding: '10px 0' }}>
+                      {profileData.bio || 'No bio added yet.'}
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
-            {profileData.reviews.items && profileData.reviews.items.length > 0 ? (
-              profileData.reviews.items.map((review, index) => (
-                <div className="review-item" key={index}>
-                  <div className="rating-stars">{'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}</div>
-                  <div className="profile-value" style={{ fontStyle: 'italic' }}>
-                    "{review.text}" — {review.reviewer}
+
+            {/* ── QUALIFICATIONS ── */}
+            <div className="cd-card">
+              <div className="cd-card-header">
+                <div className="cd-card-header-icon"><i className="fas fa-graduation-cap"></i></div>
+                <div>
+                  <div className="cd-card-title">Qualifications & Experience</div>
+                  <div className="cd-card-subtitle">Credentials that build family trust</div>
+                </div>
+              </div>
+              <div className="cd-card-body">
+                {editModeActive && (
+                  <div className="cd-field">
+                    <label className="cd-label"><i className="fas fa-upload"></i> Upload Certificate / Qualification File</label>
+                    <input
+                      type="file"
+                      accept=".pdf,.doc,.docx,.txt,.jpg,.png"
+                      className="cd-input"
+                      style={{ padding: '8px 12px', fontSize: '0.83rem', cursor: 'pointer' }}
+                      onChange={handleQualFileUpload}
+                    />
+                    {profileData._qualFileName && (
+                      <div className="cd-qual-parsed">
+                        <i className="fas fa-check-circle"></i>
+                        File attached: <strong>{profileData._qualFileName}</strong> — fields pre-filled below, please review.
+                      </div>
+                    )}
+                    <div className="cd-info-note" style={{ marginTop: 10, marginBottom: 0 }}>
+                      <i className="fas fa-info-circle"></i>
+                      Upload a file to auto-fill the fields below, or type them in manually.
+                    </div>
+                  </div>
+                )}
+
+                <div className="cd-row">
+                  <div className="cd-field">
+                    <label className="cd-label">Degrees / Diplomas</label>
+                    {editModeActive ? (
+                      <input type="text" className="cd-input" value={profileData.degrees}
+                        onChange={e => handleUpdateProfile({ degrees: e.target.value })}
+                        placeholder="e.g. BEd Honours, Mathematics Education" />
+                    ) : (
+                      <div className={`cd-value ${!profileData.degrees ? 'empty' : ''}`}>{profileData.degrees || '—'}</div>
+                    )}
+                  </div>
+                  <div className="cd-field">
+                    <label className="cd-label">Certifications</label>
+                    {editModeActive ? (
+                      <input type="text" className="cd-input" value={profileData.certifications}
+                        onChange={e => handleUpdateProfile({ certifications: e.target.value })}
+                        placeholder="e.g. SACE Registered, Umalusi Accredited" />
+                    ) : (
+                      <div className={`cd-value ${!profileData.certifications ? 'empty' : ''}`}>{profileData.certifications || '—'}</div>
+                    )}
                   </div>
                 </div>
-              ))
-            ) : (
-              <div className="review-item">
-                <div className="profile-value" style={{ fontStyle: 'italic', color: 'var(--ink-3)' }}>
-                  No reviews yet. Reviews appear here once families leave feedback.
+                <div className="cd-row">
+                  <div className="cd-field">
+                    <label className="cd-label">Professional Memberships</label>
+                    {editModeActive ? (
+                      <input type="text" className="cd-input" value={profileData.memberships}
+                        onChange={e => handleUpdateProfile({ memberships: e.target.value })}
+                        placeholder="e.g. SA Curriculum Association" />
+                    ) : (
+                      <div className={`cd-value ${!profileData.memberships ? 'empty' : ''}`}>{profileData.memberships || '—'}</div>
+                    )}
+                  </div>
+                  <div className="cd-field">
+                    <label className="cd-label">Background Clearance</label>
+                    {editModeActive ? (
+                      <input type="text" className="cd-input" value={profileData.clearance}
+                        onChange={e => handleUpdateProfile({ clearance: e.target.value })}
+                        placeholder="e.g. Verified 2024 — Cert No. 12345678" />
+                    ) : (
+                      profileData.clearance
+                        ? <span className="cd-clearance"><i className="fas fa-shield-alt"></i>{profileData.clearance}</span>
+                        : <div className="cd-value empty">Not provided</div>
+                    )}
+                  </div>
                 </div>
               </div>
-            )}
-            {profileData.reviews.count > 0 && (
-              <div className="review-item">
-                <div className="profile-value" style={{ fontStyle: 'italic', color: 'var(--ink-3)' }}>
-                  Average rating: {profileData.reviews.average}/5 (based on {profileData.reviews.count} reviews)
+            </div>
+
+            {/* ── SERVICES ── */}
+            <div className="cd-card">
+              <div className="cd-card-header">
+                <div className="cd-card-header-icon"><i className="fas fa-briefcase"></i></div>
+                <div>
+                  <div className="cd-card-title">Service Details</div>
+                  <div className="cd-card-subtitle">What you offer to homeschooling families</div>
                 </div>
               </div>
-            )}
+              <div className="cd-card-body">
+                <div className="cd-info-note">
+                  <i className="fas fa-info-circle"></i>
+                  {profileData.plan === 'free'
+                    ? 'Free plan: You can add only 1 service. Upgrade to add more.'
+                    : profileData.plan === 'pro'
+                      ? 'Trusted Provider: You can add up to 5 services.'
+                      : 'Featured Partner: You can add up to 10 services.'}
+                </div>
+
+                {profileData.services.map((service, index) => (
+                  <div className={`cd-service-card ${editModeActive ? 'editing' : ''}`} key={index}>
+                    <ServiceItem
+                      service={service}
+                      index={index}
+                      isEditing={editModeActive}
+                      onUpdate={handleUpdateService}
+                      onRemove={handleRemoveService}
+                      canRemove={profileData.services.length > 1 && profileData.plan !== 'free'}
+                    />
+                  </div>
+                ))}
+
+                {editModeActive && profileData.plan !== 'free' && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 4 }}>
+                    <button
+                      onClick={handleAddService}
+                      disabled={serviceCount >= maxServices}
+                      style={{
+                        display: 'inline-flex', alignItems: 'center', gap: 7,
+                        padding: '9px 18px', borderRadius: 8, cursor: 'pointer',
+                        border: '1.5px dashed #c9621a', background: '#fef3e8',
+                        color: '#c9621a', fontWeight: 700, fontSize: '0.85rem',
+                        fontFamily: 'inherit', opacity: serviceCount >= maxServices ? 0.5 : 1,
+                      }}
+                    >
+                      <i className="fas fa-plus-circle"></i> Add Service
+                    </button>
+                    <span style={{ fontSize: '0.78rem', color: '#888' }}>
+                      {serviceCount}/{maxServices} services used
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* ── LOCATION ── */}
+            <div className="cd-card">
+              <div className="cd-card-header">
+                <div className="cd-card-header-icon"><i className="fas fa-map-marker-alt"></i></div>
+                <div>
+                  <div className="cd-card-title">Location & Reach</div>
+                  <div className="cd-card-subtitle">Where you serve families</div>
+                </div>
+              </div>
+              <div className="cd-card-body">
+                <div className="cd-row">
+                  <div className="cd-field">
+                    <label className="cd-label">Province <span className="req">*</span></label>
+                    {editModeActive ? (
+                      <select className="cd-input cd-select" value={profileData.province}
+                        onChange={e => handleUpdateProfile({ province: e.target.value })}>
+                        <option value="">-- Select --</option>
+                        {(PROVINCES || []).map(p => <option key={p} value={p}>{p}</option>)}
+                      </select>
+                    ) : (
+                      <div className={`cd-value ${!profileData.province ? 'empty' : ''}`}>{profileData.province || '—'}</div>
+                    )}
+                  </div>
+                  <div className="cd-field">
+                    <label className="cd-label">City / Town</label>
+                    {editModeActive ? (
+                      <input type="text" className="cd-input" value={profileData.city}
+                        onChange={e => handleUpdateProfile({ city: e.target.value })} />
+                    ) : (
+                      <div className={`cd-value ${!profileData.city ? 'empty' : ''}`}>{profileData.city || '—'}</div>
+                    )}
+                  </div>
+                </div>
+                <div className="cd-field">
+                  <label className="cd-label">Service Area <span className="req">*</span></label>
+                  {editModeActive ? (
+                    <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+                      <select className="cd-input cd-select" value={profileData.serviceAreaType}
+                        style={{ width: 'auto' }}
+                        onChange={e => handleUpdateProfile({ serviceAreaType: e.target.value })}>
+                        <option value="local">Local (radius)</option>
+                        <option value="national">National</option>
+                        <option value="online">Online only</option>
+                      </select>
+                      {profileData.serviceAreaType === 'local' && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <input type="number" className="cd-input" value={profileData.radius}
+                            style={{ width: 90 }} min="1" max="200"
+                            onChange={e => handleUpdateProfile({ radius: e.target.value })} />
+                          <span style={{ fontSize: '0.85rem', color: '#888' }}>km</span>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="cd-value">
+                      {profileData.serviceAreaType === 'local' ? `Local — ${profileData.radius} km radius`
+                        : profileData.serviceAreaType === 'national' ? 'National'
+                        : 'Online only'}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* ── PRICING & AVAILABILITY ── */}
+            <div className="cd-card">
+              <div className="cd-card-header">
+                <div className="cd-card-header-icon"><i className="fas fa-tag"></i></div>
+                <div>
+                  <div className="cd-card-title">Pricing & Availability</div>
+                  <div className="cd-card-subtitle">Rates and schedule</div>
+                </div>
+              </div>
+              <div className="cd-card-body">
+                <div className="cd-row">
+                  <div className="cd-field">
+                    <label className="cd-label">Pricing Model <span className="req">*</span></label>
+                    {editModeActive ? (
+                      <select className="cd-input cd-select" value={profileData.pricingModel}
+                        onChange={e => handleUpdateProfile({ pricingModel: e.target.value })}>
+                        {(PRICING_MODELS || ['Hourly', 'Per package', 'Per term', 'Custom quote']).map(m => (
+                          <option key={m} value={m}>{m}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <div className={`cd-value ${!profileData.pricingModel ? 'empty' : ''}`}>{profileData.pricingModel || '—'}</div>
+                    )}
+                  </div>
+                  <div className="cd-field">
+                    <label className="cd-label">Starting Price</label>
+                    {editModeActive ? (
+                      <input type="text" className="cd-input" value={profileData.startingPrice}
+                        onChange={e => handleUpdateProfile({ startingPrice: e.target.value })} />
+                    ) : (
+                      <div className={`cd-value ${!profileData.startingPrice ? 'empty' : ''}`}>{profileData.startingPrice || '—'}</div>
+                    )}
+                  </div>
+                </div>
+                <div className="cd-field">
+                  <label className="cd-label">Availability — Days</label>
+                  <div className="cd-days" style={{ marginTop: 6 }}>
+                    {days.map(day => {
+                      const active = profileData.availabilityDays.includes(day);
+                      return (
+                        <button
+                          key={day}
+                          className={`cd-day-chip ${active ? 'on' : 'off'} ${editModeActive ? 'editable' : ''}`}
+                          onClick={() => editModeActive && handleToggleDay(day)}
+                          style={{ border: 'none', cursor: editModeActive ? 'pointer' : 'default' }}
+                        >
+                          {day}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <div style={{ marginTop: 10 }}>
+                    {editModeActive ? (
+                      <input type="text" className="cd-input" value={profileData.availabilityNotes}
+                        onChange={e => handleUpdateProfile({ availabilityNotes: e.target.value })}
+                        placeholder="e.g. Weekday afternoons & Saturdays" />
+                    ) : (
+                      <div className={`cd-value ${!profileData.availabilityNotes ? 'empty' : ''}`} style={{ fontSize: '0.85rem' }}>
+                        {profileData.availabilityNotes || '—'}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* ── CONTACT & SOCIAL ── */}
+            <div className="cd-card">
+              <div className="cd-card-header">
+                <div className="cd-card-header-icon"><i className="fas fa-address-card"></i></div>
+                <div>
+                  <div className="cd-card-title">Contact & Online Presence</div>
+                  <div className="cd-card-subtitle">How families reach you</div>
+                </div>
+              </div>
+              <div className="cd-card-body">
+                {editModeActive ? (
+                  <div className="cd-row">
+                    <div className="cd-field">
+                      <label className="cd-label">Contact Name</label>
+                      <input type="text" className="cd-input" value={profileData.contactName}
+                        onChange={e => handleUpdateProfile({ contactName: e.target.value })} />
+                    </div>
+                    <div className="cd-field">
+                      <label className="cd-label">Phone</label>
+                      <input type="text" className="cd-input" value={profileData.phone}
+                        onChange={e => handleUpdateProfile({ phone: e.target.value })} />
+                    </div>
+                    <div className="cd-field">
+                      <label className="cd-label">WhatsApp</label>
+                      <input type="text" className="cd-input" value={profileData.whatsapp || ''}
+                        onChange={e => handleUpdateProfile({ whatsapp: e.target.value })}
+                        placeholder="+27 82 000 0000" />
+                    </div>
+                    <div className="cd-field">
+                      <label className="cd-label">Enquiry Email</label>
+                      <input type="email" className="cd-input" value={profileData.contactEmail}
+                        onChange={e => handleUpdateProfile({ contactEmail: e.target.value })} />
+                    </div>
+                    <div className="cd-field">
+                      <label className="cd-label">Website</label>
+                      <input type="url" className="cd-input" value={profileData.website || profileData.social || ''}
+                        onChange={e => handleUpdateProfile({ website: e.target.value, social: e.target.value })}
+                        placeholder="https://yoursite.co.za" />
+                    </div>
+                    <div className="cd-field">
+                      <label className="cd-label">Facebook Page</label>
+                      <input type="url" className="cd-input" value={profileData.facebook || ''}
+                        onChange={e => handleUpdateProfile({ facebook: e.target.value })}
+                        placeholder="https://facebook.com/yourpage" />
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    {[
+                      { icon: 'fa-user', label: 'Contact Name', val: profileData.contactName },
+                      { icon: 'fa-phone', label: 'Phone', val: profileData.phone },
+                      { icon: 'fa-brands fa-whatsapp', label: 'WhatsApp', val: profileData.whatsapp || profileData.phone },
+                      { icon: 'fa-envelope', label: 'Email', val: profileData.contactEmail },
+                      { icon: 'fa-globe', label: 'Website', val: profileData.website || profileData.social },
+                      { icon: 'fa-brands fa-facebook', label: 'Facebook', val: profileData.facebook },
+                    ].map(({ icon, label, val }) => val ? (
+                      <div className="cd-contact-item" key={label}>
+                        <div className="cd-contact-icon"><i className={`fas ${icon}`}></i></div>
+                        <div>
+                          <div className="cd-contact-label">{label}</div>
+                          <div className="cd-contact-val">{val}</div>
+                        </div>
+                      </div>
+                    ) : null)}
+                    {!profileData.contactName && !profileData.phone && !profileData.contactEmail && (
+                      <div className="cd-value empty">No contact details added yet — activate Edit mode to add.</div>
+                    )}
+                  </div>
+                )}
+
+                <div className="cd-toggle-row" style={{ marginTop: 16, paddingTop: 14, borderTop: '1px solid #f0ece5' }}>
+                  <div>
+                    <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1a1a1a' }}>Display contact publicly</div>
+                    <div style={{ fontSize: '0.75rem', color: '#888' }}>Visible to families on your profile page</div>
+                  </div>
+                  <label className="cd-switch">
+                    <input type="checkbox" checked={profileData.publicToggle}
+                      onChange={e => handleUpdateProfile({ publicToggle: e.target.checked })}
+                      disabled={!editModeActive} />
+                    <span className="cd-slider"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            {/* ── PLAN ── */}
+            <div className="cd-card">
+              <div className="cd-card-header">
+                <div className="cd-card-header-icon"><i className="fas fa-crown"></i></div>
+                <div>
+                  <div className="cd-card-title">Listing Plan</div>
+                  <div className="cd-card-subtitle">Upgrade for more visibility and features</div>
+                </div>
+              </div>
+              <div className="cd-card-body">
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
+                  <span className={`cd-plan-badge ${profileData.plan}`}>
+                    <i className="fas fa-crown" style={{ color: '#f59e0b' }}></i>
+                    {getPlanName()}
+                  </span>
+                  <span style={{ fontSize: '0.78rem', color: '#888', display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <i className="fas fa-circle" style={{ color: profileData.status === 'approved' ? '#10b981' : '#f59e0b', fontSize: '0.5rem' }}></i>
+                    Listing is {profileData.status}
+                  </span>
+                </div>
+                <PlanSelector currentPlan={profileData.plan} onSelectPlan={handlePlanChange} />
+              </div>
+            </div>
+
+            {/* ── REVIEWS ── */}
+            <div className="cd-card">
+              <div className="cd-card-header">
+                <div className="cd-card-header-icon"><i className="fas fa-star"></i></div>
+                <div>
+                  <div className="cd-card-title">Reviews & Testimonials</div>
+                  <div className="cd-card-subtitle">Available on paid tiers</div>
+                </div>
+              </div>
+              <div className="cd-card-body">
+                {profileData.reviews.items && profileData.reviews.items.length > 0 ? (
+                  <>
+                    {profileData.reviews.count > 0 && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16, padding: '12px 16px', background: '#faf9f7', borderRadius: 10 }}>
+                        <div style={{ fontSize: '2rem', fontWeight: 800, color: '#c9621a', lineHeight: 1 }}>{profileData.reviews.average}</div>
+                        <div>
+                          <div style={{ color: '#f59e0b' }}>{'★'.repeat(Math.round(profileData.reviews.average))}{'☆'.repeat(5 - Math.round(profileData.reviews.average))}</div>
+                          <div style={{ fontSize: '0.75rem', color: '#888' }}>Based on {profileData.reviews.count} reviews</div>
+                        </div>
+                      </div>
+                    )}
+                    {profileData.reviews.items.map((review, index) => (
+                      <div className="cd-review" key={index}>
+                        <div className="cd-review-stars">{'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}</div>
+                        <div className="cd-review-text">"{review.text}"</div>
+                        <div className="cd-review-author">— {review.reviewer}</div>
+                      </div>
+                    ))}
+                  </>
+                ) : (
+                  <div className="cd-value empty">
+                    No reviews yet. Reviews appear once families leave feedback on your profile.
+                  </div>
+                )}
+              </div>
+              <div className="cd-footer-bar">
+                <span className="cd-last-edit"><i className="far fa-clock"></i> last edited today</span>
+                {editModeActive && (
+                  <div style={{ display: 'flex', gap: 10 }}>
+                    <button className="cd-btn-solid" onClick={saveChanges} disabled={loading}>
+                      <i className="fas fa-floppy-disk"></i> {loading ? 'Saving…' : 'Save Changes'}
+                    </button>
+                    <button className="cd-btn-solid cancel" onClick={cancelEdit} disabled={loading}>Cancel</button>
+                  </div>
+                )}
+              </div>
+            </div>
+
           </div>
 
-          <hr />
+          {/* ─── SIDEBAR ─── */}
+          <div>
+            {/* Quick Stats */}
+            <div className="cd-sidebar-card">
+              <div className="cd-sidebar-header">
+                <div className="cd-sidebar-title"><i className="fas fa-chart-bar" style={{ marginRight: 6 }}></i>Quick Overview</div>
+              </div>
+              <div className="cd-sidebar-body">
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
+                  <div className="cd-stat" style={{ borderRight: '1px solid #f0ece5', borderBottom: '1px solid #f0ece5' }}>
+                    <div className="cd-stat-val">{profileData.services.length}</div>
+                    <div className="cd-stat-label">Services</div>
+                  </div>
+                  <div className="cd-stat" style={{ borderBottom: '1px solid #f0ece5' }}>
+                    <div className="cd-stat-val">{profileData.tags.length}</div>
+                    <div className="cd-stat-label">Tags</div>
+                  </div>
+                  <div className="cd-stat" style={{ borderRight: '1px solid #f0ece5' }}>
+                    <div className="cd-stat-val">{profileData.availabilityDays.length}</div>
+                    <div className="cd-stat-label">Days/wk</div>
+                  </div>
+                  <div className="cd-stat">
+                    <div className="cd-stat-val">{profileData.reviews.count || 0}</div>
+                    <div className="cd-stat-label">Reviews</div>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-          <div className="card-footer">
-            <span className="last-edited"><i className="far fa-clock"></i> last edited today</span>
-            {editModeActive && (
-              <div style={{ display: 'flex', gap: '0.75rem' }}>
-                <button className="btn-save" onClick={saveChanges} disabled={loading}>
-                  <i className="fas fa-floppy-disk"></i> Save changes
-                </button>
-                <button className="btn-edit" onClick={cancelEdit} disabled={loading}>Cancel</button>
+            {/* Profile Completeness */}
+            <div className="cd-sidebar-card">
+              <div className="cd-sidebar-header">
+                <div className="cd-sidebar-title"><i className="fas fa-tasks" style={{ marginRight: 6 }}></i>Profile Completeness</div>
+              </div>
+              <div className="cd-sidebar-body">
+                {[
+                  { label: 'Name & Bio', done: !!(profileData.name && profileData.bio) },
+                  { label: 'Photo', done: !!(profileData.image || profileData.photo) },
+                  { label: 'Services', done: profileData.services.some(s => s.title) },
+                  { label: 'Location', done: !!(profileData.city && profileData.province) },
+                  { label: 'Contact Details', done: !!(profileData.phone && profileData.contactEmail) },
+                  { label: 'Qualifications', done: !!(profileData.degrees || profileData.certifications) },
+                  { label: 'Availability', done: profileData.availabilityDays.length > 0 },
+                ].map(({ label, done }) => (
+                  <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid #f8f6f3' }}>
+                    <i className={`fas ${done ? 'fa-check-circle' : 'fa-circle'}`}
+                      style={{ color: done ? '#10b981' : '#d1d5db', fontSize: '0.85rem', width: 16 }}></i>
+                    <span style={{ fontSize: '0.83rem', color: done ? '#1a1a1a' : '#999', fontWeight: done ? 600 : 400 }}>{label}</span>
+                  </div>
+                ))}
+                {/* Progress bar */}
+                {(() => {
+                  const items = [
+                    !!(profileData.name && profileData.bio),
+                    !!(profileData.image || profileData.photo),
+                    profileData.services.some(s => s.title),
+                    !!(profileData.city && profileData.province),
+                    !!(profileData.phone && profileData.contactEmail),
+                    !!(profileData.degrees || profileData.certifications),
+                    profileData.availabilityDays.length > 0,
+                  ];
+                  const pct = Math.round((items.filter(Boolean).length / items.length) * 100);
+                  return (
+                    <div style={{ marginTop: 12 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                        <span style={{ fontSize: '0.72rem', color: '#888', fontWeight: 700 }}>COMPLETE</span>
+                        <span style={{ fontSize: '0.72rem', color: '#c9621a', fontWeight: 800 }}>{pct}%</span>
+                      </div>
+                      <div style={{ height: 6, background: '#f0ece5', borderRadius: 3, overflow: 'hidden' }}>
+                        <div style={{ height: '100%', width: `${pct}%`, background: 'linear-gradient(90deg, #c9621a, #e07a35)', borderRadius: 3, transition: 'width 0.5s' }} />
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+            </div>
+
+            {/* Approval notice */}
+            {profileData.status === 'pending' && (
+              <div className="cd-sidebar-card">
+                <div className="cd-sidebar-header" style={{ background: '#92400e' }}>
+                  <div className="cd-sidebar-title"><i className="fas fa-clock" style={{ marginRight: 6 }}></i>Pending Review</div>
+                </div>
+                <div className="cd-sidebar-body">
+                  <p style={{ fontSize: '0.83rem', color: '#555', lineHeight: 1.6 }}>
+                    Your profile is awaiting admin verification. Once approved, it will appear live in the directory.
+                    This typically takes 1–2 business days.
+                  </p>
+                </div>
               </div>
             )}
-            {!editModeActive && (
-              <span style={{ color: 'var(--ink-4)', fontSize: '0.82rem', display: 'inline-flex', alignItems: 'center', gap: '0.375rem' }}>
-                <i className="far fa-eye"></i> view only
-              </span>
-            )}
+
+            {/* Persistence notice */}
+            <div className="cd-sidebar-card">
+              <div className="cd-sidebar-header" style={{ background: '#1e3a5f' }}>
+                <div className="cd-sidebar-title"><i className="fas fa-info-circle" style={{ marginRight: 6 }}></i>Data Storage</div>
+              </div>
+              <div className="cd-sidebar-body">
+                <p style={{ fontSize: '0.8rem', color: '#666', lineHeight: 1.6 }}>
+                  Profile data is stored in your browser's local storage. To persist data across devices and deployments,
+                  a backend database (e.g. Supabase, Firebase) is required. Contact your developer to enable cloud storage.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </main>
 
       <Footer />
-    </>
+    </div>
   );
 };
 

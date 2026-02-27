@@ -33,7 +33,6 @@ const CSS = `
     min-height: 100vh; -webkit-font-smoothing: antialiased; color: var(--dark);
   }
 
-  /* ── HEADER ── */
   .sah-rhdr {
     position: sticky; top: 0; z-index: 200;
     height: var(--header-h); background: #5a5a5a;
@@ -65,7 +64,6 @@ const CSS = `
   }
   .sah-rhdr-ghost:hover { border-color: #fff; background: rgba(255,255,255,0.10); }
 
-  /* ── HERO ── */
   .sah-reg-hero {
     position: relative; overflow: hidden;
     min-height: 220px; display: flex; align-items: center;
@@ -89,7 +87,6 @@ const CSS = `
   }
   .sah-reg-hero-title em { font-style: italic; color: var(--accent-light); }
 
-  /* Step trail */
   .sah-step-trail {
     display: flex; align-items: center; gap: 0; flex-wrap: nowrap; overflow-x: auto;
     -webkit-overflow-scrolling: touch; padding-bottom: 4px;
@@ -109,10 +106,8 @@ const CSS = `
   .sah-trail-dot .sah-tn { font-size: 0.68rem; opacity: 0.75; margin-right: 2px; }
   .sah-trail-arrow { color: rgba(255,255,255,0.25); font-size: 0.62rem; margin: 0 6px; flex-shrink: 0; }
 
-  /* ── FORM PANEL ── */
   .sah-reg-panel { max-width: 1100px; margin: 0 auto; padding: 0 24px 80px; }
 
-  /* Step card */
   .sah-step-card {
     background: var(--card-gray); border-radius: var(--radius-lg);
     box-shadow: var(--shadow-lg); margin-top: 28px; overflow: visible;
@@ -122,7 +117,6 @@ const CSS = `
   .sah-step-card-head p { font-size: 0.85rem; color: rgba(255,255,255,0.65); margin-top: 3px; }
   .sah-step-card-body { padding: 32px 36px 28px; overflow: visible; border-radius: 0 0 var(--radius-lg) var(--radius-lg); }
 
-  /* ── PLAN CARDS (step 1) ── */
   .sah-plan-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 28px; }
   .sah-plan-card {
     border: 2px solid rgba(0,0,0,0.10); border-radius: var(--radius-lg);
@@ -158,7 +152,6 @@ const CSS = `
   .sah-plan-select-btn:hover { background: var(--accent-dark); }
   .sah-plan-select-btn.selected { background: #3a3a3a; }
 
-  /* Terms row */
   .sah-terms-row {
     background: var(--card-white); border: 1.5px solid var(--border);
     border-radius: var(--radius); padding: 16px 20px;
@@ -171,7 +164,6 @@ const CSS = `
   .sah-terms-row a { color: var(--accent); font-weight: 700; text-decoration: none; }
   .sah-terms-row a:hover { text-decoration: underline; }
 
-  /* ── FORM FIELDS ── */
   .sah-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
   .sah-field { display: flex; flex-direction: column; gap: 5px; }
   .sah-full { grid-column: 1 / -1; }
@@ -196,7 +188,6 @@ const CSS = `
   }
   .sah-field input.err, .sah-field select.err, .sah-field textarea.err { border-color: #dc2626; background: #fff8f8; }
 
-  /* Inline field error */
   .sah-field-err {
     color: #dc2626; font-size: 0.76rem; font-weight: 600;
     display: flex; align-items: center; gap: 5px;
@@ -210,8 +201,6 @@ const CSS = `
     to   { opacity: 1; transform: translateY(0); }
   }
   .sah-field-err i { font-size: 0.7rem; flex-shrink: 0; }
-
-  /* Inline terms error */
   .sah-terms-err {
     color: #dc2626; font-size: 0.76rem; font-weight: 600;
     display: flex; align-items: center; gap: 5px;
@@ -219,8 +208,6 @@ const CSS = `
     background: #fff0f0; border-radius: 5px;
     border-left: 3px solid #dc2626;
   }
-
-  /* Inline group error (for checkbox/radio groups) */
   .sah-group-err {
     color: #dc2626; font-size: 0.76rem; font-weight: 600;
     display: flex; align-items: center; gap: 5px;
@@ -230,18 +217,14 @@ const CSS = `
     animation: sah-err-in 0.18s ease;
   }
 
-  /* Prefixed input wrapper */
   .sah-prefix-wrap { display: flex; align-items: stretch; border: 1.5px solid rgba(0,0,0,0.11); border-radius: var(--radius); overflow: hidden; background: var(--card-white); transition: border-color 0.15s, box-shadow 0.15s; }
   .sah-prefix-wrap:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(201,98,26,0.14); }
   .sah-prefix-wrap.err { border-color: #dc2626; background: #fff8f8; }
   .sah-prefix { background: rgba(0,0,0,0.06); border-right: 1.5px solid rgba(0,0,0,0.10); padding: 11px 12px; font-size: 0.92rem; font-weight: 700; color: var(--mid); white-space: nowrap; display: flex; align-items: center; }
   .sah-prefix-wrap input { border: none !important; box-shadow: none !important; border-radius: 0 !important; flex: 1; }
   .sah-prefix-wrap input:focus { border: none; box-shadow: none; outline: none; }
-
-  /* Suffix input (for unit display) */
   .sah-suffix { background: rgba(0,0,0,0.04); border-left: 1.5px solid rgba(0,0,0,0.10); padding: 11px 14px; font-size: 0.85rem; font-weight: 600; color: var(--muted); white-space: nowrap; display: flex; align-items: center; min-width: 90px; }
 
-  /* Password */
   .sah-pw-wrap { position: relative; }
   .sah-pw-wrap input { padding-right: 44px; }
   .sah-pw-eye {
@@ -250,7 +233,6 @@ const CSS = `
   }
   .sah-pw-eye:hover { color: var(--accent); }
 
-  /* Checkbox / radio groups */
   .sah-check-group { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 2px; }
   .sah-check-group label {
     display: inline-flex; align-items: center; gap: 7px;
@@ -268,19 +250,14 @@ const CSS = `
   }
   .sah-check-group label:has(input:checked) { border-color: var(--accent); background: rgba(201,98,26,0.08); color: var(--accent); }
 
-  /* File input */
   .sah-field input[type="file"] { padding: 8px 12px; font-size: 0.83rem; cursor: pointer; background: var(--card-white); }
-
-  /* Select arrow */
   .sah-field select {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
     background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; cursor: pointer;
   }
 
-  /* Divider */
   .sah-sec-divider { height: 1px; background: rgba(0,0,0,0.08); margin: 24px 0; }
 
-  /* Secondary categories toggle */
   .sah-secondary-toggle {
     display: inline-flex; align-items: center; gap: 8px;
     padding: 9px 16px; border-radius: 6px;
@@ -294,7 +271,6 @@ const CSS = `
   .sah-secondary-cats-box { margin-top: 10px; padding: 14px 16px; background: var(--card-white); border: 1.5px solid var(--accent); border-radius: var(--radius); }
   .sah-secondary-cats-box .sah-check-group { gap: 8px; }
 
-  /* Qual tabs */
   .sah-qual-tabs { display: flex; gap: 0; border: 1.5px solid rgba(0,0,0,0.11); border-radius: var(--radius); overflow: hidden; margin-bottom: 12px; }
   .sah-qual-tab {
     flex: 1; padding: 9px 14px; background: var(--card-white); border: none;
@@ -306,19 +282,14 @@ const CSS = `
   .sah-qual-tab.active { background: var(--accent); color: #fff; }
   .sah-qual-tab:hover:not(.active) { background: rgba(201,98,26,0.07); color: var(--accent); }
 
-  /* Qual text fields */
   .sah-qual-text-grid { display: flex; flex-direction: column; gap: 10px; }
-
-  /* Local radius row */
   .sah-local-radius-row { display: flex; gap: 10px; align-items: stretch; }
   .sah-local-radius-row input { flex: 1; }
   .sah-local-radius-row select { width: 100px; flex-shrink: 0; }
 
-  /* Time slot help */
   .sah-field-hint { font-size: 0.74rem; color: var(--muted); margin-top: 3px; display: flex; align-items: center; gap: 4px; }
   .sah-field-hint i { color: var(--accent); font-size: 0.68rem; }
 
-  /* Social add-others dropdown */
   .sah-add-others-wrap { position: relative; display: inline-block; }
   .sah-add-others-btn {
     display: inline-flex; align-items: center; gap: 7px;
@@ -344,7 +315,6 @@ const CSS = `
   .sah-add-others-option i { color: var(--accent); width: 16px; text-align: center; }
   .sah-added-socials { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
 
-  /* ── NAV BAR ── */
   .sah-form-nav-wrap {
     background: var(--card-gray); border-radius: var(--radius-lg);
     box-shadow: var(--shadow-md); margin-top: 20px;
@@ -375,11 +345,17 @@ const CSS = `
   .sah-nav-submit { background: #3a3a3a; box-shadow: 0 6px 20px -4px rgba(0,0,0,0.3); }
   .sah-nav-submit:hover { background: #1e1e1e; }
 
-  /* Spinner */
   .sah-spinner { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: sah-spin 0.7s linear infinite; }
   @keyframes sah-spin { to { transform: rotate(360deg); } }
 
-  /* ── RESPONSIVE ── */
+  /* Qual parsed success banner */
+  .sah-qual-parsed {
+    padding: 10px 14px; background: #ecfdf5; border-radius: 8px;
+    border: 1px solid #a7f3d0; font-size: 0.8rem; color: #065f46;
+    margin-top: 10px; display: flex; align-items: center; gap: 8px;
+    font-weight: 600;
+  }
+
   @media (max-width: 900px) {
     .sah-reg-panel { max-width: 100%; padding: 0 16px 80px; }
     .sah-step-card-body { padding: 24px 20px; }
@@ -396,7 +372,6 @@ const CSS = `
   }
 `;
 
-/* ── STEP DEFINITIONS ── */
 const STEPS = [
   { title: 'Select Plan', label: 'Select Plan', desc: 'Choose a listing plan and agree to terms', icon: 'fa-layer-group' },
   { title: 'Account Setup', label: 'Account Setup', desc: 'Create your provider account credentials', icon: 'fa-user-circle' },
@@ -470,7 +445,6 @@ const EXTRA_SOCIALS = [
   { key: 'twitter', label: 'X / Twitter', icon: 'fab fa-x-twitter', placeholder: 'https://x.com/yourhandle' },
 ];
 
-// Helper: inline field error component
 const FieldErr = ({ msg }) => msg
   ? <div className="sah-field-err"><i className="fas fa-exclamation-circle" /> {msg}</div>
   : null;
@@ -483,7 +457,6 @@ const Registration = () => {
 
   const [step, setStep] = useState(1);
   const [data, setData] = useState({ listingPlan: 'Free Listing – basic profile', terms: false });
-  // fieldErrors: keyed by field name, value = error string
   const [fieldErrors, setFieldErrors] = useState({});
   const [showPw, setShowPw] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -493,6 +466,8 @@ const Registration = () => {
   const [timeSlotErr, setTimeSlotErr] = useState('');
   const [showSocialDropdown, setShowSocialDropdown] = useState(false);
   const [addedSocials, setAddedSocials] = useState([]);
+  // ── NEW: track parsed qualification filename ──
+  const [parsedQualFileName, setParsedQualFileName] = useState('');
   const topRef = useRef(null);
   const socialDropRef = useRef(null);
 
@@ -513,7 +488,6 @@ const Registration = () => {
 
   useEffect(() => {
     if (topRef.current) topRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    // Clear errors when step changes
     setFieldErrors({});
     setTimeSlotErr('');
   }, [step]);
@@ -530,7 +504,6 @@ const Registration = () => {
 
   const set = (name, value) => {
     setData(p => ({ ...p, [name]: value }));
-    // Clear that field's error on change
     setFieldErrors(prev => ({ ...prev, [name]: '' }));
   };
 
@@ -561,10 +534,52 @@ const Registration = () => {
     set(key, '');
   };
 
-  /* ── VALIDATION — returns { [fieldKey]: errorMessage } or {} ── */
+  // ── Qualification file auto-parser ──
+  const handleQualFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const nameWithoutExt = file.name.replace(/\.[^.]+$/, '');
+    const segments = nameWithoutExt.replace(/[_\-\.]/g, ' ').replace(/\s+/g, ' ').trim();
+    const lc = segments.toLowerCase();
+    setParsedQualFileName(file.name);
+
+    const degreeKeywords = ['bed', 'bsc', 'ba ', 'honours', 'diploma', 'degree', 'masters', 'phd', 'med ', 'pgce', 'bachelor'];
+    const certKeywords = ['sace', 'umalusi', 'cert', 'accredited', 'registered'];
+    const memberKeywords = ['member', 'association', 'society', 'institute'];
+
+    const hasDegree = degreeKeywords.some(k => lc.includes(k));
+    const hasCert = certKeywords.some(k => lc.includes(k));
+    const hasMember = memberKeywords.some(k => lc.includes(k));
+
+    if (file.name.toLowerCase().endsWith('.txt')) {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const text = ev.target.result;
+        const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+        const degLine = lines.find(l => degreeKeywords.some(k => l.toLowerCase().includes(k)));
+        const certLine = lines.find(l => certKeywords.some(k => l.toLowerCase().includes(k)));
+        const memberLine = lines.find(l => memberKeywords.some(k => l.toLowerCase().includes(k)));
+        setData(prev => ({
+          ...prev,
+          qualDegree: degLine || prev.qualDegree || segments,
+          qualCerts: certLine || prev.qualCerts || '',
+          qualMemberships: memberLine || prev.qualMemberships || '',
+        }));
+      };
+      reader.readAsText(file);
+    } else {
+      setData(prev => ({
+        ...prev,
+        qualDegree: hasDegree ? segments : (prev.qualDegree || segments),
+        qualCerts: hasCert ? segments : (prev.qualCerts || ''),
+        qualMemberships: hasMember ? segments : prev.qualMemberships,
+      }));
+    }
+  };
+
   const validateStep = () => {
     const errs = {};
-
     if (step === 1) {
       if (!data.terms) errs.terms = 'Please tick the box to agree to the Terms and Community Guidelines before continuing.';
     }
@@ -580,16 +595,16 @@ const Registration = () => {
     }
     if (step === 4) {
       if (!data.primaryCat) errs.primaryCat = 'Please select your primary service category.';
-      if (!data.serviceTitle?.trim()) errs.serviceTitle = 'Please enter a title for your service (e.g. "Maths Tutor for Grades 10–12").';
-      if (!data.serviceDesc?.trim()) errs.serviceDesc = 'Please describe the services you offer so families know what to expect.';
-      if (!data.subjects?.trim()) errs.subjects = 'Please list the subjects or specialisations you offer (e.g. Mathematics, Phonics).';
+      if (!data.serviceTitle?.trim()) errs.serviceTitle = 'Please enter a title for your service.';
+      if (!data.serviceDesc?.trim()) errs.serviceDesc = 'Please describe the services you offer.';
+      if (!data.subjects?.trim()) errs.subjects = 'Please list the subjects or specialisations you offer.';
       if (!data.ageGroups?.length) errs.ageGroups = 'Please select at least one age group you work with.';
-      if (!data.deliveryMode) errs.deliveryMode = 'Please select how you deliver your services (online, in-person, or both).';
+      if (!data.deliveryMode) errs.deliveryMode = 'Please select how you deliver your services.';
     }
     if (step === 5) {
       if (!data.city?.trim()) errs.city = 'Please enter your city.';
       if (!data.province) errs.province = 'Please select your province.';
-      if (!data.serviceAreas?.length) errs.serviceAreas = 'Please select at least one service area (Local, National, or Online only).';
+      if (!data.serviceAreas?.length) errs.serviceAreas = 'Please select at least one service area.';
     }
     if (step === 6) {
       if (!data.pricingModel) errs.pricingModel = 'Please select how you charge for your services.';
@@ -597,15 +612,14 @@ const Registration = () => {
       if (!data.timeSlots?.trim()) {
         errs.timeSlots = 'Please enter your available time slots (e.g. 9:00 - 17:00).';
       } else if (!TIME_SLOT_REGEX.test(data.timeSlots.trim())) {
-        errs.timeSlots = 'Use the format HH:MM - HH:MM (e.g. 9:00 - 17:00). Separate multiple slots with a comma.';
+        errs.timeSlots = 'Use the format HH:MM - HH:MM (e.g. 9:00 - 17:00).';
       }
     }
     if (step === 7) {
-      if (!data.phoneLocal?.trim()) errs.phoneLocal = 'Please enter your phone number (9 digits after +27).';
-      else if (data.phoneLocal.replace(/\D/g, '').length !== 9) errs.phoneLocal = 'Enter exactly 9 digits after +27 (e.g. 71 234 5678).';
+      if (!data.phoneLocal?.trim()) errs.phoneLocal = 'Please enter your phone number.';
+      else if (data.phoneLocal.replace(/\D/g, '').length !== 9) errs.phoneLocal = 'Enter exactly 9 digits after +27.';
       if (!data.inquiryEmail?.trim() || !/^\S+@\S+\.\S+$/.test(data.inquiryEmail)) errs.inquiryEmail = 'Please enter a valid email address for enquiries.';
     }
-
     return errs;
   };
 
@@ -613,7 +627,6 @@ const Registration = () => {
     const errs = validateStep();
     if (Object.keys(errs).length > 0) {
       setFieldErrors(errs);
-      // Scroll to first error field
       setTimeout(() => {
         const firstErr = document.querySelector('.sah-field-err, .sah-group-err, .sah-terms-err');
         if (firstErr) firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -641,29 +654,23 @@ const Registration = () => {
     };
 
     const tier = planMap[data.listingPlan] || 'free';
-
-    // Phone numbers
     const fullPhone = data.phoneLocal ? '+27' + data.phoneLocal.replace(/\D/g, '') : '';
     const fullWhatsapp = data.whatsappLocal ? '+27' + data.whatsappLocal.replace(/\D/g, '') : fullPhone;
-
-    // Pricing display
     const priceUnit = PRICING_UNIT_MAP[data.pricingModel] || '';
     const priceDisplay = data.startingPrice ? `R${data.startingPrice}${priceUnit}` : 'Contact';
 
-    // Qualifications — keep individual fields AND a combined string for the profile page
+    // ── Qualifications — map parsed file data through to provider object ──
     const qualDegree = data.qualDegree || '';
     const qualCerts = data.qualCerts || '';
     const qualMemberships = data.qualMemberships || '';
     const certificationsCombined = [qualDegree, qualCerts].filter(Boolean).join(' | ');
 
-    // Service area type — derive from serviceAreas array
     let serviceAreaType = 'national';
     const svcAreas = data.serviceAreas || [];
     if (svcAreas.includes('Local') && svcAreas.length === 1) serviceAreaType = 'local';
     else if (svcAreas.includes('Online only') && svcAreas.length === 1) serviceAreaType = 'online';
     else if (svcAreas.includes('Local')) serviceAreaType = 'local';
 
-    // Services array — matches ClientDashboard ServiceItem shape
     const services = [{
       title: data.serviceTitle || '',
       description: data.serviceDesc || '',
@@ -672,20 +679,11 @@ const Registration = () => {
       subjects: data.subjects || '',
     }];
 
-    // Social links object
-    const socialLinks = {
-      website: data.website || '',
-      facebook: data.facebook || '',
-    };
-
     const newProvider = {
-      // ── Identity ──
       id: 'prov_' + Date.now(),
       name: data.fullName || '',
       email: data.email || '',
       accountType: data.accountType || 'Individual Provider',
-
-      // ── Plan & status ──
       plan: tier,
       listingPlan: tier,
       tier,
@@ -694,40 +692,26 @@ const Registration = () => {
       registered: new Date().toISOString(),
       listingPublic: true,
       publicToggle: true,
-
-      // ── Profile photo ──
-      // profilePhoto is a base64 data URL (converted by FileReader on upload)
       image: data.profilePhoto || null,
       photo: data.profilePhoto || null,
-
-      // ── Category ──
       category: catMap[data.primaryCat] || 'tutor',
       primaryCategory: data.primaryCat || '',
       secondaryCategories: data.secondaryCats || [],
-
-      // ── Bio & experience ──
       bio: data.bio || '',
       yearsExperience: data.experience || '',
-
-      // ── Qualifications ──
+      // ── Qualifications — these come from either text input OR file auto-parse ──
       degrees: qualDegree,
       certifications: certificationsCombined,
       qualCerts: qualCerts,
       memberships: qualMemberships,
       clearance: data.clearanceText || '',
-
-      // ── Tags / subjects ──
       tags: data.subjects ? data.subjects.split(',').map(s => s.trim()).filter(Boolean) : [],
       languages: data.languages || [],
-
-      // ── Services ──
       services,
       serviceTitle: data.serviceTitle || '',
       serviceDesc: data.serviceDesc || '',
       subjects: data.subjects || '',
       ageGroups: data.ageGroups || [],
-
-      // ── Location ──
       location: data.city ? `${data.city}, ${data.province}` : '',
       city: data.city || '',
       province: data.province || '',
@@ -736,28 +720,18 @@ const Registration = () => {
       serviceAreas: svcAreas,
       serviceAreaType,
       radius: data.localRadiusNum ? `${data.localRadiusNum} ${data.localRadiusUnit || 'km'}` : '',
-
-      // ── Pricing ──
       pricingModel: data.pricingModel || '',
       startingPrice: priceDisplay,
       priceFrom: priceDisplay,
-
-      // ── Availability ──
       availabilityDays: (data.daysAvailable || []).map(d => d.slice(0, 3)),
       availabilityNotes: data.timeSlots || '',
-
-      // ── Contact ──
       contactName: data.fullName || '',
       phone: fullPhone,
       whatsapp: fullWhatsapp,
       contactEmail: data.inquiryEmail || data.email || '',
-
-      // ── Social / online presence ──
       social: data.website || '',
       website: data.website || '',
       facebook: data.facebook || '',
-
-      // ── Reviews ──
       rating: null,
       reviewCount: 0,
       reviews: { average: 0, count: 0, items: [] },
@@ -782,9 +756,8 @@ const Registration = () => {
     }
   };
 
-  const fe = fieldErrors; // shorthand
+  const fe = fieldErrors;
 
-  /* ── RENDER PLAN STEP ── */
   const renderPlanStep = () => (
     <>
       <div className="sah-plan-grid">
@@ -820,9 +793,7 @@ const Registration = () => {
                 <ul className="sah-plan-features">
                   {plan.features.map((f, i) => (
                     <li key={i} className={f.y ? '' : 'no'}>
-                      {f.y
-                        ? <i className="fas fa-check sah-ico-yes" />
-                        : <i className="fas fa-times sah-ico-no" />}
+                      {f.y ? <i className="fas fa-check sah-ico-yes" /> : <i className="fas fa-times sah-ico-no" />}
                       {f.t}
                     </li>
                   ))}
@@ -886,6 +857,7 @@ const Registration = () => {
     </div>
   );
 
+  // ── STEP 3: Identity & Trust — with improved qual file upload ──
   const renderStep3 = () => (
     <div className="sah-form-grid">
       <div className="sah-field">
@@ -897,36 +869,27 @@ const Registration = () => {
             const file = e.target.files[0];
             if (!file) return;
             const reader = new FileReader();
-            reader.onload = (ev) => {
-              // Store the base64 data URL — this is what gets saved to localStorage
-              set('profilePhoto', ev.target.result);
-            };
+            reader.onload = (ev) => { set('profilePhoto', ev.target.result); };
             reader.readAsDataURL(file);
           }}
         />
-        {/* Live preview once a photo is selected */}
         {data.profilePhoto && (
           <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 12 }}>
-            <img
-              src={data.profilePhoto}
-              alt="Profile preview"
-              style={{ width: 64, height: 64, borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--accent)' }}
-            />
+            <img src={data.profilePhoto} alt="Profile preview"
+              style={{ width: 64, height: 64, borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--accent)' }} />
             <div>
               <div style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--accent)' }}>
                 <i className="fas fa-check-circle" /> Photo selected
               </div>
-              <button
-                type="button"
-                onClick={() => set('profilePhoto', null)}
-                style={{ fontSize: '0.72rem', color: 'var(--muted)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginTop: 2 }}
-              >
+              <button type="button" onClick={() => set('profilePhoto', null)}
+                style={{ fontSize: '0.72rem', color: 'var(--muted)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginTop: 2 }}>
                 Remove
               </button>
             </div>
           </div>
         )}
       </div>
+
       <div className="sah-field">
         <label><i className="fas fa-hashtag" /> Years of Experience <em className="sah-req">*</em></label>
         <input type="number" value={data.experience ?? ''} placeholder="e.g. 8" min={0} max={60}
@@ -934,6 +897,7 @@ const Registration = () => {
           onChange={e => set('experience', e.target.value)} />
         <FieldErr msg={fe.experience} />
       </div>
+
       <div className="sah-field sah-full">
         <label><i className="fas fa-align-left" /> Short Bio (150–250 words) <em className="sah-req">*</em></label>
         <textarea value={data.bio || ''} placeholder="Tell families about your teaching philosophy, experience, and approach..."
@@ -942,6 +906,7 @@ const Registration = () => {
         <FieldErr msg={fe.bio} />
       </div>
 
+      {/* ── QUALIFICATIONS with auto-fill file upload ── */}
       <div className="sah-field sah-full">
         <label><i className="fas fa-certificate" /> Qualifications / Certifications</label>
         <div className="sah-qual-tabs">
@@ -949,9 +914,10 @@ const Registration = () => {
             <i className="fas fa-edit" /> Enter Text
           </button>
           <button type="button" className={`sah-qual-tab${qualMode === 'file' ? ' active' : ''}`} onClick={() => setQualMode('file')}>
-            <i className="fas fa-upload" /> Upload File
+            <i className="fas fa-upload" /> Upload File (auto-fill)
           </button>
         </div>
+
         {qualMode === 'text' ? (
           <div className="sah-qual-text-grid">
             <input type="text" value={data.qualDegree || ''} placeholder="Degree / Diploma (e.g. BEd Honours, Mathematics Education)" onChange={e => set('qualDegree', e.target.value)} />
@@ -959,7 +925,36 @@ const Registration = () => {
             <input type="text" value={data.qualMemberships || ''} placeholder="Memberships (e.g. SA Curriculum Association)" onChange={e => set('qualMemberships', e.target.value)} />
           </div>
         ) : (
-          <input type="file" accept=".pdf,.doc,.docx,.jpg,.png" onChange={e => set('certsFile', e.target.files[0])} />
+          <div>
+            <input
+              type="file"
+              accept=".pdf,.doc,.docx,.txt,.jpg,.png"
+              onChange={handleQualFileUpload}
+            />
+            <div className="sah-field-hint" style={{ marginTop: 6 }}>
+              <i className="fas fa-info-circle" />
+              Upload a .txt file for best auto-fill results. PDF/DOC filenames are used to pre-fill fields.
+            </div>
+
+            {parsedQualFileName && (
+              <div className="sah-qual-parsed">
+                <i className="fas fa-check-circle" />
+                File parsed: <strong>{parsedQualFileName}</strong> — review the auto-filled fields below and edit as needed.
+              </div>
+            )}
+
+            {/* Always show editable fields when in file mode so user can review */}
+            <div style={{ marginTop: 14 }}>
+              <p style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--accent)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                {parsedQualFileName ? 'Review & Edit Auto-filled Fields:' : 'Or enter manually:'}
+              </p>
+              <div className="sah-qual-text-grid">
+                <input type="text" value={data.qualDegree || ''} placeholder="Degree / Diploma" onChange={e => set('qualDegree', e.target.value)} />
+                <input type="text" value={data.qualCerts || ''} placeholder="Certifications" onChange={e => set('qualCerts', e.target.value)} />
+                <input type="text" value={data.qualMemberships || ''} placeholder="Memberships" onChange={e => set('qualMemberships', e.target.value)} />
+              </div>
+            </div>
+          </div>
         )}
       </div>
 
@@ -1097,18 +1092,12 @@ const Registration = () => {
         </select>
         <FieldErr msg={fe.province} />
       </div>
-
       <div className="sah-field sah-full">
         <label><i className="fas fa-dot-circle" /> Service Area <em className="sah-req">*</em></label>
         <div className="sah-check-group">
           {['Local', 'National', 'Online only'].map(m => (
             <label key={m}>
-              <input
-                type="checkbox"
-                value={m}
-                checked={(data.serviceAreas || []).includes(m)}
-                onChange={() => toggleServiceArea(m)}
-              />
+              <input type="checkbox" value={m} checked={(data.serviceAreas || []).includes(m)} onChange={() => toggleServiceArea(m)} />
               {m}
             </label>
           ))}
@@ -1116,26 +1105,13 @@ const Registration = () => {
         <div className="sah-field-hint"><i className="fas fa-info-circle" /> You may select more than one option.</div>
         {fe.serviceAreas && <div className="sah-group-err"><i className="fas fa-exclamation-circle" /> {fe.serviceAreas}</div>}
       </div>
-
       {(data.serviceAreas || []).includes('Local') && (
         <div className="sah-field">
           <label><i className="fas fa-route" /> Local Service Radius</label>
           <div className="sah-local-radius-row">
-            <input
-              type="number"
-              min={1}
-              value={data.localRadiusNum || ''}
-              placeholder="e.g. 30"
-              onChange={e => {
-                const val = e.target.value.replace(/[^0-9]/g, '');
-                set('localRadiusNum', val);
-              }}
-            />
-            <select
-              value={data.localRadiusUnit || 'km'}
-              onChange={e => set('localRadiusUnit', e.target.value)}
-              style={{ width: 80 }}
-            >
+            <input type="number" min={1} value={data.localRadiusNum || ''} placeholder="e.g. 30"
+              onChange={e => set('localRadiusNum', e.target.value.replace(/[^0-9]/g, ''))} />
+            <select value={data.localRadiusUnit || 'km'} onChange={e => set('localRadiusUnit', e.target.value)} style={{ width: 80 }}>
               <option value="km">km</option>
               <option value="m">m</option>
             </select>
@@ -1147,7 +1123,6 @@ const Registration = () => {
 
   const renderStep6 = () => {
     const priceUnit = PRICING_UNIT_MAP[data.pricingModel] || '';
-
     return (
       <div className="sah-form-grid">
         <div className="sah-field">
@@ -1158,30 +1133,19 @@ const Registration = () => {
           </select>
           <FieldErr msg={fe.pricingModel} />
         </div>
-
         <div className="sah-field">
           <label><i className="fas fa-tag" /> Starting Price (optional)</label>
           <div className="sah-prefix-wrap">
             <span className="sah-prefix">R</span>
-            <input
-              type="text"
-              inputMode="numeric"
-              value={data.startingPrice || ''}
+            <input type="text" inputMode="numeric" value={data.startingPrice || ''}
               placeholder={data.pricingModel ? `Amount${priceUnit}` : 'Select pricing model first'}
-              onChange={e => {
-                const val = e.target.value.replace(/[^0-9]/g, '');
-                set('startingPrice', val);
-              }}
-            />
+              onChange={e => set('startingPrice', e.target.value.replace(/[^0-9]/g, ''))} />
             {priceUnit && <span className="sah-suffix">{priceUnit}</span>}
           </div>
           {data.startingPrice && priceUnit && (
-            <div className="sah-field-hint">
-              <i className="fas fa-eye" /> Preview: <strong>R{data.startingPrice}{priceUnit}</strong>
-            </div>
+            <div className="sah-field-hint"><i className="fas fa-eye" /> Preview: <strong>R{data.startingPrice}{priceUnit}</strong></div>
           )}
         </div>
-
         <div className="sah-field sah-full">
           <label><i className="fas fa-check-square" /> Days Available <em className="sah-req">*</em></label>
           <div className="sah-check-group">
@@ -1194,28 +1158,20 @@ const Registration = () => {
           </div>
           {fe.daysAvailable && <div className="sah-group-err"><i className="fas fa-exclamation-circle" /> {fe.daysAvailable}</div>}
         </div>
-
         <div className="sah-field sah-full">
           <label><i className="fas fa-clock" /> Time Slots <em className="sah-req">*</em></label>
-          <input
-            type="text"
-            value={data.timeSlots || ''}
-            placeholder="e.g. 9:00 - 12:00, 14:00 - 17:30"
+          <input type="text" value={data.timeSlots || ''} placeholder="e.g. 9:00 - 12:00, 14:00 - 17:30"
             className={fe.timeSlots ? 'err' : ''}
             onChange={e => {
               const val = e.target.value;
               set('timeSlots', val);
               if (val.trim() && !TIME_SLOT_REGEX.test(val.trim())) {
-                setTimeSlotErr('Use the format HH:MM - HH:MM (e.g. 9:00 - 17:00). Separate multiple slots with a comma.');
-              } else {
-                setTimeSlotErr('');
-              }
-            }}
-          />
+                setTimeSlotErr('Use the format HH:MM - HH:MM (e.g. 9:00 - 17:00).');
+              } else { setTimeSlotErr(''); }
+            }} />
           {(fe.timeSlots || timeSlotErr)
             ? <div className="sah-field-err"><i className="fas fa-exclamation-circle" /> {fe.timeSlots || timeSlotErr}</div>
-            : <div className="sah-field-hint"><i className="fas fa-info-circle" /> Format: 9:00 - 17:00 &nbsp;·&nbsp; Multiple: 9:00 - 12:00, 14:00 - 17:00</div>
-          }
+            : <div className="sah-field-hint"><i className="fas fa-info-circle" /> Format: 9:00 - 17:00 &nbsp;·&nbsp; Multiple: 9:00 - 12:00, 14:00 - 17:00</div>}
         </div>
       </div>
     );
@@ -1223,49 +1179,36 @@ const Registration = () => {
 
   const renderStep7 = () => {
     const availableToAdd = EXTRA_SOCIALS.filter(s => !addedSocials.includes(s.key));
-
     return (
       <div className="sah-form-grid">
         <div className="sah-field">
           <label><i className="fas fa-phone" /> Phone Number <em className="sah-req">*</em></label>
           <div className={`sah-prefix-wrap${fe.phoneLocal ? ' err' : ''}`}>
             <span className="sah-prefix">+27</span>
-            <input
-              type="tel"
-              value={data.phoneLocal || ''}
-              placeholder="71 234 5678"
-              maxLength={12}
+            <input type="tel" value={data.phoneLocal || ''} placeholder="71 234 5678" maxLength={12}
               onChange={e => {
                 let val = e.target.value.replace(/[^0-9\s]/g, '');
                 const digits = val.replace(/\D/g, '');
                 if (digits.length > 9) val = val.slice(0, val.length - (digits.length - 9));
                 set('phoneLocal', val);
-              }}
-            />
+              }} />
           </div>
           <FieldErr msg={fe.phoneLocal} />
           {!fe.phoneLocal && <div className="sah-field-hint"><i className="fas fa-info-circle" /> Enter 9 digits after +27 (e.g. 71 234 5678)</div>}
         </div>
-
         <div className="sah-field">
           <label><i className="fab fa-whatsapp" /> WhatsApp Number</label>
           <div className="sah-prefix-wrap">
             <span className="sah-prefix">+27</span>
-            <input
-              type="tel"
-              value={data.whatsappLocal || ''}
-              placeholder="71 234 5678"
-              maxLength={12}
+            <input type="tel" value={data.whatsappLocal || ''} placeholder="71 234 5678" maxLength={12}
               onChange={e => {
                 let val = e.target.value.replace(/[^0-9\s]/g, '');
                 const digits = val.replace(/\D/g, '');
                 if (digits.length > 9) val = val.slice(0, val.length - (digits.length - 9));
                 set('whatsappLocal', val);
-              }}
-            />
+              }} />
           </div>
         </div>
-
         <div className="sah-field sah-full">
           <label><i className="fas fa-envelope" /> Email for Enquiries <em className="sah-req">*</em></label>
           <input type="email" value={data.inquiryEmail || ''} placeholder="contact@example.com"
@@ -1273,17 +1216,14 @@ const Registration = () => {
             onChange={e => set('inquiryEmail', e.target.value)} />
           <FieldErr msg={fe.inquiryEmail} />
         </div>
-
         <div className="sah-field">
           <label><i className="fas fa-globe" /> Website</label>
           <input type="url" value={data.website || ''} placeholder="https://yourwebsite.co.za" onChange={e => set('website', e.target.value)} />
         </div>
-
         <div className="sah-field">
           <label><i className="fab fa-facebook-f" /> Facebook</label>
           <input type="url" value={data.facebook || ''} placeholder="https://facebook.com/yourpage" onChange={e => set('facebook', e.target.value)} />
         </div>
-
         {addedSocials.length > 0 && (
           <div className="sah-full sah-added-socials">
             {addedSocials.map(key => {
@@ -1294,12 +1234,8 @@ const Registration = () => {
                   <label><i className={s.icon} /> {s.label}</label>
                   <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                     <input type="url" value={data[key] || ''} placeholder={s.placeholder} onChange={e => set(key, e.target.value)} style={{ flex: 1 }} />
-                    <button
-                      type="button"
-                      onClick={() => removeSocial(key)}
-                      style={{ background: 'none', border: '1.5px solid rgba(0,0,0,0.12)', borderRadius: 6, padding: '10px 12px', cursor: 'pointer', color: 'var(--muted)', fontSize: '0.8rem', flexShrink: 0 }}
-                      title="Remove"
-                    >
+                    <button type="button" onClick={() => removeSocial(key)}
+                      style={{ background: 'none', border: '1.5px solid rgba(0,0,0,0.12)', borderRadius: 6, padding: '10px 12px', cursor: 'pointer', color: 'var(--muted)', fontSize: '0.8rem', flexShrink: 0 }}>
                       <i className="fas fa-times" />
                     </button>
                   </div>
@@ -1308,27 +1244,17 @@ const Registration = () => {
             })}
           </div>
         )}
-
         {availableToAdd.length > 0 && (
           <div className="sah-full">
             <div className="sah-add-others-wrap" ref={socialDropRef}>
-              <button
-                type="button"
-                className="sah-add-others-btn"
-                onClick={() => setShowSocialDropdown(s => !s)}
-              >
+              <button type="button" className="sah-add-others-btn" onClick={() => setShowSocialDropdown(s => !s)}>
                 <i className="fas fa-plus" /> Add other social platforms
                 <i className={`fas fa-chevron-${showSocialDropdown ? 'up' : 'down'}`} style={{ fontSize: '0.7rem', marginLeft: 2 }} />
               </button>
               {showSocialDropdown && (
                 <div className="sah-add-others-dropdown">
                   {availableToAdd.map(s => (
-                    <button
-                      key={s.key}
-                      type="button"
-                      className="sah-add-others-option"
-                      onClick={() => addSocial(s.key)}
-                    >
+                    <button key={s.key} type="button" className="sah-add-others-option" onClick={() => addSocial(s.key)}>
                       <i className={s.icon} /> {s.label}
                     </button>
                   ))}
@@ -1346,11 +1272,10 @@ const Registration = () => {
 
   return (
     <div className="sah-reg-wrap" ref={topRef}>
-
-      {/* ── HEADER ── */}
       <header className="sah-rhdr">
         <div className="sah-rhdr-inner">
           <div className="sah-rhdr-left">
+            {/* Back to Directory → homepage */}
             <button className="sah-rhdr-back" onClick={() => navigate('/')}>
               <i className="fas fa-arrow-left" /> Back to Directory
             </button>
@@ -1366,7 +1291,6 @@ const Registration = () => {
         </div>
       </header>
 
-      {/* ── HERO ── */}
       <section className="sah-reg-hero">
         <div className="sah-reg-hero-bg" />
         <div className="sah-reg-hero-inner">
@@ -1394,9 +1318,7 @@ const Registration = () => {
         </div>
       </section>
 
-      {/* ── FORM PANEL ── */}
       <div className="sah-reg-panel">
-        {/* Submit error (only for unexpected failures) */}
         {fe._submit && (
           <div style={{ marginTop: 20, padding: '12px 18px', background: '#fee9e9', color: '#a00c2c', border: '1px solid #f5b3b3', borderRadius: 8, fontWeight: 600, fontSize: '0.88rem', display: 'flex', alignItems: 'center', gap: 8 }}>
             <i className="fas fa-exclamation-triangle" /> {fe._submit}
@@ -1416,21 +1338,18 @@ const Registration = () => {
           </div>
         </div>
 
-        {/* Navigation bar */}
         <div className="sah-form-nav-wrap">
           {step > 1 ? (
             <button className="sah-nav-prev" onClick={prev}>
               <i className="fas fa-arrow-left" /> Previous
             </button>
           ) : <div />}
-
           <div className="sah-nav-counter">
             <strong>{step}</strong> of {TOTAL} steps
             <div className="sah-nav-progress">
               <div className="sah-nav-progress-fill" style={{ width: `${pct}%` }} />
             </div>
           </div>
-
           <button className={`sah-nav-next${step === TOTAL ? ' sah-nav-submit' : ''}`} onClick={next} disabled={submitting}>
             {submitting ? <span className="sah-spinner" /> : null}
             {step < TOTAL
