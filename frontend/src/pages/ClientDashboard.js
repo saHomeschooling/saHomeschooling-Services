@@ -155,9 +155,24 @@ const ClientDashboard = () => {
   };
 
   const handlePhotoUpload = (photoData) => {
-    setPhotoPreview(photoData);
-    setProfileData(prev => ({ ...prev, photo: photoData }));
-    showNotification('Photo updated successfully!', 'success');
+    // ProfileSection may pass either a base64 string or a raw File object.
+    // We always need base64 so it can be stored in localStorage.
+    if (typeof photoData === 'string') {
+      // Already a base64 data URL — use directly
+      setPhotoPreview(photoData);
+      setProfileData(prev => ({ ...prev, photo: photoData, image: photoData }));
+      showNotification('Photo updated successfully!', 'success');
+    } else if (photoData instanceof File || photoData instanceof Blob) {
+      // Raw file — convert to base64 first
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const base64 = ev.target.result;
+        setPhotoPreview(base64);
+        setProfileData(prev => ({ ...prev, photo: base64, image: base64 }));
+        showNotification('Photo updated successfully!', 'success');
+      };
+      reader.readAsDataURL(photoData);
+    }
   };
 
   const handleAddTag = (newTag) => {
@@ -216,8 +231,15 @@ const ClientDashboard = () => {
     featured: 'Featured Partner (R399/month)',
   }[profileData.plan] || 'Community Member (Free)');
 
-  // Public view URL — links to Profile page with this provider's id
-  const publicViewUrl = profileData.id ? `/profile?id=${profileData.id}` : '/profile';
+  // Public view URL — stays within the same app, passes from=dashboard so
+  // the Profile page can show a "Back to Dashboard" button instead of "Back to Directory"
+  const publicViewUrl = profileData.id
+    ? `/profile?id=${profileData.id}&from=dashboard`
+    : '/profile?from=dashboard';
+
+  const handlePublicView = () => {
+    navigate(publicViewUrl);
+  };
 
   return (
     <>
@@ -228,15 +250,14 @@ const ClientDashboard = () => {
           <h1>My Provider Dashboard</h1>
           <div className="welcome-row">
             <p>Welcome back, <span id="welcomeName">{profileData.name || 'Provider'}</span></p>
-            <a
-              href={publicViewUrl}
+            {/* Use a button + navigate() so it stays in the same React app */}
+            <button
               className="profile-preview-badge"
               aria-label="Switch to public view"
-              target="_blank"
-              rel="noopener noreferrer"
+              onClick={handlePublicView}
             >
               <i className="fas fa-eye"></i> public view
-            </a>
+            </button>
           </div>
           <span className="status-notice" role="status">
             <i className="fas fa-clock"></i>

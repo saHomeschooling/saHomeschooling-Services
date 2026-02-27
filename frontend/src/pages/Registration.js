@@ -662,7 +662,12 @@ const Registration = () => {
       serviceAreas: data.serviceAreas || [],
       localRadius: data.localRadiusNum ? `${data.localRadiusNum} ${data.localRadiusUnit || 'km'}` : '',
       pricingModel: data.pricingModel || '',
-      serviceTitle: data.serviceTitle || '', image: null, rating: null,
+      serviceTitle: data.serviceTitle || '',
+      // profilePhoto is already a base64 data URL (converted by FileReader on upload)
+      // stored in both `image` (used by Profile page hero) and `photo` (used by ClientDashboard)
+      image: data.profilePhoto || null,
+      photo: data.profilePhoto || null,
+      rating: null,
       reviewCount: 0, reviews: { average: 0, count: 0, items: [] },
     };
     try {
@@ -788,7 +793,42 @@ const Registration = () => {
     <div className="sah-form-grid">
       <div className="sah-field">
         <label><i className="fas fa-upload" /> Profile Photo / Logo</label>
-        <input type="file" accept="image/*" onChange={e => set('profilePhoto', e.target.files[0])} />
+        <input
+          type="file"
+          accept="image/*"
+          onChange={e => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+              // Store the base64 data URL — this is what gets saved to localStorage
+              set('profilePhoto', ev.target.result);
+            };
+            reader.readAsDataURL(file);
+          }}
+        />
+        {/* Live preview once a photo is selected */}
+        {data.profilePhoto && (
+          <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 12 }}>
+            <img
+              src={data.profilePhoto}
+              alt="Profile preview"
+              style={{ width: 64, height: 64, borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--accent)' }}
+            />
+            <div>
+              <div style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--accent)' }}>
+                <i className="fas fa-check-circle" /> Photo selected
+              </div>
+              <button
+                type="button"
+                onClick={() => set('profilePhoto', null)}
+                style={{ fontSize: '0.72rem', color: 'var(--muted)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginTop: 2 }}
+              >
+                Remove
+              </button>
+            </div>
+          </div>
+        )}
       </div>
       <div className="sah-field">
         <label><i className="fas fa-hashtag" /> Years of Experience <em className="sah-req">*</em></label>

@@ -118,7 +118,6 @@ const ORANGE = '#c2510a';
 
 /* ── Card style tokens ── */
 const S = {
-  /* Hero — fully transparent, sits on top of bg image + overlay */
   hero: {
     background: 'rgba(255, 255, 255, 0.06)',
     backdropFilter: 'blur(2px)',
@@ -130,7 +129,6 @@ const S = {
     position: 'relative',
     zIndex: 1,
   },
-  /* Gray card — warm matte, matches Login/Registration card-gray */
   gray: {
     background: '#d6d0c8',
     border: '1px solid #c8c2ba',
@@ -138,7 +136,6 @@ const S = {
     marginBottom: '20px',
     overflow: 'hidden',
   },
-  /* "White" card — matte off-white, matches Login/Registration card-white */
   white: {
     background: '#ede9e3',
     border: '1px solid #dedad4',
@@ -148,7 +145,6 @@ const S = {
   },
 };
 
-/* Reusable orange-accent typography helpers */
 const Eyebrow = ({ children }) => (
   <span className="sec-eyebrow" style={{ color: ORANGE, fontWeight: 700, textTransform: 'uppercase', fontSize: '0.68rem', letterSpacing: '0.9px' }}>
     {children}
@@ -162,6 +158,10 @@ const Profile = () => {
   const [searchParams] = useSearchParams();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  // Detect if we arrived here from the client dashboard
+  const fromDashboard = searchParams.get('from') === 'dashboard';
 
   useEffect(() => {
     const id = searchParams.get('id');
@@ -190,8 +190,34 @@ const Profile = () => {
     }
   };
 
-  if (loading) return <><Header /><main style={{ padding: '4rem', textAlign: 'center' }}><div className="loading">Loading profile...</div></main><Footer /></>;
-  if (!profile) return <><Header /><main style={{ padding: '4rem', textAlign: 'center' }}><h2>Profile not found</h2><Link to="/" className="btn btn-primary">Back to Home</Link></main><Footer /></>;
+  const handleBack = () => {
+    if (fromDashboard) {
+      navigate('/client-dashboard');
+    } else {
+      navigate('/');
+    }
+  };
+
+  if (loading) return (
+    <>
+      <Header />
+      <main style={{ padding: '4rem', textAlign: 'center' }}>
+        <div className="loading">Loading profile...</div>
+      </main>
+      <Footer />
+    </>
+  );
+
+  if (!profile) return (
+    <>
+      <Header />
+      <main style={{ padding: '4rem', textAlign: 'center' }}>
+        <h2>Profile not found</h2>
+        <Link to="/" className="btn btn-primary">Back to Home</Link>
+      </main>
+      <Footer />
+    </>
+  );
 
   const tier = profile.listingPlan || profile.tier || 'free';
 
@@ -204,11 +230,75 @@ const Profile = () => {
 
   return (
     <>
-      <Header />
+      {fromDashboard ? (
+        /* ── Slim nav shown when previewing from dashboard — single bar, no double header ── */
+        <header style={{
+          position: 'sticky', top: 0, zIndex: 1000,
+          height: '68px', background: '#5a5a5a',
+          boxShadow: '0 2px 12px rgba(0,0,0,0.22)',
+          display: 'flex', alignItems: 'center',
+          flexShrink: 0,
+        }}>
+          <div style={{
+            maxWidth: 1280, margin: '0 auto', padding: '0 32px',
+            width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
+              <button
+                onClick={handleBack}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 8,
+                  background: 'none', border: 'none', color: 'rgba(255,255,255,0.88)',
+                  fontSize: '0.88rem', fontWeight: 600, cursor: 'pointer',
+                  padding: '6px 0', fontFamily: 'inherit', whiteSpace: 'nowrap',
+                }}
+              >
+                <i className="fas fa-arrow-left" /> Back to Dashboard
+              </button>
+              <span style={{ width: 1, height: 28, background: 'rgba(255,255,255,0.28)', margin: '0 16px' }} />
+              <div style={{ textDecoration: 'none' }}>
+                <span style={{ fontFamily: "'Playfair Display', serif", fontWeight: 800, fontSize: '1.02rem', color: '#fff', display: 'block' }}>SA Homeschooling</span>
+                <span style={{ fontSize: '0.66rem', color: 'rgba(255,255,255,0.68)', fontWeight: 500, letterSpacing: '0.45px', display: 'block' }}>Education Services Directory</span>
+              </div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <button style={{
+                display: 'inline-flex', alignItems: 'center', gap: 7,
+                padding: '7px 16px', borderRadius: 6,
+                border: '1.5px solid rgba(255,255,255,0.55)', background: 'transparent',
+                color: '#fff', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer',
+                fontFamily: 'inherit', whiteSpace: 'nowrap',
+              }}>
+                <i className="fas fa-user-circle" />
+                {profile?.name || 'Provider'}
+              </button>
+              <button
+                onClick={() => {
+                  localStorage.removeItem('sah_current_user');
+                  navigate('/');
+                }}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 7,
+                  padding: '7px 18px', borderRadius: 6,
+                  border: 'none', background: ORANGE,
+                  color: '#fff', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer',
+                  fontFamily: 'inherit', whiteSpace: 'nowrap',
+                }}
+              >
+                <i className="fas fa-right-from-bracket" />
+                Log Out
+              </button>
+            </div>
+          </div>
+        </header>
+      ) : (
+        <Header />
+      )}
+
       <main className="page-wrap" id="profilePage" data-tier={tier}>
         <div className="main-content">
 
-          {/* ── HERO — provider image as bg, frosted glass overlay ── */}
+          {/* ── HERO ── */}
           <div style={{
             position: 'relative',
             borderRadius: '14px',
@@ -220,12 +310,10 @@ const Profile = () => {
             backgroundPosition: 'center 20%',
             boxShadow: '0 12px 40px rgba(0,0,0,0.35)',
           }}>
-            {/* dark overlay */}
             <div style={{
               position: 'absolute', inset: 0, zIndex: 0,
               background: 'linear-gradient(120deg, rgba(15,15,15,0.82) 0%, rgba(40,40,40,0.68) 60%, rgba(15,15,15,0.76) 100%)',
             }} />
-            {/* glass content layer */}
             <div style={{ position: 'relative', zIndex: 1 }}>
               <div className="profile-head-card" style={S.hero}>
                 <div className="profile-head-body">
@@ -280,7 +368,7 @@ const Profile = () => {
             </div>
           </div>
 
-          {/* ── About — white ── */}
+          {/* ── About ── */}
           <div className="card" style={S.white}>
             <div className="card-pad">
               <Eyebrow>About the Provider</Eyebrow>
@@ -291,7 +379,7 @@ const Profile = () => {
             </div>
           </div>
 
-          {/* ── Services — gray ── */}
+          {/* ── Services ── */}
           <div className="card" style={S.gray}>
             <div className="card-pad">
               <Eyebrow>Services</Eyebrow>
@@ -318,7 +406,7 @@ const Profile = () => {
             </div>
           </div>
 
-          {/* ── Qualifications — white ── */}
+          {/* ── Qualifications ── */}
           <div className="card" style={S.white}>
             <div className="card-pad">
               <Eyebrow>Credentials</Eyebrow>
@@ -335,7 +423,7 @@ const Profile = () => {
             </div>
           </div>
 
-          {/* ── Reviews — gray (paid only) ── */}
+          {/* ── Reviews (paid only) ── */}
           {(tier === 'pro' || tier === 'featured') && profile.reviews?.items?.length > 0 && (
             <div className="card paid-only" style={S.gray}>
               <div className="card-pad">
@@ -358,7 +446,7 @@ const Profile = () => {
         {/* ─────────── SIDEBAR ─────────── */}
         <aside className="sidebar" id="contactSection">
 
-          {/* Upgrade (free tier) — gray */}
+          {/* Upgrade (free tier) */}
           {tier === 'free' && (
             <div className="card" id="upgradeCard" style={S.gray}>
               <div className="card-pad" style={{ textAlign: 'center' }}>
@@ -373,7 +461,7 @@ const Profile = () => {
             </div>
           )}
 
-          {/* Enquiry Form — white */}
+          {/* Enquiry Form */}
           <div className="card" style={S.white}>
             <div className="card-pad">
               <Eyebrow>Get in Touch</Eyebrow>
@@ -417,7 +505,7 @@ const Profile = () => {
             </div>
           </div>
 
-          {/* Direct Contact — gray (paid only) */}
+          {/* Direct Contact (paid only) */}
           {(tier === 'pro' || tier === 'featured') && (
             <div className="card paid-only" style={S.gray}>
               <div className="card-pad">
@@ -459,7 +547,7 @@ const Profile = () => {
             </div>
           )}
 
-          {/* Availability — white */}
+          {/* Availability */}
           <div className="card" style={S.white}>
             <div className="card-pad">
               <Eyebrow>Schedule</Eyebrow>
@@ -483,7 +571,7 @@ const Profile = () => {
             </div>
           </div>
 
-          {/* Location — gray */}
+          {/* Location */}
           <div className="card" style={S.gray}>
             <div className="card-pad">
               <Eyebrow>Location</Eyebrow>
