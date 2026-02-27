@@ -14,267 +14,352 @@ import { featuredSlotsMock, reviewsMock } from '../utils/constants';
 import { escapeHtml } from '../utils/helpers';
 import '../assets/css/dashboard.css';
 
-// ── Read ALL providers from localStorage (registered providers only, no seeds) ──
 function getStoredProviders() {
-  try {
-    return JSON.parse(localStorage.getItem('sah_providers') || '[]');
-  } catch {
-    return [];
-  }
+  try { return JSON.parse(localStorage.getItem('sah_providers') || '[]'); }
+  catch { return []; }
 }
 
 function saveStoredProviders(list) {
-  try {
-    localStorage.setItem('sah_providers', JSON.stringify(list));
-  } catch {}
+  try { localStorage.setItem('sah_providers', JSON.stringify(list)); }
+  catch {}
 }
 
-// Add custom CSS for modal
-const modalStyles = `
-  .admin-modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.7);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-    animation: fadeIn 0.2s ease;
+/* ── Inline CSS for expandable provider rows ── */
+const ADMIN_CSS = `
+  .adm-expand-row {
+    border: 1px solid #e5e0d8; border-radius: 12px; overflow: hidden;
+    margin-bottom: 12px; background: #fff;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    transition: box-shadow 0.15s;
+  }
+  .adm-expand-row:hover { box-shadow: 0 3px 12px rgba(0,0,0,0.10); }
+  .adm-expand-row.expanded { border-color: #c9621a; box-shadow: 0 4px 20px rgba(201,98,26,0.12); }
+
+  .adm-row-header {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 18px; cursor: pointer; background: #faf9f7;
+    transition: background 0.12s; user-select: none;
+  }
+  .adm-row-header:hover { background: #f5f0e8; }
+  .adm-expand-row.expanded .adm-row-header { background: #fff3e8; border-bottom: 1px solid #f0d4b8; }
+
+  .adm-avatar {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: linear-gradient(135deg, #c9621a, #e07a35);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 1rem; font-weight: 800;
+    flex-shrink: 0; box-shadow: 0 2px 8px rgba(201,98,26,0.3);
   }
 
-  .admin-modal-content {
-    background: white;
-    border-radius: 16px;
-    width: 90%;
-    max-width: 800px;
-    max-height: 85vh;
-    overflow-y: auto;
-    position: relative;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    animation: slideUp 0.3s ease;
+  .adm-row-info { flex: 1; min-width: 0; }
+  .adm-row-name { font-size: 0.92rem; font-weight: 700; color: #1a1a1a; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .adm-row-meta { font-size: 0.75rem; color: #888; margin-top: 2px; }
+
+  .adm-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 2px 8px; border-radius: 4px; font-size: 0.68rem; font-weight: 700;
+  }
+  .adm-badge.pending { background: #fef3c7; color: #92400e; }
+  .adm-badge.approved { background: #d1fae5; color: #065f46; }
+  .adm-badge.rejected { background: #fee2e2; color: #991b1b; }
+  .adm-badge.featured { background: #fffbeb; color: #d97706; }
+  .adm-badge.pro { background: #dbeafe; color: #1e3a8a; }
+
+  .adm-expand-icon {
+    color: #aaa; font-size: 0.8rem; transition: transform 0.2s; flex-shrink: 0;
+  }
+  .adm-expand-row.expanded .adm-expand-icon { transform: rotate(180deg); color: #c9621a; }
+
+  .adm-row-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+
+  .adm-btn-approve {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 14px; border-radius: 7px; cursor: pointer; font-size: 0.8rem;
+    font-weight: 700; border: none; font-family: inherit;
+    background: #d1fae5; color: #065f46; transition: all 0.15s;
+  }
+  .adm-btn-approve:hover { background: #a7f3d0; }
+
+  .adm-btn-reject {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 14px; border-radius: 7px; cursor: pointer; font-size: 0.8rem;
+    font-weight: 700; border: none; font-family: inherit;
+    background: #fee2e2; color: #991b1b; transition: all 0.15s;
+  }
+  .adm-btn-reject:hover { background: #fecaca; }
+
+  /* ── Expanded detail panel ── */
+  .adm-detail-panel {
+    padding: 0;
+    animation: adm-slide-in 0.2s ease;
+  }
+  @keyframes adm-slide-in {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
   }
 
-  .admin-modal-header {
-    background: #5a5a5a;
-    color: white;
-    padding: 20px 24px;
-    border-radius: 16px 16px 0 0;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  .adm-detail-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 0;
+    border-bottom: 1px solid #f0ece5;
+  }
+  .adm-detail-section {
+    padding: 18px 20px; border-right: 1px solid #f0ece5;
+  }
+  .adm-detail-section:last-child { border-right: none; }
+  .adm-detail-section-title {
+    font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.9px;
+    color: #c9621a; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;
+  }
+  .adm-detail-field { margin-bottom: 10px; }
+  .adm-detail-label { font-size: 0.66rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: #aaa; margin-bottom: 3px; }
+  .adm-detail-val { font-size: 0.83rem; color: #1a1a1a; font-weight: 500; word-break: break-word; }
+  .adm-detail-val.empty { color: #bbb; font-style: italic; }
+
+  .adm-detail-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px; }
+  .adm-detail-tag {
+    padding: 2px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 600;
+    background: #fef3e8; color: #c9621a; border: 1px solid #f0c89a;
   }
 
-  .admin-modal-header h2 {
-    margin: 0;
-    font-size: 1.3rem;
-    font-weight: 600;
-    font-family: 'Playfair Display', serif;
+  .adm-detail-footer {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 20px; background: #faf9f7; flex-wrap: wrap; gap: 12px;
   }
+  .adm-detail-footer-note { font-size: 0.75rem; color: #888; display: flex; align-items: center; gap: 6px; }
 
-  .admin-modal-close {
-    background: rgba(255, 255, 255, 0.2);
-    border: none;
-    color: white;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 1.2rem;
-    transition: background 0.2s;
+  /* ── All listings row (non-expandable, existing style) ── */
+  .adm-listing-row {
+    display: flex; align-items: center; gap: 14px;
+    padding: 13px 18px; border: 1px solid #e5e0d8; border-radius: 10px;
+    background: #fff; margin-bottom: 10px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04); transition: box-shadow 0.15s;
   }
+  .adm-listing-row:hover { box-shadow: 0 3px 10px rgba(0,0,0,0.08); }
 
-  .admin-modal-close:hover {
-    background: rgba(255, 255, 255, 0.3);
+  .adm-promote-btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 5px 11px; border-radius: 6px; cursor: pointer; font-size: 0.77rem;
+    font-weight: 700; border: none; font-family: inherit;
+    background: #dbeafe; color: #1e40af; transition: all 0.15s;
   }
-
-  .admin-modal-body {
-    padding: 24px;
-    max-height: calc(85vh - 80px);
-    overflow-y: auto;
+  .adm-promote-btn:hover { background: #bfdbfe; }
+  .adm-demote-btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 5px 11px; border-radius: 6px; cursor: pointer; font-size: 0.77rem;
+    font-weight: 700; border: none; font-family: inherit;
+    background: #f3f4f6; color: #4b5563; transition: all 0.15s;
   }
+  .adm-demote-btn:hover { background: #e5e7eb; }
 
-  .modal-section {
-    margin-bottom: 28px;
-    border-bottom: 1px solid #eaeaea;
-    padding-bottom: 20px;
+  .adm-badge-opt {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 4px 10px; border-radius: 5px; cursor: pointer; font-size: 0.72rem; font-weight: 700;
+    transition: all 0.14s; border: 1.5px solid transparent;
   }
+  .adm-badge-opt.community { background: #f9fafb; color: #6b7280; border-color: #e5e7eb; }
+  .adm-badge-opt.community.selected { background: #e5e7eb; color: #374151; border-color: #9ca3af; }
+  .adm-badge-opt.trusted { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+  .adm-badge-opt.trusted.selected { background: #dbeafe; }
+  .adm-badge-opt.featured { background: #fffbeb; color: #d97706; border-color: #fde68a; }
+  .adm-badge-opt.featured.selected { background: #fde68a; }
+  .adm-badge-opt:hover { transform: translateY(-1px); }
 
-  .modal-section:last-child {
-    border-bottom: none;
-    margin-bottom: 0;
-    padding-bottom: 0;
+  @media (max-width: 800px) {
+    .adm-detail-grid { grid-template-columns: 1fr 1fr; }
+    .adm-detail-section { border-right: none; border-bottom: 1px solid #f0ece5; }
   }
-
-  .modal-section-title {
-    font-size: 1rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: #c9621a;
-    margin: 0 0 16px 0;
-    padding-bottom: 8px;
-    border-bottom: 2px solid #c9621a;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .modal-section-title i {
-    font-size: 1rem;
-  }
-
-  .modal-field {
-    margin-bottom: 16px;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .modal-field-label {
-    font-size: 0.7rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-    color: #666;
-    margin-bottom: 4px;
-  }
-
-  .modal-field-value {
-    font-size: 0.95rem;
-    color: #333;
-    line-height: 1.5;
-    background: #f8f8f8;
-    padding: 10px 12px;
-    border-radius: 8px;
-    word-break: break-word;
-  }
-
-  .modal-field-value.bio {
-    white-space: pre-wrap;
-    font-style: italic;
-  }
-
-  .modal-badge {
-    display: inline-block;
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    margin-right: 8px;
-  }
-
-  .badge-pending {
-    background: #fef3c7;
-    color: #92400e;
-  }
-
-  .badge-approved {
-    background: #d1fae5;
-    color: #065f46;
-  }
-
-  .badge-free {
-    background: #f0f0f0;
-    color: #555;
-  }
-
-  .badge-pro {
-    background: #dbeafe;
-    color: #1e3a8a;
-  }
-
-  .badge-featured {
-    background: #fef3c7;
-    color: #92400e;
-  }
-
-  .service-item {
-    background: #f0f0f0;
-    border-radius: 10px;
-    padding: 16px;
-    margin-bottom: 12px;
-  }
-
-  .service-item:last-child {
-    margin-bottom: 0;
-  }
-
-  .service-title {
-    font-weight: 700;
-    color: #333;
-    margin-bottom: 8px;
-    font-size: 1rem;
-  }
-
-  .service-details {
-    font-size: 0.85rem;
-    color: #666;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-
-  .file-upload-indicator {
-    color: #16a34a;
-    font-size: 0.85rem;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-top: 4px;
-  }
-
-  .social-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 12px;
-  }
-
-  .social-item {
-    background: #f0f0f0;
-    border-radius: 8px;
-    padding: 8px 12px;
-    font-size: 0.85rem;
-  }
-
-  .social-item i {
-    color: #c9621a;
-    width: 20px;
-    margin-right: 6px;
-  }
-
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-
-  @keyframes slideUp {
-    from { transform: translateY(20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-  }
-
-  @media (max-width: 768px) {
-    .admin-modal-content {
-      width: 95%;
-      max-height: 90vh;
-    }
-    
-    .admin-modal-body {
-      padding: 16px;
-    }
-    
-    .social-grid {
-      grid-template-columns: 1fr;
-    }
+  @media (max-width: 560px) {
+    .adm-detail-grid { grid-template-columns: 1fr; }
+    .adm-row-actions { flex-wrap: wrap; }
   }
 `;
+
+/* ── Expandable Pending Provider Row ── */
+const ExpandablePendingRow = ({ provider, onApprove, onReject }) => {
+  const [expanded, setExpanded] = useState(false);
+
+  const initial = (provider.name || '?')[0].toUpperCase();
+  const regDate = provider.registered ? new Date(provider.registered).toLocaleDateString('en-ZA') : '—';
+
+  const val = (v) => v ? String(v) : null;
+  const arrVal = (a) => Array.isArray(a) && a.length > 0 ? a.join(', ') : null;
+
+  return (
+    <div className={`adm-expand-row ${expanded ? 'expanded' : ''}`}>
+      {/* Header row */}
+      <div className="adm-row-header" onClick={() => setExpanded(e => !e)}>
+        <div className="adm-avatar">{initial}</div>
+        <div className="adm-row-info">
+          <div className="adm-row-name">
+            {provider.name}
+            <span className="adm-badge pending">Pending</span>
+            {provider.tier === 'featured' && <span className="adm-badge featured"><i className="fas fa-crown"></i> Featured Plan</span>}
+            {provider.tier === 'pro' && <span className="adm-badge pro"><i className="fas fa-check-circle"></i> Pro Plan</span>}
+          </div>
+          <div className="adm-row-meta">
+            {provider.email} &nbsp;·&nbsp; {provider.city || '—'}, {provider.province || '—'} &nbsp;·&nbsp;
+            {provider.listingPlan || provider.tier || 'free'} plan &nbsp;·&nbsp; Registered: {regDate}
+          </div>
+        </div>
+        <i className="fas fa-chevron-down adm-expand-icon"></i>
+        <div className="adm-row-actions" onClick={e => e.stopPropagation()}>
+          <button className="adm-btn-approve" onClick={() => onApprove(provider.id)}>
+            <i className="fas fa-check"></i> Approve
+          </button>
+          <button className="adm-btn-reject" onClick={() => onReject(provider.id)}>
+            <i className="fas fa-times"></i> Reject
+          </button>
+        </div>
+      </div>
+
+      {/* Expandable detail panel */}
+      {expanded && (
+        <div className="adm-detail-panel">
+          <div className="adm-detail-grid">
+            {/* Column 1: Account & Contact */}
+            <div className="adm-detail-section">
+              <div className="adm-detail-section-title"><i className="fas fa-user"></i> Account & Contact</div>
+              {[
+                { label: 'Full Name / Business', val: val(provider.name) },
+                { label: 'Account Type', val: val(provider.accountType) },
+                { label: 'Email', val: val(provider.email) },
+                { label: 'Phone', val: val(provider.phone) },
+                { label: 'WhatsApp', val: val(provider.whatsapp) },
+                { label: 'Enquiry Email', val: val(provider.contactEmail) },
+                { label: 'Website', val: val(provider.website || provider.social) },
+                { label: 'Plan', val: val(provider.listingPlan || provider.tier) },
+                { label: 'Registered', val: regDate },
+              ].map(({ label, val: v }) => (
+                <div className="adm-detail-field" key={label}>
+                  <div className="adm-detail-label">{label}</div>
+                  <div className={`adm-detail-val ${!v ? 'empty' : ''}`}>{v || '—'}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Column 2: Bio & Services */}
+            <div className="adm-detail-section">
+              <div className="adm-detail-section-title"><i className="fas fa-briefcase"></i> Bio & Services</div>
+              <div className="adm-detail-field">
+                <div className="adm-detail-label">Bio</div>
+                <div className={`adm-detail-val ${!val(provider.bio) ? 'empty' : ''}`} style={{ lineHeight: 1.6, fontSize: '0.8rem' }}>
+                  {val(provider.bio) || '—'}
+                </div>
+              </div>
+              <div className="adm-detail-field">
+                <div className="adm-detail-label">Primary Category</div>
+                <div className="adm-detail-val">{val(provider.primaryCategory || provider.category) || '—'}</div>
+              </div>
+              <div className="adm-detail-field">
+                <div className="adm-detail-label">Tags / Subjects</div>
+                {provider.tags?.length > 0
+                  ? <div className="adm-detail-tags">{provider.tags.map((t, i) => <span key={i} className="adm-detail-tag">{t}</span>)}</div>
+                  : <div className="adm-detail-val empty">—</div>}
+              </div>
+              <div className="adm-detail-field">
+                <div className="adm-detail-label">Age Groups</div>
+                <div className={`adm-detail-val ${!arrVal(provider.ageGroups) ? 'empty' : ''}`}>
+                  {arrVal(provider.ageGroups) || '—'}
+                </div>
+              </div>
+              <div className="adm-detail-field">
+                <div className="adm-detail-label">Delivery Mode</div>
+                <div className={`adm-detail-val ${!val(provider.deliveryMode || provider.delivery) ? 'empty' : ''}`}>
+                  {val(provider.deliveryMode || provider.delivery) || '—'}
+                </div>
+              </div>
+              {provider.services?.length > 0 && (
+                <div className="adm-detail-field">
+                  <div className="adm-detail-label">Services ({provider.services.length})</div>
+                  {provider.services.map((svc, i) => (
+                    <div key={i} style={{ padding: '6px 10px', background: '#faf9f7', borderRadius: 6, marginTop: 5, fontSize: '0.8rem' }}>
+                      {svc.title && <div style={{ fontWeight: 700 }}>{svc.title}</div>}
+                      {svc.description && <div style={{ color: '#666', marginTop: 2 }}>{svc.description}</div>}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Column 3: Location, Qualifications & Availability */}
+            <div className="adm-detail-section">
+              <div className="adm-detail-section-title"><i className="fas fa-map-marker-alt"></i> Location & Credentials</div>
+              {[
+                { label: 'City', val: val(provider.city) },
+                { label: 'Province', val: val(provider.province) },
+                { label: 'Service Area', val: val(provider.serviceAreaType) },
+                { label: 'Radius', val: val(provider.radius) },
+              ].map(({ label, val: v }) => (
+                <div className="adm-detail-field" key={label}>
+                  <div className="adm-detail-label">{label}</div>
+                  <div className={`adm-detail-val ${!v ? 'empty' : ''}`}>{v || '—'}</div>
+                </div>
+              ))}
+
+              <div className="adm-detail-section-title" style={{ marginTop: 14 }}><i className="fas fa-graduation-cap"></i> Qualifications</div>
+              {[
+                { label: 'Degrees / Diplomas', val: val(provider.degrees) },
+                { label: 'Certifications', val: val(provider.certifications) },
+                { label: 'Memberships', val: val(provider.memberships) },
+                { label: 'Clearance', val: val(provider.clearance) },
+              ].map(({ label, val: v }) => (
+                <div className="adm-detail-field" key={label}>
+                  <div className="adm-detail-label">{label}</div>
+                  <div className={`adm-detail-val ${!v ? 'empty' : ''}`}>{v || '—'}</div>
+                </div>
+              ))}
+
+              <div className="adm-detail-section-title" style={{ marginTop: 14 }}><i className="fas fa-clock"></i> Availability</div>
+              <div className="adm-detail-field">
+                <div className="adm-detail-label">Days</div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 4 }}>
+                  {provider.availabilityDays?.length > 0
+                    ? provider.availabilityDays.map(d => (
+                        <span key={d} style={{ padding: '2px 8px', background: '#c9621a', color: '#fff', borderRadius: 12, fontSize: '0.72rem', fontWeight: 700 }}>{d}</span>
+                      ))
+                    : <span style={{ color: '#bbb', fontSize: '0.8rem', fontStyle: 'italic' }}>—</span>}
+                </div>
+              </div>
+              <div className="adm-detail-field">
+                <div className="adm-detail-label">Notes</div>
+                <div className={`adm-detail-val ${!val(provider.availabilityNotes) ? 'empty' : ''}`}>{val(provider.availabilityNotes) || '—'}</div>
+              </div>
+
+              <div className="adm-detail-section-title" style={{ marginTop: 14 }}><i className="fas fa-tag"></i> Pricing</div>
+              {[
+                { label: 'Model', val: val(provider.pricingModel) },
+                { label: 'Starting Price', val: val(provider.startingPrice || provider.priceFrom) },
+              ].map(({ label, val: v }) => (
+                <div className="adm-detail-field" key={label}>
+                  <div className="adm-detail-label">{label}</div>
+                  <div className={`adm-detail-val ${!v ? 'empty' : ''}`}>{v || '—'}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Detail footer with action bar */}
+          <div className="adm-detail-footer">
+            <div className="adm-detail-footer-note">
+              <i className="fas fa-info-circle" style={{ color: '#c9621a' }}></i>
+              Click outside this area to collapse · Admin review on {new Date().toLocaleDateString('en-ZA')}
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button className="adm-btn-approve" style={{ padding: '9px 20px', fontSize: '0.85rem' }}
+                onClick={() => onApprove(provider.id)}>
+                <i className="fas fa-check-circle"></i> Approve & Go Live
+              </button>
+              <button className="adm-btn-reject" style={{ padding: '9px 20px', fontSize: '0.85rem' }}
+                onClick={() => onReject(provider.id)}>
+                <i className="fas fa-times-circle"></i> Reject Registration
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 const AdminDashboard = () => {
   const { user } = useAuth();
@@ -303,12 +388,20 @@ const AdminDashboard = () => {
     };
   }, []);
 
-  // Load providers from localStorage on mount
+  // Inject admin CSS
+  useEffect(() => {
+    if (!document.getElementById('adm-styles')) {
+      const style = document.createElement('style');
+      style.id = 'adm-styles';
+      style.textContent = ADMIN_CSS;
+      document.head.appendChild(style);
+    }
+  }, []);
+
   useEffect(() => {
     setProviders(getStoredProviders());
   }, []);
 
-  // Derived stats
   const pendingProviders = providers.filter(p => p.status === 'pending');
   const approvedProviders = providers.filter(p => p.status === 'approved');
   const featuredCount = providers.filter(p => p.tier === 'featured' && p.status === 'approved').length;
@@ -321,19 +414,25 @@ const AdminDashboard = () => {
     pendingReviews: pendingReviews.length,
   };
 
-  const handleStatusChange = (providerId, status) => {
-    const updated = providers.map(p =>
-      p.id === providerId ? { ...p, status } : p
-    );
+  const handleApprove = (providerId) => {
+    const updated = providers.map(p => p.id === providerId ? { ...p, status: 'approved' } : p);
     setProviders(updated);
     saveStoredProviders(updated);
-
     const provider = providers.find(p => p.id === providerId);
-    if (status === 'approved') {
-      showNotification(`✅ ${provider?.name || 'Provider'} approved and is now live on the homepage.`, 'success');
-    } else {
-      showNotification(`${provider?.name || 'Provider'} registration rejected.`, 'info');
-    }
+    showNotification(`✅ ${provider?.name || 'Provider'} approved and is now live on the homepage.`, 'success');
+  };
+
+  const handleReject = (providerId) => {
+    const updated = providers.map(p => p.id === providerId ? { ...p, status: 'rejected' } : p);
+    setProviders(updated);
+    saveStoredProviders(updated);
+    const provider = providers.find(p => p.id === providerId);
+    showNotification(`${provider?.name || 'Provider'} registration rejected.`, 'info');
+  };
+
+  const handleStatusChange = (providerId, status) => {
+    if (status === 'approved') handleApprove(providerId);
+    else handleReject(providerId);
   };
 
   const handleBadgeSelect = (providerId, badgeType) => {
@@ -364,9 +463,7 @@ const AdminDashboard = () => {
 
   const handleAssignFeatured = (slotId) => {
     const available = approvedProviders.map(p => p.name).filter(Boolean);
-    const randomProvider = available.length
-      ? available[Math.floor(Math.random() * available.length)]
-      : 'Khan Academy SA';
+    const randomProvider = available.length ? available[Math.floor(Math.random() * available.length)] : 'Khan Academy SA';
     setFeaturedSlots(prev => prev.map(slot =>
       slot.id === slotId ? { ...slot, provider: randomProvider, addedDaysAgo: 0, daysRemaining: 7 } : slot
     ));
@@ -375,9 +472,7 @@ const AdminDashboard = () => {
 
   const handleRotateFeatured = (slotId) => {
     const available = approvedProviders.map(p => p.name).filter(Boolean);
-    const newProvider = available.length
-      ? available[Math.floor(Math.random() * available.length)]
-      : 'STEM Mastery Tutors';
+    const newProvider = available.length ? available[Math.floor(Math.random() * available.length)] : 'STEM Mastery Tutors';
     setFeaturedSlots(prev => prev.map(slot =>
       slot.id === slotId ? { ...slot, provider: newProvider, addedDaysAgo: 0, daysRemaining: 7 } : slot
     ));
@@ -390,290 +485,36 @@ const AdminDashboard = () => {
     ));
   };
 
-  const openProviderModal = (provider) => {
-    setSelectedProvider(provider);
-    setModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setModalOpen(false);
-    setSelectedProvider(null);
-  };
-
-  const renderProviderModal = () => {
-    if (!selectedProvider) return null;
-
-    const p = selectedProvider;
-
-    // Format service areas
-    const serviceAreas = p.serviceAreas ? p.serviceAreas.join(', ') : 
-                         p.serviceAreaType === 'local' ? `Local (${p.radius || p.localRadiusNum || ''} ${p.localRadiusUnit || 'km'})` :
-                         p.serviceAreaType === 'national' ? 'National' : 'Online only';
-
-    // Format qualifications
-    const qualifications = [
-      p.certifications, p.degrees, p.memberships
-    ].filter(Boolean).join(' · ') || 'None provided';
-
-    // Format languages
-    const languages = p.languages && p.languages.length > 0 ? p.languages.join(', ') : 'None selected';
-
-    // Format services
-    const servicesList = p.services && p.services.length > 0 
-      ? p.services.map((s, i) => `
-          <div class="service-item">
-            <div class="service-title">${escapeHtml(s.title || 'Untitled Service')}</div>
-            <div class="service-details">
-              <span><i class="fas fa-users"></i> Age groups: ${escapeHtml(s.ageGroups ? s.ageGroups.join(', ') : 'None')}</span>
-              <span><i class="fas fa-dot-circle"></i> Delivery: ${escapeHtml(s.deliveryMode || 'Not specified')}</span>
-            </div>
-          </div>
-        `).join('')
-      : '<div class="modal-field-value">No services added</div>';
-
-    // Format availability days
-    const availabilityDays = p.availabilityDays && p.availabilityDays.length > 0 
-      ? p.availabilityDays.join(', ') 
-      : 'None selected';
-
-    // Format uploaded files
-    const uploadedFiles = [];
-    if (p.profilePhoto) uploadedFiles.push('<span class="file-upload-indicator"><i class="fas fa-check-circle"></i> Profile photo uploaded</span>');
-    if (p.certsFile) uploadedFiles.push('<span class="file-upload-indicator"><i class="fas fa-check-circle"></i> Certifications file uploaded</span>');
-    if (p.clearanceFile) uploadedFiles.push('<span class="file-upload-indicator"><i class="fas fa-check-circle"></i> Police clearance file uploaded</span>');
-    
-    const filesHtml = uploadedFiles.length > 0
-      ? uploadedFiles.join('')
-      : '<div class="modal-field-value">No files uploaded</div>';
-
-    // Format social media
-    const socialMedia = [];
-    if (p.website) socialMedia.push(`<div class="social-item"><i class="fas fa-globe"></i> ${escapeHtml(p.website)}</div>`);
-    if (p.facebook) socialMedia.push(`<div class="social-item"><i class="fab fa-facebook"></i> ${escapeHtml(p.facebook)}</div>`);
-    if (p.instagram) socialMedia.push(`<div class="social-item"><i class="fab fa-instagram"></i> ${escapeHtml(p.instagram)}</div>`);
-    if (p.linkedin) socialMedia.push(`<div class="social-item"><i class="fab fa-linkedin"></i> ${escapeHtml(p.linkedin)}</div>`);
-    if (p.tiktok) socialMedia.push(`<div class="social-item"><i class="fab fa-tiktok"></i> ${escapeHtml(p.tiktok)}</div>`);
-    if (p.youtube) socialMedia.push(`<div class="social-item"><i class="fab fa-youtube"></i> ${escapeHtml(p.youtube)}</div>`);
-    if (p.twitter) socialMedia.push(`<div class="social-item"><i class="fab fa-x-twitter"></i> ${escapeHtml(p.twitter)}</div>`);
-
-    const socialHtml = socialMedia.length > 0 
-      ? `<div class="social-grid">${socialMedia.join('')}</div>`
-      : '<div class="modal-field-value">No social media links provided</div>';
-
-    return (
-      <div className="admin-modal-overlay" onClick={closeModal}>
-        <div className="admin-modal-content" onClick={(e) => e.stopPropagation()}>
-          <div className="admin-modal-header">
-            <h2>{escapeHtml(p.name || 'Provider')} — Complete Registration Details</h2>
-            <button className="admin-modal-close" onClick={closeModal}>
-              <i className="fas fa-times"></i>
-            </button>
-          </div>
-          <div className="admin-modal-body">
-
-            {/* Account Information Section */}
-            <div className="modal-section">
-              <h3 className="modal-section-title"><i className="fas fa-user-circle"></i> Account Information</h3>
-              
-              <div className="modal-field">
-                <span className="modal-field-label">Full name / Business</span>
-                <div className="modal-field-value">{escapeHtml(p.name || '—')}</div>
-              </div>
-              
-              <div className="modal-field">
-                <span className="modal-field-label">Email address</span>
-                <div className="modal-field-value">{escapeHtml(p.email || '—')}</div>
-              </div>
-              
-              <div className="modal-field">
-                <span className="modal-field-label">Account type</span>
-                <div className="modal-field-value">{escapeHtml(p.accountType || '—')}</div>
-              </div>
-              
-              <div className="modal-field">
-                <span className="modal-field-label">Primary category</span>
-                <div className="modal-field-value">{escapeHtml(p.primaryCategory || p.category || '—')}</div>
-              </div>
-              
-              <div className="modal-field">
-                <span className="modal-field-label">Status</span>
-                <div className="modal-field-value">
-                  <span className={`modal-badge ${p.status === 'approved' ? 'badge-approved' : p.status === 'pending' ? 'badge-pending' : ''}`}>
-                    {escapeHtml(p.status || '—')}
-                  </span>
-                </div>
-              </div>
-              
-              <div className="modal-field">
-                <span className="modal-field-label">Plan</span>
-                <div className="modal-field-value">
-                  <span className={`modal-badge badge-${p.plan || 'free'}`}>
-                    <i className={`fas fa-${p.plan === 'featured' ? 'crown' : p.plan === 'pro' ? 'check-circle' : 'user'}`}></i> {escapeHtml(p.plan || 'free')}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Identity & Trust Section */}
-            <div className="modal-section">
-              <h3 className="modal-section-title"><i className="fas fa-id-card"></i> Identity & Trust</h3>
-              
-              <div className="modal-field">
-                <span className="modal-field-label">Years of experience</span>
-                <div className="modal-field-value">{escapeHtml(p.yearsExperience || p.experience || '—')}</div>
-              </div>
-              
-              <div className="modal-field">
-                <span className="modal-field-label">Short bio</span>
-                <div className="modal-field-value bio">{escapeHtml(p.bio || '—')}</div>
-              </div>
-              
-              <div className="modal-field">
-                <span className="modal-field-label">Qualifications</span>
-                <div className="modal-field-value">{escapeHtml(qualifications)}</div>
-              </div>
-              
-              <div className="modal-field">
-                <span className="modal-field-label">Police clearance</span>
-                <div className="modal-field-value">{escapeHtml(p.clearance || '—')}</div>
-              </div>
-              
-              <div className="modal-field">
-                <span className="modal-field-label">Languages spoken</span>
-                <div className="modal-field-value">{escapeHtml(languages)}</div>
-              </div>
-              
-              <div className="modal-field">
-                <span className="modal-field-label">Uploaded files</span>
-                <div dangerouslySetInnerHTML={{ __html: filesHtml }} />
-              </div>
-            </div>
-
-            {/* Services Offered Section */}
-            <div className="modal-section">
-              <h3 className="modal-section-title"><i className="fas fa-briefcase"></i> Services Offered</h3>
-              
-              <div dangerouslySetInnerHTML={{ __html: servicesList }} />
-              
-              <div className="modal-field" style={{ marginTop: '16px' }}>
-                <span className="modal-field-label">Subjects / Specialisations</span>
-                <div className="modal-field-value">{escapeHtml(p.tags ? p.tags.join(', ') : p.subjects || '—')}</div>
-              </div>
-            </div>
-
-            {/* Location & Reach Section */}
-            <div className="modal-section">
-              <h3 className="modal-section-title"><i className="fas fa-map-marker-alt"></i> Location & Reach</h3>
-              
-              <div className="modal-field">
-                <span className="modal-field-label">City / Province</span>
-                <div className="modal-field-value">{escapeHtml(p.city || '')}{p.city && p.province ? ', ' : ''}{escapeHtml(p.province || '')}</div>
-              </div>
-              
-              <div className="modal-field">
-                <span className="modal-field-label">Service area</span>
-                <div className="modal-field-value">{escapeHtml(serviceAreas)}</div>
-              </div>
-              
-              {p.localRadiusNum && (
-                <div className="modal-field">
-                  <span className="modal-field-label">Local radius</span>
-                  <div className="modal-field-value">{escapeHtml(p.localRadiusNum)} {escapeHtml(p.localRadiusUnit || 'km')}</div>
-                </div>
-              )}
-            </div>
-
-            {/* Pricing & Availability Section */}
-            <div className="modal-section">
-              <h3 className="modal-section-title"><i className="fas fa-calendar-alt"></i> Pricing & Availability</h3>
-              
-              <div className="modal-field">
-                <span className="modal-field-label">Pricing model</span>
-                <div className="modal-field-value">{escapeHtml(p.pricingModel || '—')}</div>
-              </div>
-              
-              <div className="modal-field">
-                <span className="modal-field-label">Starting price</span>
-                <div className="modal-field-value">{escapeHtml(p.startingPrice ? `R${p.startingPrice}` : p.priceFrom || '—')}</div>
-              </div>
-              
-              <div className="modal-field">
-                <span className="modal-field-label">Days available</span>
-                <div className="modal-field-value">{escapeHtml(availabilityDays)}</div>
-              </div>
-              
-              <div className="modal-field">
-                <span className="modal-field-label">Time slots</span>
-                <div className="modal-field-value">{escapeHtml(p.availabilityNotes || p.timeSlots || '—')}</div>
-              </div>
-            </div>
-
-            {/* Contact Details Section */}
-            <div className="modal-section">
-              <h3 className="modal-section-title"><i className="fas fa-phone"></i> Contact Details</h3>
-              
-              <div className="modal-field">
-                <span className="modal-field-label">Phone number</span>
-                <div className="modal-field-value">{escapeHtml(p.phone || '—')}</div>
-              </div>
-              
-              {p.whatsappLocal && (
-                <div className="modal-field">
-                  <span className="modal-field-label">WhatsApp number</span>
-                  <div className="modal-field-value">{escapeHtml(`+27${p.whatsappLocal}`)}</div>
-                </div>
-              )}
-              
-              <div className="modal-field">
-                <span className="modal-field-label">Email for enquiries</span>
-                <div className="modal-field-value">{escapeHtml(p.contactEmail || p.email || '—')}</div>
-              </div>
-              
-              <div className="modal-field">
-                <span className="modal-field-label">Display contact publicly</span>
-                <div className="modal-field-value">{p.publicToggle ? 'Yes' : 'No'}</div>
-              </div>
-              
-              <div className="modal-field">
-                <span className="modal-field-label">Website & Social Media</span>
-                <div dangerouslySetInnerHTML={{ __html: socialHtml }} />
-              </div>
-            </div>
-
-            {/* Registration Info Section */}
-            <div className="modal-section">
-              <h3 className="modal-section-title"><i className="fas fa-clock"></i> Registration Info</h3>
-              
-              <div className="modal-field">
-                <span className="modal-field-label">Provider ID</span>
-                <div className="modal-field-value" style={{ fontFamily: 'monospace' }}>{escapeHtml(p.id || '—')}</div>
-              </div>
-              
-              <div className="modal-field">
-                <span className="modal-field-label">Registered on</span>
-                <div className="modal-field-value">
-                  {p.registered ? new Date(p.registered).toLocaleDateString('en-ZA', { 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  }) : '—'}
-                </div>
-              </div>
-              
-              <div className="modal-field">
-                <span className="modal-field-label">Reviews</span>
-                <div className="modal-field-value">
-                  {p.reviews?.count || 0} reviews (average: {p.reviews?.average || 0}/5)
-                </div>
-              </div>
-            </div>
-
-          </div>
-        </div>
+  const showProfileModal = (provider) => {
+    if (!provider) return;
+    const p = typeof provider === 'string' ? providers.find(x => x.id === provider) || {} : provider;
+    const modalBody = `
+      <div style="border-top:1px solid var(--border); margin:1.25rem 0 0.75rem; padding-top:0.75rem;">
+        <p style="font-size:0.85rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:var(--accent);">Account Information</p>
       </div>
-    );
+      <div class="modal-field"><label>Full name / Business</label><div class="value">${escapeHtml(p.name || '—')}</div></div>
+      <div class="modal-field"><label>Email address</label><div class="value">${escapeHtml(p.email || '—')}</div></div>
+      <div class="modal-field"><label>Primary category</label><div class="value">${escapeHtml(p.primaryCategory || p.category || '—')}</div></div>
+      <div class="modal-field"><label>Status</label><div class="value">${escapeHtml(p.status || '—')}</div></div>
+      <div class="modal-field"><label>Listing plan</label><div class="value">${escapeHtml(p.listingPlan || p.tier || '—')}</div></div>
+      <div style="border-top:1px solid var(--border); margin:1.25rem 0 0.75rem; padding-top:0.75rem;">
+        <p style="font-size:0.85rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:var(--accent);">Bio & Services</p>
+      </div>
+      <div class="modal-field"><label>Bio</label><div class="value">${escapeHtml(p.bio || '—')}</div></div>
+      <div class="modal-field"><label>Tags / Subjects</label><div class="value">${escapeHtml((p.tags || []).join(', ') || '—')}</div></div>
+      <div class="modal-field"><label>Age groups</label><div class="value">${escapeHtml((p.ageGroups || []).join(', ') || '—')}</div></div>
+      <div class="modal-field"><label>Delivery mode</label><div class="value">${escapeHtml(p.deliveryMode || p.delivery || '—')}</div></div>
+      <div style="border-top:1px solid var(--border); margin:1.25rem 0 0.75rem; padding-top:0.75rem;">
+        <p style="font-size:0.85rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:var(--accent);">Location & Contact</p>
+      </div>
+      <div class="modal-field"><label>City / Province</label><div class="value">${escapeHtml(p.city || '')} ${escapeHtml(p.province || '')}</div></div>
+      <div class="modal-field"><label>Phone</label><div class="value">${escapeHtml(p.phone || '—')}</div></div>
+      <div class="modal-field"><label>Contact email</label><div class="value">${escapeHtml(p.contactEmail || p.email || '—')}</div></div>
+      <div class="modal-field"><label>Pricing</label><div class="value">${escapeHtml(p.pricingModel || '—')} — ${escapeHtml(p.startingPrice || p.priceFrom || '—')}</div></div>
+      <div class="modal-field"><label>Registered</label><div class="value">${p.registered ? new Date(p.registered).toLocaleDateString('en-ZA') : '—'}</div></div>
+    `;
+    setModalContent({ title: `${p.name || 'Provider'} — Registration Details`, body: modalBody });
+    setModalOpen(true);
   };
 
   return (
@@ -717,12 +558,12 @@ const AdminDashboard = () => {
             </button>
           </div>
 
-          {/* ── PENDING APPROVALS ── */}
+          {/* ── PENDING APPROVALS — Expandable ── */}
           {activeTab === 'pending' && (
             <div className="tab-pane active" role="tabpanel">
               <p className="section-heading">
                 <i className="fas fa-hourglass-half"></i>
-                Pending Approval ({pendingProviders.length}) — click name to view full details
+                Pending Approval ({pendingProviders.length}) — click a row to expand full details
               </p>
 
               {pendingProviders.length === 0 && (
@@ -733,46 +574,12 @@ const AdminDashboard = () => {
               )}
 
               {pendingProviders.map(provider => (
-                <div className="provider-row" key={provider.id}>
-                  <div
-                    className="provider-info"
-                    onClick={() => openProviderModal(provider)}
-                    role="button"
-                    tabIndex="0"
-                    style={{ cursor: 'pointer' }}
-                  >
-                    <span className="avatar-small">{(provider.name || '?')[0].toUpperCase()}</span>
-                    <div>
-                      <div className="provider-name-row">
-                        <strong style={{ color: 'var(--accent)' }}>{provider.name}</strong>
-                        <span className="provider-cat">({provider.primaryCategory || provider.category})</span>
-                        <span style={{ fontSize: '0.72rem', background: '#fef3c7', color: '#92400e', padding: '2px 8px', borderRadius: '3px', fontWeight: 700 }}>pending</span>
-                      </div>
-                      <div style={{ fontSize: '0.78rem', color: 'var(--ink-3)', marginTop: '2px' }}>
-                        {provider.email} · {provider.city}, {provider.province} · {provider.listingPlan || provider.tier} plan
-                      </div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--ink-4)', marginTop: '2px' }}>
-                        Registered: {provider.registered ? new Date(provider.registered).toLocaleDateString('en-ZA') : '—'}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="provider-actions">
-                    <button
-                      className="promote-btn"
-                      style={{ background: '#d1fae5', color: '#065f46', border: 'none', padding: '6px 14px', borderRadius: '5px', fontWeight: 700, cursor: 'pointer' }}
-                      onClick={() => handleStatusChange(provider.id, 'approved')}
-                    >
-                      <i className="fas fa-check"></i> Approve
-                    </button>
-                    <button
-                      className="demote-btn"
-                      style={{ marginLeft: '6px' }}
-                      onClick={() => handleStatusChange(provider.id, 'rejected')}
-                    >
-                      <i className="fas fa-times"></i> Reject
-                    </button>
-                  </div>
-                </div>
+                <ExpandablePendingRow
+                  key={provider.id}
+                  provider={provider}
+                  onApprove={handleApprove}
+                  onReject={handleReject}
+                />
               ))}
             </div>
           )}
@@ -792,57 +599,50 @@ const AdminDashboard = () => {
               )}
 
               {providers.map(provider => (
-                <div className="provider-row" key={provider.id}>
+                <div className="adm-listing-row" key={provider.id}>
                   <div
-                    className="provider-info"
-                    onClick={() => openProviderModal(provider)}
-                    role="button"
-                    tabIndex="0"
-                    style={{ cursor: 'pointer' }}
+                    style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, minWidth: 0, cursor: 'pointer' }}
+                    onClick={() => showProfileModal(provider)}
+                    role="button" tabIndex="0"
                   >
-                    <span className="avatar-small">{(provider.name || '?')[0].toUpperCase()}</span>
-                    <div>
-                      <div className="provider-name-row">
-                        <strong>{provider.name}</strong>
-                        <span className="provider-cat">({provider.primaryCategory || provider.category})</span>
-                        <span className={provider.status === 'approved' ? 'approved-badge' : 'pending-badge'} style={{ fontSize: '0.72rem' }}>
-                          {provider.status}
-                        </span>
-                        {provider.tier === 'featured' && (
-                          <span className="featured-tag"><i className="fas fa-crown"></i> featured</span>
-                        )}
-                        {provider.tier === 'pro' && (
-                          <span className="featured-tag" style={{ background: '#dbeafe', color: '#1e3a8a' }}>
-                            <i className="fas fa-check-circle"></i> trusted
-                          </span>
-                        )}
+                    <div className="adm-avatar" style={{ fontSize: '0.9rem' }}>
+                      {(provider.name || '?')[0].toUpperCase()}
+                    </div>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                        <strong style={{ fontSize: '0.9rem', color: '#1a1a1a' }}>{provider.name}</strong>
+                        <span className={`adm-badge ${provider.status}`}>{provider.status}</span>
+                        {provider.tier === 'featured' && <span className="adm-badge featured"><i className="fas fa-crown"></i> featured</span>}
+                        {provider.tier === 'pro' && <span className="adm-badge pro"><i className="fas fa-check-circle"></i> trusted</span>}
                       </div>
-                      <div style={{ fontSize: '0.78rem', color: 'var(--ink-3)', marginTop: '2px' }}>
+                      <div style={{ fontSize: '0.75rem', color: '#888', marginTop: 2 }}>
                         {provider.city}, {provider.province} · {provider.email}
                       </div>
                     </div>
                   </div>
-                  <div className="provider-actions">
-                    <div className="promote-demote-pair">
-                      <button className="promote-btn" onClick={() => handlePromote(provider.name)}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0, flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', gap: 4 }}>
+                      <button className="adm-promote-btn" onClick={() => handlePromote(provider.name)}>
                         <i className="fas fa-arrow-up"></i> Promote
                       </button>
-                      <button className="demote-btn" onClick={() => handleDemote(provider.name)}>
+                      <button className="adm-demote-btn" onClick={() => handleDemote(provider.name)}>
                         <i className="fas fa-arrow-down"></i> Demote
                       </button>
                     </div>
-                    <div className="badge-selector">
-                      {['community', 'trusted', 'featured'].map(b => (
-                        <span
-                          key={b}
-                          className={`badge-option ${b} ${(provider.tier === (b === 'community' ? 'free' : b === 'trusted' ? 'pro' : 'featured')) ? 'selected' : ''}`}
-                          onClick={() => handleBadgeSelect(provider.id, b)}
-                          role="button"
-                          tabIndex="0"
-                        >
-                          {b.charAt(0).toUpperCase() + b.slice(1)}
-                        </span>
-                      ))}
+                    <div style={{ display: 'flex', gap: 4 }}>
+                      {['community', 'trusted', 'featured'].map(b => {
+                        const isSelected = (provider.tier === (b === 'community' ? 'free' : b === 'trusted' ? 'pro' : 'featured'));
+                        return (
+                          <span
+                            key={b}
+                            className={`adm-badge-opt ${b} ${isSelected ? 'selected' : ''}`}
+                            onClick={() => handleBadgeSelect(provider.id, b)}
+                            role="button" tabIndex="0"
+                          >
+                            {b.charAt(0).toUpperCase() + b.slice(1)}
+                          </span>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
@@ -909,7 +709,9 @@ const AdminDashboard = () => {
         </div>
       </main>
 
-      {modalOpen && renderProviderModal()}
+      <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title={modalContent.title}>
+        <div dangerouslySetInnerHTML={{ __html: modalContent.body }} />
+      </Modal>
 
       <Footer />
     </>
