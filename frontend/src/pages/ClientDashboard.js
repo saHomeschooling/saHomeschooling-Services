@@ -13,6 +13,94 @@ import { PLAN_LIMITS, DAYS_OF_WEEK, PRICING_MODELS, PROVINCES } from '../utils/c
 import { getPlanLimits } from '../utils/helpers';
 import '../assets/css/dashboard.css';
 
+// Add custom CSS for spacing
+const dashboardSpacingCSS = `
+  .profile-field {
+    margin-bottom: 24px !important;
+  }
+  
+  .inline-group {
+    display: flex;
+    gap: 24px !important;
+    margin-bottom: 24px !important;
+  }
+  
+  .inline-group > * {
+    flex: 1;
+  }
+  
+  .qualification-item {
+    margin-bottom: 24px !important;
+  }
+  
+  .service-item {
+    margin-bottom: 32px !important;
+    padding: 24px !important;
+    background: #f9f9f9;
+    border-radius: 12px;
+  }
+  
+  .days-multi {
+    margin-bottom: 16px !important;
+  }
+  
+  .contact-block {
+    margin-bottom: 24px !important;
+  }
+  
+  .contact-details {
+    display: flex;
+    gap: 12px !important;
+    margin-top: 12px !important;
+  }
+  
+  .contact-details input,
+  .contact-details span {
+    padding: 8px 12px !important;
+  }
+  
+  .social-links-preview {
+    margin-top: 12px !important;
+  }
+  
+  .reviews-section {
+    margin-top: 32px !important;
+    margin-bottom: 24px !important;
+  }
+  
+  .review-item {
+    margin-bottom: 16px !important;
+    padding: 16px !important;
+    background: #f5f5f5;
+    border-radius: 8px;
+  }
+  
+  .section-label {
+    margin: 32px 0 16px 0 !important;
+    padding-bottom: 8px !important;
+    border-bottom: 1px solid #e0e0e0;
+  }
+  
+  .profile-field input,
+  .profile-field select,
+  .profile-field textarea {
+    margin-top: 6px !important;
+  }
+  
+  .add-service-btn {
+    margin-right: 16px !important;
+  }
+  
+  .service-counter {
+    margin-left: 8px !important;
+  }
+  
+  .card-footer {
+    margin-top: 32px !important;
+    padding-top: 24px !important;
+  }
+`;
+
 // ── Read/write the logged-in provider's data from localStorage ──
 function getCurrentUser() {
   try {
@@ -73,6 +161,9 @@ const EMPTY_PROFILE = {
   listingPublic: true,
   status: 'pending',
   reviews: { average: 0, count: 0, items: [] },
+  profilePhoto: null,
+  certsFile: null,
+  clearanceFile: null,
 };
 
 const ClientDashboard = () => {
@@ -86,6 +177,16 @@ const ClientDashboard = () => {
   const [photoPreview, setPhotoPreview] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  // Add custom CSS for spacing
+  useEffect(() => {
+    if (!document.getElementById('dashboard-spacing-css')) {
+      const s = document.createElement('style');
+      s.id = 'dashboard-spacing-css';
+      s.textContent = dashboardSpacingCSS;
+      document.head.appendChild(s);
+    }
+  }, []);
+
   // Load the logged-in user's provider data on mount
   useEffect(() => {
     const currentUser = getCurrentUser();
@@ -98,6 +199,10 @@ const ClientDashboard = () => {
 
     if (stored) {
       setProfileData({ ...EMPTY_PROFILE, ...stored });
+      // Set photo preview if exists
+      if (stored.profilePhoto) {
+        setPhotoPreview(stored.profilePhoto);
+      }
     } else {
       // New user with no stored provider record yet — prefill from currentUser
       setProfileData(prev => ({
@@ -156,7 +261,7 @@ const ClientDashboard = () => {
 
   const handlePhotoUpload = (photoData) => {
     setPhotoPreview(photoData);
-    setProfileData(prev => ({ ...prev, photo: photoData }));
+    setProfileData(prev => ({ ...prev, profilePhoto: photoData }));
     showNotification('Photo updated successfully!', 'success');
   };
 
@@ -302,10 +407,10 @@ const ClientDashboard = () => {
                 onChange={(e) => handleUpdateProfile({ bio: e.target.value })}
                 className="profile-value"
                 rows="4"
-                style={{ minHeight: '80px' }}
+                style={{ minHeight: '80px', width: '100%', padding: '12px' }}
               />
             ) : (
-              <div className="profile-value" style={{ minHeight: '80px' }}>{profileData.bio || <em style={{ color: 'var(--ink-4)' }}>No bio added yet.</em>}</div>
+              <div className="profile-value" style={{ minHeight: '80px', padding: '12px', background: '#f5f5f5', borderRadius: '8px' }}>{profileData.bio || <em style={{ color: 'var(--ink-4)' }}>No bio added yet.</em>}</div>
             )}
           </div>
 
@@ -317,17 +422,17 @@ const ClientDashboard = () => {
               <div className="profile-field">
                 <label>Certifications</label>
                 {editModeActive ? (
-                  <input type="text" value={profileData.certifications} onChange={(e) => handleUpdateProfile({ certifications: e.target.value })} className="profile-value" />
+                  <input type="text" value={profileData.certifications} onChange={(e) => handleUpdateProfile({ certifications: e.target.value })} className="profile-value" style={{ width: '100%', padding: '10px' }} />
                 ) : (
-                  <div className="profile-value">{profileData.certifications || '—'}</div>
+                  <div className="profile-value" style={{ padding: '10px', background: '#f5f5f5', borderRadius: '8px' }}>{profileData.certifications || '—'}</div>
                 )}
               </div>
               <div className="profile-field">
                 <label>Degrees</label>
                 {editModeActive ? (
-                  <input type="text" value={profileData.degrees} onChange={(e) => handleUpdateProfile({ degrees: e.target.value })} className="profile-value" />
+                  <input type="text" value={profileData.degrees} onChange={(e) => handleUpdateProfile({ degrees: e.target.value })} className="profile-value" style={{ width: '100%', padding: '10px' }} />
                 ) : (
-                  <div className="profile-value">{profileData.degrees || '—'}</div>
+                  <div className="profile-value" style={{ padding: '10px', background: '#f5f5f5', borderRadius: '8px' }}>{profileData.degrees || '—'}</div>
                 )}
               </div>
             </div>
@@ -335,15 +440,15 @@ const ClientDashboard = () => {
               <div className="profile-field">
                 <label>Professional memberships</label>
                 {editModeActive ? (
-                  <input type="text" value={profileData.memberships} onChange={(e) => handleUpdateProfile({ memberships: e.target.value })} className="profile-value" />
+                  <input type="text" value={profileData.memberships} onChange={(e) => handleUpdateProfile({ memberships: e.target.value })} className="profile-value" style={{ width: '100%', padding: '10px' }} />
                 ) : (
-                  <div className="profile-value">{profileData.memberships || '—'}</div>
+                  <div className="profile-value" style={{ padding: '10px', background: '#f5f5f5', borderRadius: '8px' }}>{profileData.memberships || '—'}</div>
                 )}
               </div>
               <div className="profile-field">
                 <label>Background clearance</label>
                 <div>
-                  <span className="badge-clearance" id="clearanceBadge">
+                  <span className="badge-clearance" id="clearanceBadge" style={{ display: 'inline-block', padding: '8px 12px', background: '#f5f5f5', borderRadius: '8px' }}>
                     <i className="fas fa-circle-check"></i> {profileData.clearance || 'Not provided'}
                   </span>
                 </div>
@@ -354,7 +459,7 @@ const ClientDashboard = () => {
           {/* Service Details */}
           <p className="section-label"><i className="fas fa-briefcase"></i> Service Details</p>
 
-          <div className={`service-limit-note ${profileData.plan === 'free' ? 'free-limit' : 'paid-limit'}`} style={{ marginBottom: '1rem' }}>
+          <div className={`service-limit-note ${profileData.plan === 'free' ? 'free-limit' : 'paid-limit'}`} style={{ marginBottom: '1.5rem', padding: '12px', background: '#f0f0f0', borderRadius: '8px' }}>
             <i className="fas fa-info-circle"></i>
             <span>
               {profileData.plan === 'free'
@@ -366,23 +471,24 @@ const ClientDashboard = () => {
           </div>
 
           {profileData.services.map((service, index) => (
-            <ServiceItem
-              key={index}
-              service={service}
-              index={index}
-              isEditing={editModeActive}
-              onUpdate={handleUpdateService}
-              onRemove={handleRemoveService}
-              canRemove={profileData.services.length > 1 && profileData.plan !== 'free'}
-            />
+            <div key={index} className="service-item" style={{ marginBottom: '32px', padding: '24px', background: '#f9f9f9', borderRadius: '12px' }}>
+              <ServiceItem
+                service={service}
+                index={index}
+                isEditing={editModeActive}
+                onUpdate={handleUpdateService}
+                onRemove={handleRemoveService}
+                canRemove={profileData.services.length > 1 && profileData.plan !== 'free'}
+              />
+            </div>
           ))}
 
           {editModeActive && profileData.plan !== 'free' && (
-            <div style={{ margin: '1rem 0' }}>
-              <button className="add-service-btn" onClick={handleAddService} disabled={serviceCount >= maxServices}>
+            <div style={{ margin: '1.5rem 0', display: 'flex', alignItems: 'center' }}>
+              <button className="add-service-btn" onClick={handleAddService} disabled={serviceCount >= maxServices} style={{ padding: '10px 20px', marginRight: '16px' }}>
                 <i className="fas fa-plus-circle"></i> Add another service
               </button>
-              <span className="service-counter">{serviceCount}/{maxServices} services used</span>
+              <span className="service-counter" style={{ fontSize: '0.9rem', color: '#666' }}>{serviceCount}/{maxServices} services used</span>
             </div>
           )}
 
@@ -393,47 +499,47 @@ const ClientDashboard = () => {
             <div className="profile-field">
               <label>Province</label>
               {editModeActive ? (
-                <select value={profileData.province} onChange={(e) => handleUpdateProfile({ province: e.target.value })} className="profile-value">
+                <select value={profileData.province} onChange={(e) => handleUpdateProfile({ province: e.target.value })} className="profile-value" style={{ width: '100%', padding: '10px' }}>
                   <option value="">-- Select --</option>
                   {(PROVINCES || []).map(p => <option key={p} value={p}>{p}</option>)}
                 </select>
               ) : (
-                <div className="profile-value">{profileData.province || '—'}</div>
+                <div className="profile-value" style={{ padding: '10px', background: '#f5f5f5', borderRadius: '8px' }}>{profileData.province || '—'}</div>
               )}
             </div>
             <div className="profile-field">
               <label>City / Town</label>
               {editModeActive ? (
-                <input type="text" value={profileData.city} onChange={(e) => handleUpdateProfile({ city: e.target.value })} className="profile-value" />
+                <input type="text" value={profileData.city} onChange={(e) => handleUpdateProfile({ city: e.target.value })} className="profile-value" style={{ width: '100%', padding: '10px' }} />
               ) : (
-                <div className="profile-value">{profileData.city || '—'}</div>
+                <div className="profile-value" style={{ padding: '10px', background: '#f5f5f5', borderRadius: '8px' }}>{profileData.city || '—'}</div>
               )}
             </div>
           </div>
 
           <div className="profile-field">
             <label>Service area <span>*</span></label>
-            <div className="inline-flex-row">
+            <div className="inline-flex-row" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
               {editModeActive ? (
-                <select value={profileData.serviceAreaType} onChange={(e) => handleUpdateProfile({ serviceAreaType: e.target.value })} className="profile-value" style={{ width: 'auto' }}>
+                <select value={profileData.serviceAreaType} onChange={(e) => handleUpdateProfile({ serviceAreaType: e.target.value })} className="profile-value" style={{ width: 'auto', padding: '10px' }}>
                   <option value="local">Local (specify radius)</option>
                   <option value="national">National</option>
                   <option value="online">Online only</option>
                 </select>
               ) : (
-                <div className="profile-value" style={{ width: 'auto' }}>
+                <div className="profile-value" style={{ width: 'auto', padding: '10px', background: '#f5f5f5', borderRadius: '8px' }}>
                   {profileData.serviceAreaType === 'local' ? 'Local' : profileData.serviceAreaType === 'national' ? 'National' : 'Online only'}
                 </div>
               )}
               {profileData.serviceAreaType === 'local' && (
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.375rem', marginLeft: '8px' }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.75rem' }}>
                   {editModeActive ? (
                     <>
-                      <input type="number" value={profileData.radius} onChange={(e) => handleUpdateProfile({ radius: e.target.value })} className="radius-input" min="1" max="200" />
+                      <input type="number" value={profileData.radius} onChange={(e) => handleUpdateProfile({ radius: e.target.value })} className="radius-input" min="1" max="200" style={{ width: '80px', padding: '8px' }} />
                       <span style={{ fontSize: '0.875rem', color: 'var(--ink-3)' }}>km</span>
                     </>
                   ) : (
-                    <span style={{ fontSize: '0.875rem', color: 'var(--ink-3)' }}>{profileData.radius} km</span>
+                    <span style={{ fontSize: '0.875rem', color: 'var(--ink-3)', padding: '8px', background: '#f5f5f5', borderRadius: '8px' }}>{profileData.radius} km</span>
                   )}
                 </span>
               )}
@@ -447,30 +553,30 @@ const ClientDashboard = () => {
             <div className="profile-field">
               <label>Pricing model <span>*</span></label>
               {editModeActive ? (
-                <select value={profileData.pricingModel} onChange={(e) => handleUpdateProfile({ pricingModel: e.target.value })} className="profile-value">
+                <select value={profileData.pricingModel} onChange={(e) => handleUpdateProfile({ pricingModel: e.target.value })} className="profile-value" style={{ width: '100%', padding: '10px' }}>
                   {(PRICING_MODELS || ['Hourly', 'Per package', 'Per term', 'Custom quote']).map(model => (
                     <option key={model} value={model}>{model}</option>
                   ))}
                 </select>
               ) : (
-                <div className="profile-value">{profileData.pricingModel || '—'}</div>
+                <div className="profile-value" style={{ padding: '10px', background: '#f5f5f5', borderRadius: '8px' }}>{profileData.pricingModel || '—'}</div>
               )}
             </div>
             <div className="profile-field">
               <label>Starting price (optional)</label>
               {editModeActive ? (
-                <input type="text" value={profileData.startingPrice} onChange={(e) => handleUpdateProfile({ startingPrice: e.target.value })} className="profile-value" />
+                <input type="text" value={profileData.startingPrice} onChange={(e) => handleUpdateProfile({ startingPrice: e.target.value })} className="profile-value" style={{ width: '100%', padding: '10px' }} />
               ) : (
-                <div className="profile-value">{profileData.startingPrice || '—'}</div>
+                <div className="profile-value" style={{ padding: '10px', background: '#f5f5f5', borderRadius: '8px' }}>{profileData.startingPrice || '—'}</div>
               )}
             </div>
           </div>
 
           <div className="profile-field">
             <label>Availability — Days</label>
-            <div className="days-multi" role="group" aria-label="Available days">
+            <div className="days-multi" role="group" aria-label="Available days" style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginBottom: '16px' }}>
               {(DAYS_OF_WEEK || ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']).map(day => (
-                <label key={day} className="day-checkbox">
+                <label key={day} className="day-checkbox" style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 12px', background: '#f5f5f5', borderRadius: '6px' }}>
                   <input
                     type="checkbox"
                     value={day}
@@ -483,19 +589,19 @@ const ClientDashboard = () => {
               ))}
             </div>
             {editModeActive ? (
-              <input type="text" value={profileData.availabilityNotes} onChange={(e) => handleUpdateProfile({ availabilityNotes: e.target.value })} className="profile-value" style={{ marginTop: '0.5rem' }} />
+              <input type="text" value={profileData.availabilityNotes} onChange={(e) => handleUpdateProfile({ availabilityNotes: e.target.value })} className="profile-value" style={{ width: '100%', padding: '10px', marginTop: '0.5rem' }} placeholder="e.g. 9:00 - 17:00, Weekdays only" />
             ) : (
-              <div className="profile-value" style={{ marginTop: '0.5rem' }}>{profileData.availabilityNotes || '—'}</div>
+              <div className="profile-value" style={{ padding: '10px', background: '#f5f5f5', borderRadius: '8px', marginTop: '0.5rem' }}>{profileData.availabilityNotes || '—'}</div>
             )}
           </div>
 
           {/* Contact & Social */}
           <p className="section-label"><i className="fas fa-address-card"></i> Contact &amp; Online Presence</p>
 
-          <div className="contact-block">
-            <div className="contact-inner">
+          <div className="contact-block" style={{ marginBottom: '24px' }}>
+            <div className="contact-inner" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
               <strong style={{ fontSize: '0.9rem' }}>Primary contact</strong>
-              <label className="toggle-switch">
+              <label className="toggle-switch" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <input
                   type="checkbox"
                   checked={profileData.publicToggle}
@@ -506,32 +612,32 @@ const ClientDashboard = () => {
                 <span>Display publicly <i className="fas fa-globe"></i></span>
               </label>
             </div>
-            <div className="contact-details">
+            <div className="contact-details" style={{ display: 'flex', gap: '16px', marginTop: '12px' }}>
               {editModeActive ? (
                 <>
-                  <input type="text" value={profileData.contactName} onChange={(e) => handleUpdateProfile({ contactName: e.target.value })} placeholder="Contact name" style={{ width: 'auto', marginRight: '0.5rem' }} /> ·
-                  <input type="text" value={profileData.phone} onChange={(e) => handleUpdateProfile({ phone: e.target.value })} placeholder="Phone" style={{ width: 'auto', margin: '0 0.5rem' }} /> ·
-                  <input type="email" value={profileData.contactEmail} onChange={(e) => handleUpdateProfile({ contactEmail: e.target.value })} placeholder="Email" style={{ width: 'auto', marginLeft: '0.5rem' }} />
+                  <input type="text" value={profileData.contactName} onChange={(e) => handleUpdateProfile({ contactName: e.target.value })} placeholder="Contact name" style={{ flex: 1, padding: '10px' }} />
+                  <input type="text" value={profileData.phone} onChange={(e) => handleUpdateProfile({ phone: e.target.value })} placeholder="Phone" style={{ flex: 1, padding: '10px' }} />
+                  <input type="email" value={profileData.contactEmail} onChange={(e) => handleUpdateProfile({ contactEmail: e.target.value })} placeholder="Email" style={{ flex: 1, padding: '10px' }} />
                 </>
               ) : (
                 <>
-                  <span>{profileData.contactName || '—'}</span> ·
-                  <span>{profileData.phone || '—'}</span> ·
-                  <span>{profileData.contactEmail || '—'}</span>
+                  <span style={{ flex: 1, padding: '10px', background: '#f5f5f5', borderRadius: '8px' }}>{profileData.contactName || '—'}</span>
+                  <span style={{ flex: 1, padding: '10px', background: '#f5f5f5', borderRadius: '8px' }}>{profileData.phone || '—'}</span>
+                  <span style={{ flex: 1, padding: '10px', background: '#f5f5f5', borderRadius: '8px' }}>{profileData.contactEmail || '—'}</span>
                 </>
               )}
             </div>
-            <div className="social-links-preview">
+            <div className="social-links-preview" style={{ marginTop: '12px' }}>
               {editModeActive ? (
-                <input type="text" value={profileData.social} onChange={(e) => handleUpdateProfile({ social: e.target.value })} className="profile-value" style={{ width: '100%' }} placeholder="Website / social link" />
+                <input type="text" value={profileData.social} onChange={(e) => handleUpdateProfile({ social: e.target.value })} className="profile-value" style={{ width: '100%', padding: '10px' }} placeholder="Website / social link" />
               ) : (
-                <span>{profileData.social || '—'}</span>
+                <div style={{ padding: '10px', background: '#f5f5f5', borderRadius: '8px' }}>{profileData.social || '—'}</div>
               )}
             </div>
           </div>
 
           {/* Plan row */}
-          <div className="plan-row">
+          <div className="plan-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '24px 0', padding: '16px', background: '#f0f0f0', borderRadius: '8px' }}>
             <span className="plan-badge"><i className="fas fa-crown" style={{ color: '#f59e0b' }}></i> {getPlanName()}</span>
             <span className="public-indicator">
               <i className="fas fa-circle-check"></i> listing is {profileData.status === 'approved' ? 'live' : profileData.status}
@@ -541,7 +647,7 @@ const ClientDashboard = () => {
           <PlanSelector currentPlan={profileData.plan} onSelectPlan={handlePlanChange} />
 
           {/* Reviews */}
-          <div className="reviews-section" aria-label="Reviews and testimonials">
+          <div className="reviews-section" aria-label="Reviews and testimonials" style={{ marginTop: '32px', marginBottom: '24px' }}>
             <div className="profile-field">
               <p className="section-label" style={{ border: 'none', margin: '0 0 0.75rem' }}>
                 <i className="fas fa-star"></i> Reviews &amp; Testimonials
@@ -550,22 +656,22 @@ const ClientDashboard = () => {
             </div>
             {profileData.reviews.items && profileData.reviews.items.length > 0 ? (
               profileData.reviews.items.map((review, index) => (
-                <div className="review-item" key={index}>
+                <div className="review-item" key={index} style={{ marginBottom: '16px', padding: '16px', background: '#f5f5f5', borderRadius: '8px' }}>
                   <div className="rating-stars">{'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}</div>
-                  <div className="profile-value" style={{ fontStyle: 'italic' }}>
+                  <div className="profile-value" style={{ fontStyle: 'italic', marginTop: '8px' }}>
                     "{review.text}" — {review.reviewer}
                   </div>
                 </div>
               ))
             ) : (
-              <div className="review-item">
+              <div className="review-item" style={{ marginBottom: '16px', padding: '16px', background: '#f5f5f5', borderRadius: '8px' }}>
                 <div className="profile-value" style={{ fontStyle: 'italic', color: 'var(--ink-3)' }}>
                   No reviews yet. Reviews appear here once families leave feedback.
                 </div>
               </div>
             )}
             {profileData.reviews.count > 0 && (
-              <div className="review-item">
+              <div className="review-item" style={{ marginBottom: '16px', padding: '16px', background: '#f5f5f5', borderRadius: '8px' }}>
                 <div className="profile-value" style={{ fontStyle: 'italic', color: 'var(--ink-3)' }}>
                   Average rating: {profileData.reviews.average}/5 (based on {profileData.reviews.count} reviews)
                 </div>
@@ -573,16 +679,16 @@ const ClientDashboard = () => {
             )}
           </div>
 
-          <hr />
+          <hr style={{ margin: '24px 0' }} />
 
-          <div className="card-footer">
+          <div className="card-footer" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '32px', paddingTop: '24px' }}>
             <span className="last-edited"><i className="far fa-clock"></i> last edited today</span>
             {editModeActive && (
               <div style={{ display: 'flex', gap: '0.75rem' }}>
-                <button className="btn-save" onClick={saveChanges} disabled={loading}>
+                <button className="btn-save" onClick={saveChanges} disabled={loading} style={{ padding: '10px 24px' }}>
                   <i className="fas fa-floppy-disk"></i> Save changes
                 </button>
-                <button className="btn-edit" onClick={cancelEdit} disabled={loading}>Cancel</button>
+                <button className="btn-edit" onClick={cancelEdit} disabled={loading} style={{ padding: '10px 24px' }}>Cancel</button>
               </div>
             )}
             {!editModeActive && (

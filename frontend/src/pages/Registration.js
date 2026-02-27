@@ -482,7 +482,11 @@ const Registration = () => {
   const { showNotification } = useNotification();
 
   const [step, setStep] = useState(1);
-  const [data, setData] = useState({ listingPlan: 'Free Listing – basic profile', terms: false });
+  const [data, setData] = useState({ 
+    listingPlan: 'Free Listing – basic profile', 
+    terms: false,
+    services: [{ title: '', ageGroups: [], deliveryMode: 'Online' }] // Initialize services array
+  });
   // fieldErrors: keyed by field name, value = error string
   const [fieldErrors, setFieldErrors] = useState({});
   const [showPw, setShowPw] = useState(false);
@@ -559,6 +563,40 @@ const Registration = () => {
   const removeSocial = (key) => {
     setAddedSocials(prev => prev.filter(k => k !== key));
     set(key, '');
+  };
+
+  // Service management functions
+  const addService = () => {
+    setData(prev => ({
+      ...prev,
+      services: [...(prev.services || []), { title: '', ageGroups: [], deliveryMode: 'Online' }]
+    }));
+  };
+
+  const updateService = (index, field, value) => {
+    setData(prev => {
+      const newServices = [...(prev.services || [])];
+      newServices[index] = { ...newServices[index], [field]: value };
+      return { ...prev, services: newServices };
+    });
+  };
+
+  const removeService = (index) => {
+    setData(prev => ({
+      ...prev,
+      services: (prev.services || []).filter((_, i) => i !== index)
+    }));
+  };
+
+  // Handle file uploads and convert to base64 for storage
+  const handleFileUpload = (name, file) => {
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        set(name, reader.result); // Store base64 string
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   /* ── VALIDATION — returns { [fieldKey]: errorMessage } or {} ── */
@@ -643,34 +681,76 @@ const Registration = () => {
     const fullPhone = '+27' + (data.phoneLocal || '').replace(/\D/g, '');
     const priceUnit = PRICING_UNIT_MAP[data.pricingModel] || '';
     const priceDisplay = data.startingPrice ? `R${data.startingPrice}${priceUnit}` : 'Contact';
+    
+    // Determine service area type
+    let serviceAreaType = 'online';
+    if (data.serviceAreas) {
+      if (data.serviceAreas.includes('Local')) serviceAreaType = 'local';
+      else if (data.serviceAreas.includes('National')) serviceAreaType = 'national';
+      else serviceAreaType = 'online';
+    }
+
+    // Create services array with proper structure
+    const services = (data.services && data.services.length > 0) ? data.services : [
+      {
+        title: data.serviceTitle || '',
+        ageGroups: data.ageGroups || [],
+        deliveryMode: data.deliveryMode || 'Online'
+      }
+    ];
+
     const newProvider = {
-      id: 'prov_' + Date.now(), name: data.fullName || '', email: data.email || '',
-      category: catMap[data.primaryCat] || 'tutor', primaryCategory: data.primaryCat || '',
-      location: data.city ? `${data.city}, ${data.province}` : '',
-      city: data.city || '', province: data.province || '',
-      delivery: data.deliveryMode || '', deliveryMode: data.deliveryMode || '',
-      priceFrom: priceDisplay, startingPrice: priceDisplay,
-      tier, listingPlan: tier, badge: tier === 'featured' ? 'featured' : tier === 'pro' ? 'verified' : null,
-      status: 'pending', registered: new Date().toISOString(), bio: data.bio || '',
+      id: 'prov_' + Date.now(), 
+      name: data.fullName || '', 
+      email: data.email || '',
+      accountType: data.accountType || 'Individual Provider',
+      yearsExperience: data.experience || '',
+      languages: data.languages || [],
+      primaryCategory: data.primaryCat || '',
+      primaryCat: data.primaryCat || '', // Keep for backward compatibility
       tags: data.subjects ? data.subjects.split(',').map(s => s.trim()) : [],
-      ageGroups: data.ageGroups || [],
-      availabilityDays: (data.daysAvailable || []).map(d => d.slice(0, 3)),
-      availabilityNotes: data.timeSlots || '', phone: fullPhone,
-      contactEmail: data.inquiryEmail || data.email || '',
-      certifications: [data.qualDegree, data.qualCerts, data.qualMemberships].filter(Boolean).join(' | ') || '',
-      social: data.website || '',
-      serviceAreas: data.serviceAreas || [],
-      localRadius: data.localRadiusNum ? `${data.localRadiusNum} ${data.localRadiusUnit || 'km'}` : '',
+      bio: data.bio || '',
+      certifications: data.qualCerts || '',
+      degrees: data.qualDegree || '',
+      memberships: data.qualMemberships || '',
+      clearance: data.clearanceText || '',
+      services: services,
+      province: data.province || '',
+      city: data.city || '',
+      serviceAreaType: serviceAreaType,
+      radius: data.localRadiusNum || '',
       pricingModel: data.pricingModel || '',
-      serviceTitle: data.serviceTitle || '', image: null, rating: null,
-      reviewCount: 0, reviews: { average: 0, count: 0, items: [] },
+      startingPrice: data.startingPrice || '',
+      availabilityDays: data.daysAvailable || [],
+      availabilityNotes: data.timeSlots || '',
+      contactName: data.fullName || '',
+      phone: fullPhone,
+      contactEmail: data.inquiryEmail || data.email || '',
+      social: data.website || '',
+      publicToggle: true,
+      plan: tier,
+      listingPlan: tier,
+      badge: tier === 'featured' ? 'featured' : tier === 'pro' ? 'verified' : null,
+      status: 'pending', 
+      registered: new Date().toISOString(),
+      listingPublic: true,
+      reviews: { average: 0, count: 0, items: [] },
+      // Store uploaded files as base64 strings
+      profilePhoto: data.profilePhoto || null,
+      certsFile: data.certsFile || null,
+      clearanceFile: data.clearanceFile || null,
     };
+    
     try {
       const existing = JSON.parse(localStorage.getItem('sah_providers') || '[]');
       existing.push(newProvider);
       localStorage.setItem('sah_providers', JSON.stringify(existing));
       localStorage.setItem('sah_current_user', JSON.stringify({
-        role: 'client', email: newProvider.email, id: newProvider.id, name: newProvider.name, plan: tier,
+        role: 'client', 
+        email: newProvider.email, 
+        id: newProvider.id, 
+        name: newProvider.name, 
+        plan: tier,
       }));
       showNotification?.('✅ Registration successful! Your profile is pending approval.', 'success');
       setTimeout(() => navigate('/client-dashboard'), 1800);
@@ -788,7 +868,8 @@ const Registration = () => {
     <div className="sah-form-grid">
       <div className="sah-field">
         <label><i className="fas fa-upload" /> Profile Photo / Logo</label>
-        <input type="file" accept="image/*" onChange={e => set('profilePhoto', e.target.files[0])} />
+        <input type="file" accept="image/*" onChange={e => handleFileUpload('profilePhoto', e.target.files[0])} />
+        {data.profilePhoto && <div className="sah-field-hint"><i className="fas fa-check-circle" style={{color: 'green'}} /> Photo uploaded</div>}
       </div>
       <div className="sah-field">
         <label><i className="fas fa-hashtag" /> Years of Experience <em className="sah-req">*</em></label>
@@ -822,7 +903,10 @@ const Registration = () => {
             <input type="text" value={data.qualMemberships || ''} placeholder="Memberships (e.g. SA Curriculum Association)" onChange={e => set('qualMemberships', e.target.value)} />
           </div>
         ) : (
-          <input type="file" accept=".pdf,.doc,.docx,.jpg,.png" onChange={e => set('certsFile', e.target.files[0])} />
+          <>
+            <input type="file" accept=".pdf,.doc,.docx,.jpg,.png" onChange={e => handleFileUpload('certsFile', e.target.files[0])} />
+            {data.certsFile && <div className="sah-field-hint"><i className="fas fa-check-circle" style={{color: 'green'}} /> File uploaded</div>}
+          </>
         )}
       </div>
 
@@ -839,7 +923,10 @@ const Registration = () => {
         {clearanceMode === 'text' ? (
           <input type="text" value={data.clearanceText || ''} placeholder="e.g. Verified 2024 — Certificate No. 12345678" onChange={e => set('clearanceText', e.target.value)} />
         ) : (
-          <input type="file" accept=".pdf,.jpg,.png" onChange={e => set('clearanceFile', e.target.files[0])} />
+          <>
+            <input type="file" accept=".pdf,.jpg,.png" onChange={e => handleFileUpload('clearanceFile', e.target.files[0])} />
+            {data.clearanceFile && <div className="sah-field-hint"><i className="fas fa-check-circle" style={{color: 'green'}} /> File uploaded</div>}
+          </>
         )}
       </div>
 
