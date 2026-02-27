@@ -49,29 +49,51 @@ const EMPTY_PROFILE = {
   yearsExperience: '',
   languages: [],
   primaryCategory: '',
+  secondaryCategories: [],
   tags: [],
   bio: '',
-  certifications: '',
+  // Qualifications — stored individually so dashboard can display each field separately
   degrees: '',
+  certifications: '',
   memberships: '',
   clearance: '',
-  services: [{ title: '', ageGroups: [], deliveryMode: 'Online' }],
+  // Services
+  services: [{ title: '', description: '', ageGroups: [], deliveryMode: 'Online', subjects: '' }],
+  serviceTitle: '',
+  serviceDesc: '',
+  subjects: '',
+  ageGroups: [],
+  // Location
   province: '',
   city: '',
+  serviceAreas: [],
   serviceAreaType: 'national',
   radius: '',
+  deliveryMode: '',
+  // Pricing
   pricingModel: '',
   startingPrice: '',
+  // Availability
   availabilityDays: [],
   availabilityNotes: '',
+  // Contact
   contactName: '',
   phone: '',
+  whatsapp: '',
   contactEmail: '',
+  // Social
   social: '',
+  website: '',
+  facebook: '',
   publicToggle: true,
+  // Plan & status
   plan: 'free',
   listingPublic: true,
   status: 'pending',
+  // Photo
+  image: null,
+  photo: null,
+  // Reviews
   reviews: { average: 0, count: 0, items: [] },
 };
 
@@ -134,7 +156,9 @@ const ClientDashboard = () => {
   const saveChanges = () => {
     setLoading(true);
     try {
-      saveProviderById(profileData);
+      // Keep `social` in sync with `website` so Profile.js always finds the link
+      const toSave = { ...profileData, social: profileData.website || profileData.social || '' };
+      saveProviderById(toSave);
       // Also update currentUser name in storage
       const currentUser = getCurrentUser();
       if (currentUser) {
@@ -336,19 +360,19 @@ const ClientDashboard = () => {
           <div className="qualification-item">
             <div className="inline-group">
               <div className="profile-field">
-                <label>Certifications</label>
+                <label>Degrees / Diplomas</label>
                 {editModeActive ? (
-                  <input type="text" value={profileData.certifications} onChange={(e) => handleUpdateProfile({ certifications: e.target.value })} className="profile-value" />
+                  <input type="text" value={profileData.degrees} onChange={(e) => handleUpdateProfile({ degrees: e.target.value })} className="profile-value" placeholder="e.g. BEd Honours, Mathematics Education" />
                 ) : (
-                  <div className="profile-value">{profileData.certifications || '—'}</div>
+                  <div className="profile-value">{profileData.degrees || '—'}</div>
                 )}
               </div>
               <div className="profile-field">
-                <label>Degrees</label>
+                <label>Certifications</label>
                 {editModeActive ? (
-                  <input type="text" value={profileData.degrees} onChange={(e) => handleUpdateProfile({ degrees: e.target.value })} className="profile-value" />
+                  <input type="text" value={profileData.certifications} onChange={(e) => handleUpdateProfile({ certifications: e.target.value })} className="profile-value" placeholder="e.g. SACE Registered, Umalusi Accredited" />
                 ) : (
-                  <div className="profile-value">{profileData.degrees || '—'}</div>
+                  <div className="profile-value">{profileData.certifications || '—'}</div>
                 )}
               </div>
             </div>
@@ -356,7 +380,7 @@ const ClientDashboard = () => {
               <div className="profile-field">
                 <label>Professional memberships</label>
                 {editModeActive ? (
-                  <input type="text" value={profileData.memberships} onChange={(e) => handleUpdateProfile({ memberships: e.target.value })} className="profile-value" />
+                  <input type="text" value={profileData.memberships} onChange={(e) => handleUpdateProfile({ memberships: e.target.value })} className="profile-value" placeholder="e.g. SA Curriculum Association" />
                 ) : (
                   <div className="profile-value">{profileData.memberships || '—'}</div>
                 )}
@@ -367,6 +391,9 @@ const ClientDashboard = () => {
                   <span className="badge-clearance" id="clearanceBadge">
                     <i className="fas fa-circle-check"></i> {profileData.clearance || 'Not provided'}
                   </span>
+                  {editModeActive && (
+                    <input type="text" value={profileData.clearance} onChange={(e) => handleUpdateProfile({ clearance: e.target.value })} className="profile-value" style={{ marginTop: '6px' }} placeholder="e.g. Verified 2024 — Cert No. 12345678" />
+                  )}
                 </div>
               </div>
             </div>
@@ -532,7 +559,7 @@ const ClientDashboard = () => {
                 <>
                   <input type="text" value={profileData.contactName} onChange={(e) => handleUpdateProfile({ contactName: e.target.value })} placeholder="Contact name" style={{ width: 'auto', marginRight: '0.5rem' }} /> ·
                   <input type="text" value={profileData.phone} onChange={(e) => handleUpdateProfile({ phone: e.target.value })} placeholder="Phone" style={{ width: 'auto', margin: '0 0.5rem' }} /> ·
-                  <input type="email" value={profileData.contactEmail} onChange={(e) => handleUpdateProfile({ contactEmail: e.target.value })} placeholder="Email" style={{ width: 'auto', marginLeft: '0.5rem' }} />
+                  <input type="email" value={profileData.contactEmail} onChange={(e) => handleUpdateProfile({ contactEmail: e.target.value })} placeholder="Enquiry email" style={{ width: 'auto', marginLeft: '0.5rem' }} />
                 </>
               ) : (
                 <>
@@ -542,13 +569,34 @@ const ClientDashboard = () => {
                 </>
               )}
             </div>
-            <div className="social-links-preview">
+            {/* WhatsApp */}
+            <div className="social-links-preview" style={{ marginTop: '6px' }}>
               {editModeActive ? (
-                <input type="text" value={profileData.social} onChange={(e) => handleUpdateProfile({ social: e.target.value })} className="profile-value" style={{ width: '100%' }} placeholder="Website / social link" />
+                <input type="text" value={profileData.whatsapp || ''} onChange={(e) => handleUpdateProfile({ whatsapp: e.target.value })} className="profile-value" style={{ width: '100%' }} placeholder="WhatsApp number (e.g. +27 82 000 0000)" />
               ) : (
-                <span>{profileData.social || '—'}</span>
+                profileData.whatsapp ? <span><i className="fab fa-whatsapp" style={{ color: '#25d366', marginRight: 5 }} />{profileData.whatsapp}</span> : null
               )}
             </div>
+            {/* Website */}
+            <div className="social-links-preview" style={{ marginTop: '6px' }}>
+              {editModeActive ? (
+                <input type="url" value={profileData.website || profileData.social || ''} onChange={(e) => handleUpdateProfile({ website: e.target.value, social: e.target.value })} className="profile-value" style={{ width: '100%' }} placeholder="Website (https://yoursite.co.za)" />
+              ) : (
+                (profileData.website || profileData.social)
+                  ? <span><i className="fas fa-globe" style={{ marginRight: 5 }} />{profileData.website || profileData.social}</span>
+                  : <span>—</span>
+              )}
+            </div>
+            {/* Facebook */}
+            {(profileData.facebook || editModeActive) && (
+              <div className="social-links-preview" style={{ marginTop: '6px' }}>
+                {editModeActive ? (
+                  <input type="url" value={profileData.facebook || ''} onChange={(e) => handleUpdateProfile({ facebook: e.target.value })} className="profile-value" style={{ width: '100%' }} placeholder="Facebook page URL" />
+                ) : (
+                  profileData.facebook ? <span><i className="fab fa-facebook" style={{ color: '#1877f2', marginRight: 5 }} />{profileData.facebook}</span> : null
+                )}
+              </div>
+            )}
           </div>
 
           {/* Plan row */}

@@ -639,43 +639,140 @@ const Registration = () => {
       'Online / Hybrid School': 'school', 'Educational Consultant': 'consultant',
       'Extracurricular / Enrichment': 'extracurricular',
     };
+
     const tier = planMap[data.listingPlan] || 'free';
-    const fullPhone = '+27' + (data.phoneLocal || '').replace(/\D/g, '');
+
+    // Phone numbers
+    const fullPhone = data.phoneLocal ? '+27' + data.phoneLocal.replace(/\D/g, '') : '';
+    const fullWhatsapp = data.whatsappLocal ? '+27' + data.whatsappLocal.replace(/\D/g, '') : fullPhone;
+
+    // Pricing display
     const priceUnit = PRICING_UNIT_MAP[data.pricingModel] || '';
     const priceDisplay = data.startingPrice ? `R${data.startingPrice}${priceUnit}` : 'Contact';
-    const newProvider = {
-      id: 'prov_' + Date.now(), name: data.fullName || '', email: data.email || '',
-      category: catMap[data.primaryCat] || 'tutor', primaryCategory: data.primaryCat || '',
-      location: data.city ? `${data.city}, ${data.province}` : '',
-      city: data.city || '', province: data.province || '',
-      delivery: data.deliveryMode || '', deliveryMode: data.deliveryMode || '',
-      priceFrom: priceDisplay, startingPrice: priceDisplay,
-      tier, listingPlan: tier, badge: tier === 'featured' ? 'featured' : tier === 'pro' ? 'verified' : null,
-      status: 'pending', registered: new Date().toISOString(), bio: data.bio || '',
-      tags: data.subjects ? data.subjects.split(',').map(s => s.trim()) : [],
+
+    // Qualifications — keep individual fields AND a combined string for the profile page
+    const qualDegree = data.qualDegree || '';
+    const qualCerts = data.qualCerts || '';
+    const qualMemberships = data.qualMemberships || '';
+    const certificationsCombined = [qualDegree, qualCerts].filter(Boolean).join(' | ');
+
+    // Service area type — derive from serviceAreas array
+    let serviceAreaType = 'national';
+    const svcAreas = data.serviceAreas || [];
+    if (svcAreas.includes('Local') && svcAreas.length === 1) serviceAreaType = 'local';
+    else if (svcAreas.includes('Online only') && svcAreas.length === 1) serviceAreaType = 'online';
+    else if (svcAreas.includes('Local')) serviceAreaType = 'local';
+
+    // Services array — matches ClientDashboard ServiceItem shape
+    const services = [{
+      title: data.serviceTitle || '',
+      description: data.serviceDesc || '',
       ageGroups: data.ageGroups || [],
-      availabilityDays: (data.daysAvailable || []).map(d => d.slice(0, 3)),
-      availabilityNotes: data.timeSlots || '', phone: fullPhone,
-      contactEmail: data.inquiryEmail || data.email || '',
-      certifications: [data.qualDegree, data.qualCerts, data.qualMemberships].filter(Boolean).join(' | ') || '',
-      social: data.website || '',
-      serviceAreas: data.serviceAreas || [],
-      localRadius: data.localRadiusNum ? `${data.localRadiusNum} ${data.localRadiusUnit || 'km'}` : '',
-      pricingModel: data.pricingModel || '',
-      serviceTitle: data.serviceTitle || '',
-      // profilePhoto is already a base64 data URL (converted by FileReader on upload)
-      // stored in both `image` (used by Profile page hero) and `photo` (used by ClientDashboard)
+      deliveryMode: data.deliveryMode || 'Online',
+      subjects: data.subjects || '',
+    }];
+
+    // Social links object
+    const socialLinks = {
+      website: data.website || '',
+      facebook: data.facebook || '',
+    };
+
+    const newProvider = {
+      // ── Identity ──
+      id: 'prov_' + Date.now(),
+      name: data.fullName || '',
+      email: data.email || '',
+      accountType: data.accountType || 'Individual Provider',
+
+      // ── Plan & status ──
+      plan: tier,
+      listingPlan: tier,
+      tier,
+      badge: tier === 'featured' ? 'featured' : tier === 'pro' ? 'verified' : null,
+      status: 'pending',
+      registered: new Date().toISOString(),
+      listingPublic: true,
+      publicToggle: true,
+
+      // ── Profile photo ──
+      // profilePhoto is a base64 data URL (converted by FileReader on upload)
       image: data.profilePhoto || null,
       photo: data.profilePhoto || null,
+
+      // ── Category ──
+      category: catMap[data.primaryCat] || 'tutor',
+      primaryCategory: data.primaryCat || '',
+      secondaryCategories: data.secondaryCats || [],
+
+      // ── Bio & experience ──
+      bio: data.bio || '',
+      yearsExperience: data.experience || '',
+
+      // ── Qualifications ──
+      degrees: qualDegree,
+      certifications: certificationsCombined,
+      qualCerts: qualCerts,
+      memberships: qualMemberships,
+      clearance: data.clearanceText || '',
+
+      // ── Tags / subjects ──
+      tags: data.subjects ? data.subjects.split(',').map(s => s.trim()).filter(Boolean) : [],
+      languages: data.languages || [],
+
+      // ── Services ──
+      services,
+      serviceTitle: data.serviceTitle || '',
+      serviceDesc: data.serviceDesc || '',
+      subjects: data.subjects || '',
+      ageGroups: data.ageGroups || [],
+
+      // ── Location ──
+      location: data.city ? `${data.city}, ${data.province}` : '',
+      city: data.city || '',
+      province: data.province || '',
+      delivery: data.deliveryMode || '',
+      deliveryMode: data.deliveryMode || '',
+      serviceAreas: svcAreas,
+      serviceAreaType,
+      radius: data.localRadiusNum ? `${data.localRadiusNum} ${data.localRadiusUnit || 'km'}` : '',
+
+      // ── Pricing ──
+      pricingModel: data.pricingModel || '',
+      startingPrice: priceDisplay,
+      priceFrom: priceDisplay,
+
+      // ── Availability ──
+      availabilityDays: (data.daysAvailable || []).map(d => d.slice(0, 3)),
+      availabilityNotes: data.timeSlots || '',
+
+      // ── Contact ──
+      contactName: data.fullName || '',
+      phone: fullPhone,
+      whatsapp: fullWhatsapp,
+      contactEmail: data.inquiryEmail || data.email || '',
+
+      // ── Social / online presence ──
+      social: data.website || '',
+      website: data.website || '',
+      facebook: data.facebook || '',
+
+      // ── Reviews ──
       rating: null,
-      reviewCount: 0, reviews: { average: 0, count: 0, items: [] },
+      reviewCount: 0,
+      reviews: { average: 0, count: 0, items: [] },
     };
+
     try {
       const existing = JSON.parse(localStorage.getItem('sah_providers') || '[]');
       existing.push(newProvider);
       localStorage.setItem('sah_providers', JSON.stringify(existing));
       localStorage.setItem('sah_current_user', JSON.stringify({
-        role: 'client', email: newProvider.email, id: newProvider.id, name: newProvider.name, plan: tier,
+        role: 'client',
+        email: newProvider.email,
+        id: newProvider.id,
+        name: newProvider.name,
+        plan: tier,
       }));
       showNotification?.('✅ Registration successful! Your profile is pending approval.', 'success');
       setTimeout(() => navigate('/client-dashboard'), 1800);
