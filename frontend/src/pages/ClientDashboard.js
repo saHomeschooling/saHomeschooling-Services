@@ -470,6 +470,7 @@ const ClientDashboard = () => {
 
   const maxServices = getPlanLimits(profileData.plan).maxServices;
   const serviceCount = profileData.services.length;
+  const isPaidPlan = profileData.plan === 'pro' || profileData.plan === 'featured';
 
   const toggleEditMode = () => {
     if (!editModeActive) {
@@ -575,15 +576,9 @@ const ClientDashboard = () => {
     if (!file) return;
 
     const fileName = file.name.toLowerCase();
-    // For PDF/image we can't read text easily in browser without a library,
-    // so we store the file reference and attempt basic name parsing
     const nameWithoutExt = file.name.replace(/\.[^.]+$/, '');
-
-    // Try to extract meaningful info from the filename
-    // e.g. "BEd_Honours_Mathematics_SACE_2024.pdf" → parse segments
     const segments = nameWithoutExt.replace(/[_\-\.]/g, ' ').replace(/\s+/g, ' ').trim();
 
-    // Simple heuristic: if filename contains cert/qual keywords, prefill
     const lc = segments.toLowerCase();
     let parsedDegree = profileData.degrees;
     let parsedCerts = profileData.certifications;
@@ -598,12 +593,10 @@ const ClientDashboard = () => {
     if (hasCert && !parsedCerts) parsedCerts = segments;
     if (!hasDegree && !hasCert && !parsedDegree) parsedDegree = segments;
 
-    // Read as text if it's a txt file, otherwise use the filename
     if (fileName.endsWith('.txt')) {
       const reader = new FileReader();
       reader.onload = (ev) => {
         const text = ev.target.result;
-        // Parse text: look for lines with keywords
         const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
         const degLine = lines.find(l => degreeKeywords.some(k => l.toLowerCase().includes(k)));
         const certLine = lines.find(l => certKeywords.some(k => l.toLowerCase().includes(k)));
@@ -674,7 +667,6 @@ const ClientDashboard = () => {
             </div>
           </div>
           <div className="cd-hero-right">
-            {/* Back to directory — goes to homepage */}
             <button className="cd-btn-ghost" onClick={() => navigate('/')}>
               <i className="fas fa-arrow-left"></i> Back to Directory
             </button>
@@ -721,7 +713,6 @@ const ClientDashboard = () => {
                 </button>
               </div>
               <div className="cd-card-body">
-                {/* Photo + basic info via ProfileSection component */}
                 <ProfileSection
                   profileData={profileData}
                   isEditing={editModeActive}
@@ -876,19 +867,20 @@ const ClientDashboard = () => {
                       isEditing={editModeActive}
                       onUpdate={handleUpdateService}
                       onRemove={handleRemoveService}
-                      canRemove={profileData.services.length > 1 && profileData.plan !== 'free'}
+                      canRemove={profileData.services.length > 1 && isPaidPlan}
                     />
                   </div>
                 ))}
 
-                {editModeActive && profileData.plan !== 'free' && (
+                {/* Show Add Service button for paid plans when in edit mode */}
+                {editModeActive && isPaidPlan && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 4 }}>
                     <button
                       onClick={handleAddService}
                       disabled={serviceCount >= maxServices}
                       style={{
                         display: 'inline-flex', alignItems: 'center', gap: 7,
-                        padding: '9px 18px', borderRadius: 8, cursor: 'pointer',
+                        padding: '9px 18px', borderRadius: 8, cursor: serviceCount >= maxServices ? 'not-allowed' : 'pointer',
                         border: '1.5px dashed #c9621a', background: '#fef3e8',
                         color: '#c9621a', fontWeight: 700, fontSize: '0.85rem',
                         fontFamily: 'inherit', opacity: serviceCount >= maxServices ? 0.5 : 1,
@@ -901,19 +893,39 @@ const ClientDashboard = () => {
                     </span>
                   </div>
                 )}
+
+                {/* Prompt free users to upgrade to add more services */}
+                {editModeActive && !isPaidPlan && (
+                  <div style={{ marginTop: 8 }}>
+                    <div className="cd-info-note" style={{ marginBottom: 0 }}>
+                      <i className="fas fa-lock"></i>
+                      <span>
+                        Want to add more services?{' '}
+                        <span
+                          style={{ fontWeight: 700, color: '#c9621a', cursor: 'pointer', textDecoration: 'underline' }}
+                          onClick={() => document.getElementById('plan-selector-section')?.scrollIntoView({ behavior: 'smooth' })}
+                        >
+                          Upgrade your plan ↓
+                        </span>
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* ── LOCATION ── */}
+            {/* ── LOCATION, PRICING & AVAILABILITY ── */}
             <div className="cd-card">
               <div className="cd-card-header">
                 <div className="cd-card-header-icon"><i className="fas fa-map-marker-alt"></i></div>
                 <div>
-                  <div className="cd-card-title">Location & Reach</div>
-                  <div className="cd-card-subtitle">Where you serve families</div>
+                  <div className="cd-card-title">Location, Pricing & Availability</div>
+                  <div className="cd-card-subtitle">Where you serve families and your rates</div>
                 </div>
               </div>
               <div className="cd-card-body">
+                {/* Location row */}
+                <div className="cd-sec-label" style={{ marginTop: 0 }}><i className="fas fa-map-marker-alt"></i> Location & Reach</div>
                 <div className="cd-row">
                   <div className="cd-field">
                     <label className="cd-label">Province <span className="req">*</span></label>
@@ -965,19 +977,9 @@ const ClientDashboard = () => {
                     </div>
                   )}
                 </div>
-              </div>
-            </div>
 
-            {/* ── PRICING & AVAILABILITY ── */}
-            <div className="cd-card">
-              <div className="cd-card-header">
-                <div className="cd-card-header-icon"><i className="fas fa-tag"></i></div>
-                <div>
-                  <div className="cd-card-title">Pricing & Availability</div>
-                  <div className="cd-card-subtitle">Rates and schedule</div>
-                </div>
-              </div>
-              <div className="cd-card-body">
+                {/* Pricing + Availability */}
+                <div className="cd-sec-label"><i className="fas fa-tag"></i> Pricing & Availability</div>
                 <div className="cd-row">
                   <div className="cd-field">
                     <label className="cd-label">Pricing Model <span className="req">*</span></label>
@@ -1119,45 +1121,41 @@ const ClientDashboard = () => {
               </div>
             </div>
 
-            {/* ── PLAN ── */}
+            {/* ── PLAN & REVIEWS — compact row ── */}
             <div className="cd-card">
               <div className="cd-card-header">
                 <div className="cd-card-header-icon"><i className="fas fa-crown"></i></div>
                 <div>
-                  <div className="cd-card-title">Listing Plan</div>
-                  <div className="cd-card-subtitle">Upgrade for more visibility and features</div>
+                  <div className="cd-card-title">Plan & Reviews</div>
+                  <div className="cd-card-subtitle">Your listing tier and family feedback</div>
                 </div>
               </div>
               <div className="cd-card-body">
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
+                {/* Plan strip */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: '#faf9f7', borderRadius: 10, marginBottom: 20, flexWrap: 'wrap', gap: 10 }}>
                   <span className={`cd-plan-badge ${profileData.plan}`}>
                     <i className="fas fa-crown" style={{ color: '#f59e0b' }}></i>
                     {getPlanName()}
                   </span>
-                  <span style={{ fontSize: '0.78rem', color: '#888', display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <i className="fas fa-circle" style={{ color: profileData.status === 'approved' ? '#10b981' : '#f59e0b', fontSize: '0.5rem' }}></i>
-                    Listing is {profileData.status}
-                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <span style={{ fontSize: '0.78rem', color: '#888', display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <i className="fas fa-circle" style={{ color: profileData.status === 'approved' ? '#10b981' : '#f59e0b', fontSize: '0.5rem' }}></i>
+                      Listing is {profileData.status}
+                    </span>
+                    <span style={{ fontSize: '0.72rem', color: '#c9621a', fontWeight: 700, cursor: 'pointer' }}
+                      onClick={() => document.getElementById('plan-selector-section')?.scrollIntoView({ behavior: 'smooth' })}>
+                      Upgrade plan ↓
+                    </span>
+                  </div>
                 </div>
-                <PlanSelector currentPlan={profileData.plan} onSelectPlan={handlePlanChange} />
-              </div>
-            </div>
 
-            {/* ── REVIEWS ── */}
-            <div className="cd-card">
-              <div className="cd-card-header">
-                <div className="cd-card-header-icon"><i className="fas fa-star"></i></div>
-                <div>
-                  <div className="cd-card-title">Reviews & Testimonials</div>
-                  <div className="cd-card-subtitle">Available on paid tiers</div>
-                </div>
-              </div>
-              <div className="cd-card-body">
+                {/* Reviews */}
+                <div className="cd-sec-label" style={{ marginTop: 0 }}><i className="fas fa-star"></i> Reviews & Testimonials <span style={{ fontWeight: 400, fontSize: '0.7rem', color: '#aaa', textTransform: 'none', letterSpacing: 0 }}>(paid tiers)</span></div>
                 {profileData.reviews.items && profileData.reviews.items.length > 0 ? (
                   <>
                     {profileData.reviews.count > 0 && (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16, padding: '12px 16px', background: '#faf9f7', borderRadius: 10 }}>
-                        <div style={{ fontSize: '2rem', fontWeight: 800, color: '#c9621a', lineHeight: 1 }}>{profileData.reviews.average}</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 12, padding: '10px 14px', background: '#faf9f7', borderRadius: 10 }}>
+                        <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#c9621a', lineHeight: 1 }}>{profileData.reviews.average}</div>
                         <div>
                           <div style={{ color: '#f59e0b' }}>{'★'.repeat(Math.round(profileData.reviews.average))}{'☆'.repeat(5 - Math.round(profileData.reviews.average))}</div>
                           <div style={{ fontSize: '0.75rem', color: '#888' }}>Based on {profileData.reviews.count} reviews</div>
@@ -1166,14 +1164,14 @@ const ClientDashboard = () => {
                     )}
                     {profileData.reviews.items.map((review, index) => (
                       <div className="cd-review" key={index}>
-                        <div className="cd-review-stars">{'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}</div>
+                        <div className="cd-review-stars">{"★".repeat(review.rating)}{"☆".repeat(5 - review.rating)}</div>
                         <div className="cd-review-text">"{review.text}"</div>
                         <div className="cd-review-author">— {review.reviewer}</div>
                       </div>
                     ))}
                   </>
                 ) : (
-                  <div className="cd-value empty">
+                  <div className="cd-value empty" style={{ marginBottom: 4 }}>
                     No reviews yet. Reviews appear once families leave feedback on your profile.
                   </div>
                 )}
@@ -1191,37 +1189,24 @@ const ClientDashboard = () => {
               </div>
             </div>
 
+            {/* ── PLAN SELECTOR (full) ── */}
+            <div className="cd-card" id="plan-selector-section">
+              <div className="cd-card-header">
+                <div className="cd-card-header-icon"><i className="fas fa-arrow-up"></i></div>
+                <div>
+                  <div className="cd-card-title">Upgrade Your Plan</div>
+                  <div className="cd-card-subtitle">More features and visibility with paid tiers</div>
+                </div>
+              </div>
+              <div className="cd-card-body">
+                <PlanSelector currentPlan={profileData.plan} onSelectPlan={handlePlanChange} />
+              </div>
+            </div>
+
           </div>
 
           {/* ─── SIDEBAR ─── */}
           <div>
-            {/* Quick Stats */}
-            <div className="cd-sidebar-card">
-              <div className="cd-sidebar-header">
-                <div className="cd-sidebar-title"><i className="fas fa-chart-bar" style={{ marginRight: 6 }}></i>Quick Overview</div>
-              </div>
-              <div className="cd-sidebar-body">
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
-                  <div className="cd-stat" style={{ borderRight: '1px solid #f0ece5', borderBottom: '1px solid #f0ece5' }}>
-                    <div className="cd-stat-val">{profileData.services.length}</div>
-                    <div className="cd-stat-label">Services</div>
-                  </div>
-                  <div className="cd-stat" style={{ borderBottom: '1px solid #f0ece5' }}>
-                    <div className="cd-stat-val">{profileData.tags.length}</div>
-                    <div className="cd-stat-label">Tags</div>
-                  </div>
-                  <div className="cd-stat" style={{ borderRight: '1px solid #f0ece5' }}>
-                    <div className="cd-stat-val">{profileData.availabilityDays.length}</div>
-                    <div className="cd-stat-label">Days/wk</div>
-                  </div>
-                  <div className="cd-stat">
-                    <div className="cd-stat-val">{profileData.reviews.count || 0}</div>
-                    <div className="cd-stat-label">Reviews</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
             {/* Profile Completeness */}
             <div className="cd-sidebar-card">
               <div className="cd-sidebar-header">
@@ -1284,19 +1269,6 @@ const ClientDashboard = () => {
                 </div>
               </div>
             )}
-
-            {/* Persistence notice */}
-            <div className="cd-sidebar-card">
-              <div className="cd-sidebar-header" style={{ background: '#1e3a5f' }}>
-                <div className="cd-sidebar-title"><i className="fas fa-info-circle" style={{ marginRight: 6 }}></i>Data Storage</div>
-              </div>
-              <div className="cd-sidebar-body">
-                <p style={{ fontSize: '0.8rem', color: '#666', lineHeight: 1.6 }}>
-                  Profile data is stored in your browser's local storage. To persist data across devices and deployments,
-                  a backend database (e.g. Supabase, Firebase) is required. Contact your developer to enable cloud storage.
-                </p>
-              </div>
-            </div>
           </div>
         </div>
       </main>
