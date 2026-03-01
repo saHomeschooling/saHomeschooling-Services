@@ -33,23 +33,71 @@ function getAuthLogs() {
 function getFeaturedSlots() {
   try {
     const s = localStorage.getItem('sah_featured_slots');
-    if (s) return JSON.parse(s);
-    // default 3 empty slots
+    if (s) {
+      const slots = JSON.parse(s);
+      // Ensure we always have exactly 4 slots
+      while (slots.length < 4) {
+        slots.push({ 
+          id: slots.length + 1, 
+          provider: null, 
+          providerId: null, 
+          addedDaysAgo: 0, 
+          daysRemaining: 0 
+        });
+      }
+      return slots.slice(0, 4); // Only return first 4
+    }
+    // default 4 empty slots
     return [
       { id: 1, provider: null, providerId: null, addedDaysAgo: 0, daysRemaining: 0 },
       { id: 2, provider: null, providerId: null, addedDaysAgo: 0, daysRemaining: 0 },
       { id: 3, provider: null, providerId: null, addedDaysAgo: 0, daysRemaining: 0 },
+      { id: 4, provider: null, providerId: null, addedDaysAgo: 0, daysRemaining: 0 },
     ];
-  } catch { return [{ id:1,provider:null,providerId:null,addedDaysAgo:0,daysRemaining:0 },{ id:2,provider:null,providerId:null,addedDaysAgo:0,daysRemaining:0 },{ id:3,provider:null,providerId:null,addedDaysAgo:0,daysRemaining:0 }]; }
+  } catch { 
+    return [
+      { id:1,provider:null,providerId:null,addedDaysAgo:0,daysRemaining:0 },
+      { id:2,provider:null,providerId:null,addedDaysAgo:0,daysRemaining:0 },
+      { id:3,provider:null,providerId:null,addedDaysAgo:0,daysRemaining:0 },
+      { id:4,provider:null,providerId:null,addedDaysAgo:0,daysRemaining:0 }
+    ]; 
+  }
 }
 function saveFeaturedSlots(slots) {
   try { localStorage.setItem('sah_featured_slots', JSON.stringify(slots)); }
   catch {}
 }
-const MAX_FEATURED_SLOTS = 3;
+const MAX_FEATURED_SLOTS = 4;
 
 /* ── Inline CSS ── */
 const ADMIN_CSS = `
+  /* ── Smaller filter-style stats cards ── */
+  .admin-stats {
+    display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;
+  }
+  .stat-filter-card {
+    flex: 1; min-width: 140px; padding: 12px 16px; 
+    background: #fff; border: 2px solid #e5e0d8; border-radius: 10px;
+    cursor: pointer; transition: all 0.15s;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .stat-filter-card:hover {
+    border-color: #c9621a; transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(201,98,26,0.15);
+  }
+  .stat-filter-card.active {
+    border-color: #c9621a; background: #fff8f2;
+    box-shadow: 0 0 0 3px rgba(201,98,26,0.1);
+  }
+  .stat-filter-value {
+    font-size: 1.6rem; font-weight: 800; color: #c9621a;
+    font-family: 'Playfair Display', serif;
+  }
+  .stat-filter-label {
+    font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.8px; color: #888;
+  }
+
   /* ── Expand rows ── */
   .adm-expand-row {
     border: 1px solid #e5e0d8; border-radius: 12px; overflow: hidden;
@@ -186,7 +234,7 @@ const ADMIN_CSS = `
   .adm-badge-opt:hover { transform: translateY(-1px); }
 
   /* ── Featured slots ── */
-  .adm-featured-slots-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-bottom: 20px; }
+  .adm-featured-slots-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 20px; }
   .adm-slot-card {
     border: 2px solid #e5e0d8; border-radius: 12px; overflow: hidden;
     background: #fff; transition: all 0.15s;
@@ -304,7 +352,6 @@ const ExpandablePendingRow = ({ provider, onApprove, onReject }) => {
   const regDate = provider.registered
     ? new Date(provider.registered).toLocaleDateString('en-ZA') : '—';
   const val    = (v) => v ? String(v) : null;
-  const arrVal = (a) => Array.isArray(a) && a.length > 0 ? a.join(', ') : null;
 
   return (
     <div className={`adm-expand-row ${expanded ? 'expanded' : ''}`}>
@@ -391,7 +438,7 @@ const ExpandablePendingRow = ({ provider, onApprove, onReject }) => {
                 { label: 'City',         val: val(provider.city) },
                 { label: 'Province',     val: val(provider.province) },
                 { label: 'Service Area', val: val(provider.serviceAreaType) },
-                { label: 'Radius',       val: provider.radius ? val(provider.radius) + ' km' : null },
+                { label: 'Radius',       val: provider.radius ? val(provider.radius) : null },
               ].map(({ label, val: v }) => (
                 <div className="adm-detail-field" key={label}>
                   <div className="adm-detail-label">{label}</div>
@@ -444,7 +491,7 @@ const ExpandablePendingRow = ({ provider, onApprove, onReject }) => {
   );
 };
 
-/* ── Featured Slot Card (inline, no external dependency) ── */
+/* ── Featured Slot Card ── */
 const InlineFeaturedSlotCard = ({ slot, onRemove, onRotate }) => {
   const filled = !!slot.provider;
   return (
@@ -492,13 +539,17 @@ const AdminDashboard = () => {
   const { showNotification } = useNotification();
   const navigate = useNavigate();
 
-  const [activeTab, setActiveTab]           = useState('pending');
+  const [activeTab, setActiveTab]           = useState('all'); // Changed default to 'all'
   const [providers, setProviders]           = useState([]);
   const [featuredSlots, setFeaturedSlots]   = useState([]);
   const [reviews, setReviews]               = useState(reviewsMock || []);
   const [modalOpen, setModalOpen]           = useState(false);
   const [modalContent, setModalContent]     = useState(EMPTY_MODAL);
   const [featuredError, setFeaturedError]   = useState('');
+
+  // All listings filters
+  const [listingSearch, setListingSearch]   = useState('');
+  const [filterType, setFilterType]         = useState('all');
 
   // Users registry state
   const [registeredUsers, setRegisteredUsers] = useState([]);
@@ -520,11 +571,12 @@ const AdminDashboard = () => {
 
   // Load data
   useEffect(() => {
-    setProviders(getStoredProviders());
+    const loadedProviders = getStoredProviders();
+    setProviders(loadedProviders);
     setFeaturedSlots(getFeaturedSlots());
-    // Build user registry from providers + sah_users
+    
     const storedUsers = getStoredUsers();
-    const providerUsers = getStoredProviders().map(p => ({
+    const providerUsers = loadedProviders.map(p => ({
       id: p.id,
       email: p.email || p.contactEmail || '',
       name: p.name || '',
@@ -534,7 +586,6 @@ const AdminDashboard = () => {
       status: p.status || 'pending',
       plan: p.plan || p.listingPlan || p.tier || 'free',
     }));
-    // Merge, deduplicate by email
     const seen = new Set();
     const merged = [...storedUsers.map(u => ({ ...u, role: u.role || 'USER' })), ...providerUsers]
       .filter(u => {
@@ -548,15 +599,21 @@ const AdminDashboard = () => {
 
   const pendingProviders  = providers.filter(p => p.status === 'pending');
   const approvedProviders = providers.filter(p => p.status === 'approved');
+  const rejectedProviders = providers.filter(p => p.status === 'rejected');
   const featuredCount     = featuredSlots.filter(s => !!s.provider).length;
   const pendingReviews    = (reviews || []).filter(r => r.status === 'pending');
+
+  // Count only actual USER role entries, not providers
+  const actualUsers = registeredUsers.filter(u => u.role === 'USER');
 
   const stats = {
     totalProviders:   providers.length,
     pendingApproval:  pendingProviders.length,
+    approved:         approvedProviders.length,
+    rejected:         rejectedProviders.length,
     featuredSlots:    featuredCount,
     pendingReviews:   pendingReviews.length,
-    totalUsers:       registeredUsers.filter(u => u.role === 'USER').length,
+    totalUsers:       actualUsers.length,
   };
 
   /* ── Provider approve / reject ── */
@@ -583,22 +640,18 @@ const AdminDashboard = () => {
     const provider = providers.find(p => p.id === providerId);
 
     if (badgeType === 'featured') {
-      // Check if provider already in a slot
       const alreadyInSlot = featuredSlots.some(s => s.providerId === providerId);
       if (alreadyInSlot) {
         showNotification(`${provider?.name || 'Provider'} is already in a featured slot.`, 'info');
       } else {
-        // Find first empty slot
         const emptySlot = featuredSlots.find(s => !s.provider);
         if (!emptySlot) {
-          // All slots full → show error
           setFeaturedError(
             `All ${MAX_FEATURED_SLOTS} featured slots are occupied. Remove a provider from a slot before assigning a new one. Go to the "Featured Slots" tab to manage slots.`
           );
-          setActiveTab('featured'); // navigate to featured tab to show the error
+          setActiveTab('featured');
           return;
         }
-        // Assign to slot
         const updatedSlots = featuredSlots.map(s =>
           s.id === emptySlot.id
             ? { ...s, provider: provider?.name || 'Unknown', providerId, addedDaysAgo: 0, daysRemaining: 7 }
@@ -610,7 +663,6 @@ const AdminDashboard = () => {
       }
     }
 
-    // Update tier/badge on provider record
     const updated = providers.map(p =>
       p.id === providerId ? { ...p, badge: badgeType, tier: tierMap[badgeType] || p.tier } : p
     );
@@ -621,20 +673,45 @@ const AdminDashboard = () => {
     }
   };
 
-  const handlePromote = (providerName) =>
-    showNotification(`"${providerName}" promoted — listing will move up in search results.`, 'success');
+  const handlePromote = (providerId) => {
+    const updated = providers.map(p => 
+      p.id === providerId ? { ...p, promoted: true, demoted: false } : p
+    );
+    setProviders(updated);
+    saveStoredProviders(updated);
+    const provider = providers.find(p => p.id === providerId);
+    showNotification(`"${provider?.name}" promoted — listing will move up in search results.`, 'success');
+  };
 
-  const handleDemote = (providerName) =>
-    showNotification(`"${providerName}" demoted — listing will move down in search results.`, 'info');
+  const handleDemote = (providerId) => {
+    const updated = providers.map(p => 
+      p.id === providerId ? { ...p, demoted: true, promoted: false } : p
+    );
+    setProviders(updated);
+    saveStoredProviders(updated);
+    const provider = providers.find(p => p.id === providerId);
+    showNotification(`"${provider?.name}" demoted — listing will move down in search results.`, 'info');
+  };
 
   /* ── Featured slot management ── */
   const handleRemoveFeatured = (slotId, providerName) => {
     setFeaturedError('');
+    const slot = featuredSlots.find(s => s.id === slotId);
     const updatedSlots = featuredSlots.map(s =>
       s.id === slotId ? { ...s, provider: null, providerId: null, addedDaysAgo: 0, daysRemaining: 0 } : s
     );
     setFeaturedSlots(updatedSlots);
     saveFeaturedSlots(updatedSlots);
+    
+    // Also update provider tier back to pro if they were featured
+    if (slot?.providerId) {
+      const updated = providers.map(p =>
+        p.id === slot.providerId ? { ...p, tier: 'pro', badge: 'verified' } : p
+      );
+      setProviders(updated);
+      saveStoredProviders(updated);
+    }
+    
     showNotification(`Removed ${providerName} from featured slot #${slotId}`, 'info');
   };
 
@@ -700,6 +777,51 @@ const AdminDashboard = () => {
     setTimeout(() => setModalContent(EMPTY_MODAL), 300);
   };
 
+  /* ── Filtered listings - SHOWS ALL PROVIDERS with status filters ── */
+  const getFilteredListings = () => {
+    let filtered = providers;
+
+    // Search
+    if (listingSearch) {
+      const term = listingSearch.toLowerCase();
+      filtered = filtered.filter(p =>
+        p.name?.toLowerCase().includes(term) ||
+        p.email?.toLowerCase().includes(term) ||
+        p.city?.toLowerCase().includes(term)
+      );
+    }
+
+    // Filter by type (All, Featured, Trusted, Community, Promoted, Demoted, Approved, Pending, Rejected)
+    if (filterType !== 'all') {
+      filtered = filtered.filter(p => {
+        switch(filterType) {
+          case 'featured':
+            return p.tier === 'featured';
+          case 'trusted':
+            return p.tier === 'pro';
+          case 'community':
+            return p.tier === 'free' || !p.tier;
+          case 'promoted':
+            return p.promoted === true;
+          case 'demoted':
+            return p.demoted === true;
+          case 'approved':
+            return p.status === 'approved';
+          case 'pending':
+            return p.status === 'pending';
+          case 'rejected':
+            return p.status === 'rejected';
+          default:
+            return true;
+        }
+      });
+    }
+
+    return filtered;
+  };
+
+  const filteredListings = getFilteredListings();
+
   /* ── Filtered users / logs ── */
   const filteredUsers = registeredUsers.filter(u => {
     const matchSearch = !userSearch || u.email?.toLowerCase().includes(userSearch.toLowerCase()) || u.name?.toLowerCase().includes(userSearch.toLowerCase());
@@ -736,24 +858,54 @@ const AdminDashboard = () => {
             <span className="badge"><i className="fas fa-lock"></i> admin</span>
           </div>
 
-          {/* Stats */}
+          {/* Stats - Now as clickable cards that navigate */}
           <div className="admin-stats" role="region" aria-label="Dashboard statistics">
-            <StatsBox value={stats.totalProviders}  label="total providers" />
-            <StatsBox value={stats.pendingApproval} label="pending approval" />
-            <StatsBox value={`${featuredCount}/${MAX_FEATURED_SLOTS}`} label="featured slots used" />
-            <StatsBox value={stats.pendingReviews}  label="reviews pending" />
-            <StatsBox value={stats.totalUsers}       label="registered users" />
+            <div 
+              className={`stat-filter-card${activeTab === 'all' ? ' active' : ''}`}
+              onClick={() => setActiveTab('all')}
+            >
+              <div className="stat-filter-value">{stats.totalProviders}</div>
+              <div className="stat-filter-label">Total Providers</div>
+            </div>
+            <div 
+              className={`stat-filter-card${activeTab === 'pending' ? ' active' : ''}`}
+              onClick={() => setActiveTab('pending')}
+            >
+              <div className="stat-filter-value">{stats.pendingApproval}</div>
+              <div className="stat-filter-label">Pending Approval</div>
+            </div>
+            <div 
+              className={`stat-filter-card${activeTab === 'featured' ? ' active' : ''}`}
+              onClick={() => setActiveTab('featured')}
+            >
+              <div className="stat-filter-value">{featuredCount}/{MAX_FEATURED_SLOTS}</div>
+              <div className="stat-filter-label">Featured Slots</div>
+            </div>
+            <div 
+              className={`stat-filter-card${activeTab === 'reviews' ? ' active' : ''}`}
+              onClick={() => setActiveTab('reviews')}
+            >
+              <div className="stat-filter-value">{stats.pendingReviews}</div>
+              <div className="stat-filter-label">Reviews Pending</div>
+            </div>
+            <div 
+              className={`stat-filter-card${activeTab === 'users' ? ' active' : ''}`}
+              onClick={() => setActiveTab('users')}
+            >
+              <div className="stat-filter-value">{stats.totalUsers}</div>
+              <div className="stat-filter-label">Registered Users</div>
+            </div>
           </div>
 
-          {/* Tabs */}
+          {/* Tabs - Reordered with All Listings first, Pending Approvals second */}
           <div className="admin-tabs" role="tablist">
             {[
+              { id:'all',       icon:'fa-list',           label:'All Listings', badge: stats.totalProviders },
               { id:'pending',   icon:'fa-hourglass-half', label:'Pending Approvals', badge: pendingProviders.length },
-              { id:'all',       icon:'fa-list',           label:'All Listings' },
               { id:'featured',  icon:'fa-star',           label:'Featured Slots', badge: featuredCount },
-              { id:'users',     icon:'fa-users',          label:'Users & Providers', badge: stats.totalUsers + providers.length },
-              { id:'logs',      icon:'fa-clock-rotate-left', label:'Auth Logs', badge: authLogs.length > 0 ? authLogs.length : undefined },
               { id:'reviews',   icon:'fa-star-half-alt',  label:'Review Moderation', badge: pendingReviews.length },
+              { id:'users',     icon:'fa-users',          label:'Users & Providers', badge: registeredUsers.length },
+              { id:'logs',      icon:'fa-clock-rotate-left', label:'Auth Logs', badge: authLogs.length > 0 ? authLogs.length : undefined },
             ].map(tab => (
               <button
                 key={tab.id}
@@ -788,54 +940,83 @@ const AdminDashboard = () => {
             </div>
           )}
 
-          {/* ── ALL LISTINGS ── */}
+          {/* ── ALL LISTINGS with Search and Filters - SHOWS ALL PROVIDERS ── */}
           {activeTab === 'all' && (
             <div className="tab-pane active" role="tabpanel">
               <p className="section-heading">
                 <i className="fas fa-list"></i>
-                All Providers ({providers.length}) — click name to view · assign Featured badge to add to a homepage slot
+                All Providers ({filteredListings.length} of {providers.length}) — click on any listing to view all details
               </p>
+
+              {/* Search & Filter Controls */}
+              <div className="adm-search-row">
+                <input
+                  className="adm-search-input"
+                  type="text" 
+                  placeholder="Search by name, email, or city…"
+                  value={listingSearch} 
+                  onChange={e => setListingSearch(e.target.value)}
+                />
+                <select 
+                  className="adm-filter-select" 
+                  value={filterType} 
+                  onChange={e => setFilterType(e.target.value)}
+                >
+                  <option value="all">All Listings</option>
+                  <option value="approved">Approved</option>
+                  <option value="pending">Pending</option>
+                  <option value="rejected">Rejected</option>
+                  <option value="featured">Featured</option>
+                  <option value="trusted">Trusted</option>
+                  <option value="community">Community</option>
+                  <option value="promoted">Promoted</option>
+                  <option value="demoted">Demoted</option>
+                </select>
+              </div>
+
               {featuredError && (
                 <div className="adm-err-banner">
                   <i className="fas fa-exclamation-triangle"></i> {featuredError}
                 </div>
               )}
-              {providers.length === 0 ? (
-                <div style={{ padding:'2rem', textAlign:'center', color:'var(--ink-3)' }}>No providers registered yet.</div>
+
+              {filteredListings.length === 0 ? (
+                <div style={{ padding:'2rem', textAlign:'center', color:'var(--ink-3)' }}>No providers match your filters.</div>
               ) : (
-                providers.map(provider => (
-                  <div className="adm-listing-row" key={provider.id}>
-                    <div
-                      style={{ display:'flex', alignItems:'center', gap:12, flex:1, minWidth:0, cursor:'pointer' }}
-                      onClick={() => showProfileModal(provider)}
-                      role="button" tabIndex="0"
-                    >
-                      <div className="adm-avatar" style={{ fontSize:'0.9rem' }}>
-                        {(provider.name || '?')[0].toUpperCase()}
+                filteredListings.map(provider => (
+                  <div 
+                    className="adm-listing-row" 
+                    key={provider.id}
+                    style={{ cursor: 'pointer' }}
+                    onClick={() => showProfileModal(provider)}
+                  >
+                    <div className="adm-avatar" style={{ fontSize:'0.9rem' }}>
+                      {(provider.name || '?')[0].toUpperCase()}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' }}>
+                        <strong style={{ fontSize:'0.9rem', color:'#1a1a1a' }}>{provider.name}</strong>
+                        <span className={`adm-badge ${provider.status}`}>{provider.status}</span>
+                        {provider.promoted && <span className="adm-badge" style={{ background:'#dcfce7', color:'#166534' }}>Promoted</span>}
+                        {provider.demoted && <span className="adm-badge" style={{ background:'#fee2e2', color:'#991b1b' }}>Demoted</span>}
+                        {provider.tier === 'featured' && <span className="adm-badge featured"><i className="fas fa-crown"></i> featured</span>}
+                        {provider.tier === 'pro'      && <span className="adm-badge pro"><i className="fas fa-check-circle"></i> trusted</span>}
+                        {featuredSlots.some(s => s.providerId === provider.id) && (
+                          <span style={{ fontSize:'0.68rem', fontWeight:700, padding:'2px 8px', borderRadius:4, background:'#fde68a', color:'#92400e' }}>
+                            <i className="fas fa-star" style={{ marginRight:3 }}></i>In Slot #{featuredSlots.find(s => s.providerId === provider.id)?.id}
+                          </span>
+                        )}
                       </div>
-                      <div style={{ minWidth:0 }}>
-                        <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' }}>
-                          <strong style={{ fontSize:'0.9rem', color:'#1a1a1a' }}>{provider.name}</strong>
-                          <span className={`adm-badge ${provider.status}`}>{provider.status}</span>
-                          {provider.tier === 'featured' && <span className="adm-badge featured"><i className="fas fa-crown"></i> featured</span>}
-                          {provider.tier === 'pro'      && <span className="adm-badge pro"><i className="fas fa-check-circle"></i> trusted</span>}
-                          {featuredSlots.some(s => s.providerId === provider.id) && (
-                            <span style={{ fontSize:'0.68rem', fontWeight:700, padding:'2px 8px', borderRadius:4, background:'#fde68a', color:'#92400e' }}>
-                              <i className="fas fa-star" style={{ marginRight:3 }}></i>In Slot #{featuredSlots.find(s => s.providerId === provider.id)?.id}
-                            </span>
-                          )}
-                        </div>
-                        <div style={{ fontSize:'0.75rem', color:'#888', marginTop:2 }}>
-                          {provider.city}, {provider.province} · {provider.email}
-                        </div>
+                      <div style={{ fontSize:'0.75rem', color:'#888', marginTop:2 }}>
+                        {provider.city}, {provider.province} · {provider.email}
                       </div>
                     </div>
-                    <div style={{ display:'flex', alignItems:'center', gap:8, flexShrink:0, flexWrap:'wrap' }}>
+                    <div style={{ display:'flex', alignItems:'center', gap:8, flexShrink:0, flexWrap:'wrap' }} onClick={e => e.stopPropagation()}>
                       <div style={{ display:'flex', gap:4 }}>
-                        <button className="adm-promote-btn" onClick={() => handlePromote(provider.name)}>
+                        <button className="adm-promote-btn" onClick={() => handlePromote(provider.id)}>
                           <i className="fas fa-arrow-up"></i> Promote
                         </button>
-                        <button className="adm-demote-btn" onClick={() => handleDemote(provider.name)}>
+                        <button className="adm-demote-btn" onClick={() => handleDemote(provider.id)}>
                           <i className="fas fa-arrow-down"></i> Demote
                         </button>
                       </div>
@@ -865,7 +1046,7 @@ const AdminDashboard = () => {
             </div>
           )}
 
-          {/* ── FEATURED SLOTS ── */}
+          {/* ── FEATURED SLOTS - ALL 4 SLOTS VISIBLE ── */}
           {activeTab === 'featured' && (
             <div className="tab-pane active" role="tabpanel">
               <p className="section-heading">
@@ -887,14 +1068,22 @@ const AdminDashboard = () => {
                   />
                 ))}
               </div>
-              <div className="manual-override-note">
+            </div>
+          )}
+
+          {/* ── REVIEW MODERATION ── */}
+          {activeTab === 'reviews' && (
+            <div className="tab-pane active" role="tabpanel">
+              <p className="section-heading">
+                <i className="fas fa-star-half-alt"></i>
+                Moderate Reviews ({pendingReviews.length} pending)
+              </p>
+              {pendingReviews.map(review => (
+                <ReviewCard key={review.id} review={review} onModerate={handleModerateReview} />
+              ))}
+              <div className="info-block">
                 <i className="fas fa-circle-info"></i>
-                <p>
-                  <strong>How it works:</strong> Assign the "Featured" badge to any provider in the All Listings tab —
-                  they are automatically placed in the next available slot (max {MAX_FEATURED_SLOTS} slots).
-                  Featured providers appear <strong>first on the homepage</strong> above all others.
-                  Rotate or remove providers here to free up slots.
-                </p>
+                <p><strong>Review Moderation:</strong> Only approved reviews appear on client profile pages.</p>
               </div>
             </div>
           )}
@@ -990,23 +1179,6 @@ const AdminDashboard = () => {
                     </div>
                   ))
                 )}
-              </div>
-            </div>
-          )}
-
-          {/* ── REVIEW MODERATION ── */}
-          {activeTab === 'reviews' && (
-            <div className="tab-pane active" role="tabpanel">
-              <p className="section-heading">
-                <i className="fas fa-star-half-alt"></i>
-                Moderate Reviews ({pendingReviews.length} pending)
-              </p>
-              {pendingReviews.map(review => (
-                <ReviewCard key={review.id} review={review} onModerate={handleModerateReview} />
-              ))}
-              <div className="info-block">
-                <i className="fas fa-circle-info"></i>
-                <p><strong>Review Moderation:</strong> Only approved reviews appear on client profile pages.</p>
               </div>
             </div>
           )}

@@ -3,7 +3,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 import Login from './pages/Login';
 import Registration from './pages/Registration';
-import Registration from './pages/UserRegister';
+import UserRegister from './pages/UserRegister';
 import './App.css';
 import HomePage from './pages/HomePage';
 import AdminDashboard from './pages/AdminDashboard';

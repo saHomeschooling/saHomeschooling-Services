@@ -296,6 +296,7 @@ const SEED = [
 
 const CAT_ICON = { tutor:"fa-chalkboard-teacher", therapist:"fa-heart", curriculum:"fa-book-open", school:"fa-school", consultant:"fa-user-tie", extracurricular:"fa-palette" };
 const TIER_LBL = { featured:"Deluxe Package", pro:"Trusted Provider", free:"Community Member" };
+const MAX_FEATURED_SLOTS = 4;
 
 const PLANS = [
   { id:"community", name:"Community Member", desc:"Basic profile — always free", price:"R0", highlight:false,
@@ -313,7 +314,6 @@ const PLANS = [
 function getFeaturedSlotProviderIds() {
   try {
     const slots = JSON.parse(localStorage.getItem("sah_featured_slots") || "[]");
-    // Return array of provider IDs (and names) that are in active slots
     return slots
       .filter(s => s.provider && s.providerId)
       .map(s => ({ id: s.providerId, name: s.provider, slotId: s.id }));
@@ -332,24 +332,16 @@ function getAll() {
   try {
     const stored   = JSON.parse(localStorage.getItem("sah_providers") || "[]");
     const allRaw   = [...stored, ...SEED].filter(p => (p.status || "approved") === "approved");
-
-    // Deduplicate by id
     const seen = new Set();
     const all  = allRaw.filter(p => { if (seen.has(p.id)) return false; seen.add(p.id); return true; });
-
-    // Get provider IDs/names currently in featured slots
     const slotIds   = getFeaturedSlotProviderIds();
     const slotNames = getFeaturedSlotProviderNames();
     const slotIdSet = new Set(slotIds.map(s => s.id));
-
-    // Mark providers that are in featured slots
     const marked = all.map(p => {
       const inSlotById   = slotIdSet.has(p.id);
       const inSlotByName = slotNames.includes(p.name);
       return { ...p, _inFeaturedSlot: inSlotById || inSlotByName };
     });
-
-    // Sort: featured-slot providers first → then by tier → then by date
     return marked.sort((a, b) => {
       if (a._inFeaturedSlot && !b._inFeaturedSlot) return -1;
       if (!a._inFeaturedSlot && b._inFeaturedSlot) return 1;
@@ -361,10 +353,8 @@ function getAll() {
   } catch { return SEED; }
 }
 
-/* ─── HELPERS ────────────────────────────────────────────────────────────── */
 function starsStr(r) { return "★".repeat(Math.floor(r)) + (r % 1 >= 0.5 ? "½" : ""); }
 
-/* ─── SUB-COMPONENTS ─────────────────────────────────────────────────────── */
 function Badge({ badge, inSlot }) {
   if (inSlot) return <span className="sah-cbadge sah-cbadge-spotlight"><i className="fas fa-star" style={{ marginRight:3, fontSize:'0.6rem' }} />Spotlight</span>;
   if (!badge) return null;
@@ -456,7 +446,6 @@ function PlanCard({ plan, openId, onToggle, allOpen }) {
   );
 }
 
-/* ─── MAIN COMPONENT ─────────────────────────────────────────────────────── */
 export default function HomePage() {
   const navigate = useNavigate();
 
@@ -475,8 +464,6 @@ export default function HomePage() {
   const [nlEmail, setNlEmail]           = useState("");
   const [nlMsg, setNlMsg]               = useState({ text: "", type: "" });
   const [toast, setToast]               = useState({ show: false, msg: "", err: false });
-
-  // Count how many are in featured slots for the banner
   const [featuredSlotCount, setFeaturedSlotCount] = useState(0);
 
   useEffect(() => {
@@ -497,7 +484,8 @@ export default function HomePage() {
   useEffect(() => {
     const all = getAll();
     setProviders(all);
-    setFeaturedSlotCount(all.filter(p => p._inFeaturedSlot).length);
+    const featCount = all.filter(p => p._inFeaturedSlot).length;
+    setFeaturedSlotCount(Math.min(featCount, MAX_FEATURED_SLOTS));
   }, []);
 
   const showToast = useCallback((msg, err = false) => {
@@ -541,7 +529,6 @@ export default function HomePage() {
 
   const viewProfile = (id) => { navigate("/profile?id=" + id); };
 
-  // Log auth event
   const logAuthEvent = (email, role, event) => {
     try {
       const logs = JSON.parse(localStorage.getItem("sah_auth_logs") || "[]");
@@ -554,7 +541,6 @@ export default function HomePage() {
     const email = loginEmail.trim().toLowerCase();
     if (!email) { showToast("Please enter your email.", true); return; }
 
-    // Admin login
     if (email === "admin@sahomeschooling.co.za" && loginPass === "admin123") {
       localStorage.setItem("sah_current_user", JSON.stringify({ role: "admin", email }));
       logAuthEvent(email, "ADMIN", "LOGIN");
@@ -564,7 +550,6 @@ export default function HomePage() {
       return;
     }
 
-    // User (simple browser) login
     const users = JSON.parse(localStorage.getItem("sah_users") || "[]");
     const matchUser = users.find(u => u.email?.toLowerCase() === email);
     if (matchUser) {
@@ -579,7 +564,6 @@ export default function HomePage() {
       return;
     }
 
-    // Provider login
     const stored = JSON.parse(localStorage.getItem("sah_providers") || "[]");
     const matchProv = stored.find(p => (p.email || "").toLowerCase() === email);
     if (matchProv) {
@@ -613,14 +597,12 @@ export default function HomePage() {
     { cat: "extracurricular", label: "Enrichment", icon: "fa-palette" },
   ];
 
-  // Split providers: featured-slot first, then rest
-  const featuredSlotProviders = providers.filter(p => p._inFeaturedSlot);
-  const displayed = showAll ? providers : providers.slice(0, 8);
+  const featuredSlotProviders = providers.filter(p => p._inFeaturedSlot).slice(0, MAX_FEATURED_SLOTS);
+  const regularProviders = providers.filter(p => !p._inFeaturedSlot);
+  const displayed = showAll ? providers : [...featuredSlotProviders, ...regularProviders.slice(0, Math.max(0, 8 - featuredSlotProviders.length))];
 
   return (
     <div className="sah-wrap">
-
-      {/* HEADER */}
       <header className="sah-header">
         <div className="sah-container sah-nav-inner">
           <Link to="/" className="sah-brand">
@@ -647,7 +629,6 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* HERO */}
       <section className="sah-hero">
         <div className="sah-hero-bg" />
         <div className="sah-container">
@@ -691,7 +672,6 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* PLANS */}
             <div className={`sah-hero-plans-wrap${plansVisible ? " open" : ""}`}>
               <div className="sah-hero-plans-inner">
                 <div className="sah-hero-plans-grid-outer">
@@ -707,7 +687,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* FILTER BAR */}
       <div className="sah-filter-bar">
         <div className="sah-container">
           <div className="sah-filter-bar-row">
@@ -722,7 +701,6 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* PROVIDERS SECTION */}
       <section className="sah-providers-section" id="sah-providers">
         <div className="sah-container">
           <div className="sah-sec-header">
@@ -737,7 +715,7 @@ export default function HomePage() {
             <div className="sah-sec-right">
               {providers.length > 8 && !showAll && (
                 <button className="sah-link-btn" onClick={() => setShowAll(true)}>
-                  Show all {providers.length} providers →
+                  View all {providers.length} providers →
                 </button>
               )}
               {showAll && providers.length > 8 && (
@@ -746,7 +724,6 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Featured slot banner */}
           {featuredSlotCount > 0 && (
             <div className="sah-featured-banner">
               <i className="fas fa-star" />
@@ -756,7 +733,6 @@ export default function HomePage() {
             </div>
           )}
 
-          {/* If there are featured-slot providers, show dividers */}
           {providers.length === 0 ? (
             <div className="sah-provider-grid">
               <div className="sah-grid-empty">
@@ -771,7 +747,6 @@ export default function HomePage() {
             </div>
           ) : (
             <>
-              {/* Spotlight providers first */}
               {featuredSlotCount > 0 && (
                 <>
                   <div className="sah-section-label">
@@ -787,12 +762,8 @@ export default function HomePage() {
                   </div>
                 </>
               )}
-              {/* All (or non-featured if split) */}
               <div className="sah-provider-grid">
-                {(featuredSlotCount > 0
-                  ? (showAll ? providers.filter(p => !p._inFeaturedSlot) : providers.filter(p => !p._inFeaturedSlot).slice(0, 8))
-                  : displayed
-                ).map(p => (
+                {(showAll ? regularProviders : regularProviders.slice(0, Math.max(0, 8 - featuredSlotProviders.length))).map(p => (
                   <ProviderCard key={p.id} p={p} onView={viewProfile} />
                 ))}
               </div>
@@ -801,7 +772,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* HOW IT WORKS */}
       <section className="sah-how-section" id="sah-how">
         <div className="sah-container">
           <div className="sah-how-header">
@@ -827,7 +797,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* FOOTER */}
       <footer className="sah-footer">
         <div className="sah-container">
           <div className="sah-footer-grid">
@@ -885,7 +854,6 @@ export default function HomePage() {
         </div>
       </footer>
 
-      {/* ── REGISTER CHOOSER MODAL ── */}
       <div className={`sah-modal-overlay${regModal ? " open" : ""}`} onClick={e => { if (e.target === e.currentTarget) setRegModal(false); }}>
         <div className="sah-modal-box">
           <div className="sah-modal-head">
@@ -898,7 +866,7 @@ export default function HomePage() {
               <Link to="/register/user" className="sah-reg-opt" onClick={() => setRegModal(false)}>
                 <div className="sah-reg-opt-icon user"><i className="fas fa-user" /></div>
                 <div>
-                  <div className="sah-reg-opt-title">I'm a Parent / Family</div>
+                  <div className="sah-reg-opt-title">Register as a User</div>
                   <div className="sah-reg-opt-desc">Email + password only — browse all provider profiles</div>
                 </div>
                 <i className="fas fa-chevron-right" style={{ marginLeft:"auto", color:"#ccc", fontSize:"0.8rem" }} />
@@ -906,7 +874,7 @@ export default function HomePage() {
               <Link to="/register/provider" className="sah-reg-opt" onClick={() => setRegModal(false)}>
                 <div className="sah-reg-opt-icon provider"><i className="fas fa-store" /></div>
                 <div>
-                  <div className="sah-reg-opt-title">I'm a Service Provider</div>
+                  <div className="sah-reg-opt-title">Register as a Service Provider</div>
                   <div className="sah-reg-opt-desc">Full profile — tutor, therapist, school, curriculum etc.</div>
                 </div>
                 <i className="fas fa-chevron-right" style={{ marginLeft:"auto", color:"#ccc", fontSize:"0.8rem" }} />
@@ -919,7 +887,6 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* ── LOGIN MODAL ── */}
       <div className={`sah-modal-overlay${loginModal ? " open" : ""}`} onClick={e => { if (e.target === e.currentTarget) setLoginModal(false); }}>
         <div className="sah-modal-box">
           <div className="sah-modal-head">
@@ -948,7 +915,6 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* TOAST */}
       <div className={`sah-toast${toast.show ? " show" : ""}`} style={{ background: toast.err ? "#b91c1c" : "var(--grey)" }}>
         <i className={`fas ${toast.err ? "fa-exclamation-circle" : "fa-check-circle"}`} />
         <span>{toast.msg}</span>
