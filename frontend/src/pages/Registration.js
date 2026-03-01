@@ -971,7 +971,10 @@ const Registration = () => {
         {clearanceMode === 'text' ? (
           <input type="text" value={data.clearanceText || ''} placeholder="e.g. Verified 2024 — Certificate No. 12345678" onChange={e => set('clearanceText', e.target.value)} />
         ) : (
-          <input type="file" accept=".pdf,.jpg,.png" onChange={e => set('clearanceFile', e.target.files[0])} />
+          <>
+            <input type="file" accept=".pdf,.jpg,.png" onChange={e => handleFileUpload('clearanceFile', e.target.files[0])} />
+            {data.clearanceFile && <div className="sah-field-hint"><i className="fas fa-check-circle" style={{color: 'green'}} /> File uploaded</div>}
+          </>
         )}
       </div>
 

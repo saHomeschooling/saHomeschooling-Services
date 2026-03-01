@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
 
-/* ─── Google Fonts + FA injected once ─────────────────────────────────────── */
 const injectHead = () => {
   if (document.getElementById("sah-fonts")) return;
   const fonts = document.createElement("link");
@@ -10,15 +9,12 @@ const injectHead = () => {
   fonts.href =
     "https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700&family=DM+Sans:wght@400;500;600;700&display=swap";
   document.head.appendChild(fonts);
-
   const fa = document.createElement("link");
   fa.rel = "stylesheet";
-  fa.href =
-    "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css";
+  fa.href = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css";
   document.head.appendChild(fa);
 };
 
-/* ─── CSS injected as a <style> tag ─────────────────────────────────────────── */
 const CSS = `
   :root {
     --accent:#c9621a; --accent-dark:#a84e12; --accent-light:#f5e0cc;
@@ -53,10 +49,10 @@ const CSS = `
   .sah-nav-ctas{display:flex;align-items:center;gap:8px;}
   .sah-btn-ghost-nav{padding:7px 16px;border-radius:5px;border:1.5px solid rgba(255,255,255,0.6);background:transparent;color:#fff;font-weight:600;font-size:0.85rem;transition:all 0.15s;}
   .sah-btn-ghost-nav:hover{border-color:#fff;background:rgba(255,255,255,0.2);}
-  .sah-btn-solid-nav{padding:7px 18px;border-radius:5px;background:var(--accent);color:#fff;font-weight:700;font-size:0.85rem;border:none;transition:all 0.15s;}
+  .sah-btn-solid-nav{padding:7px 18px;border-radius:5px;background:var(--accent);color:#fff !important;font-weight:700;font-size:0.85rem;border:none;transition:all 0.15s;display:inline-flex;align-items:center;}
   .sah-btn-solid-nav:hover{background:var(--accent-dark);}
 
-  /* HERO — dark gray base with deep gradient overlay matching the pink version's opacity/depth */
+  /* HERO */
   .sah-hero{position:relative;min-height:88vh;display:flex;align-items:center;overflow:hidden;background:#1e1e1e;}
   .sah-hero-bg{position:absolute;inset:0;z-index:0;background-image:url('https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=1600&auto=format&fit=crop&q=80');background-size:cover;background-position:center 30%;}
   .sah-hero-bg::after{content:'';position:absolute;inset:0;background:linear-gradient(100deg,rgba(20,20,20,0.90) 0%,rgba(50,50,50,0.80) 45%,rgba(15,15,15,0.62) 100%);}
@@ -65,84 +61,40 @@ const CSS = `
   .sah-hero-h1{font-family:'Playfair Display',serif;font-size:clamp(2.5rem,5.5vw,4.4rem);font-weight:900;line-height:1.07;color:#fff;margin-bottom:22px;letter-spacing:-0.3px;}
   .sah-hero-h1 em{font-style:italic;color:rgba(255,255,255,0.9);}
 
-  /* SEARCH BAR — cross-browser, always horizontal row, consistent on all screen sizes */
-  .sah-hero-search{
-    display:flex;
-    flex-direction:row;
-    align-items:stretch;
-    background:#fff;
-    border-radius:var(--radius);
-    overflow:hidden;
-    max-width:780px;
-    margin:0 auto;
-    box-shadow:0 8px 40px rgba(0,0,0,0.4);
-    width:100%;
-  }
+  /* SEARCH BAR */
+  .sah-hero-search{display:flex;flex-direction:row;align-items:stretch;background:#fff;border-radius:var(--radius);overflow:hidden;max-width:780px;margin:0 auto;box-shadow:0 8px 40px rgba(0,0,0,0.4);width:100%;}
   .sah-hs-icon{display:flex;align-items:center;padding:0 14px;color:#aaa;font-size:0.9rem;flex-shrink:0;}
-  .sah-hero-search input{
-    flex:1;
-    min-width:0;
-    border:none;
-    outline:none;
-    padding:16px 6px;
-    font-family:'DM Sans',sans-serif;
-    font-size:0.95rem;
-    color:var(--dark);
-    background:transparent;
-    -webkit-appearance:none;
-    appearance:none;
-  }
+  .sah-hero-search input{flex:1;min-width:0;border:none;outline:none;padding:16px 6px;font-family:'DM Sans',sans-serif;font-size:0.95rem;color:var(--dark);background:transparent;-webkit-appearance:none;appearance:none;}
   .sah-hero-search input::placeholder{color:#bbb;}
   .sah-hs-sep{width:1px;background:var(--border);margin:10px 0;flex-shrink:0;}
-  .sah-hero-search select{
-    border:none;
-    outline:none;
-    padding:0 14px;
-    background:transparent;
-    font-family:'DM Sans',sans-serif;
-    font-size:0.88rem;
-    color:var(--muted);
-    cursor:pointer;
-    min-width:140px;
-    flex-shrink:0;
-    -webkit-appearance:none;
-    -moz-appearance:none;
-    appearance:none;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23aaa' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-    background-repeat:no-repeat;
-    background-position:right 10px center;
-    padding-right:28px;
-  }
-  .sah-hs-btn{
-    background:var(--accent);
-    color:#fff;
-    border:none;
-    padding:0 26px;
-    font-family:'DM Sans',sans-serif;
-    font-weight:700;
-    font-size:0.92rem;
-    white-space:nowrap;
-    transition:background 0.15s;
-    flex-shrink:0;
-    cursor:pointer;
-    -webkit-appearance:none;
-    appearance:none;
-  }
+  .sah-hero-search select{border:none;outline:none;padding:0 14px;background:transparent;font-family:'DM Sans',sans-serif;font-size:0.88rem;color:var(--muted);cursor:pointer;min-width:140px;flex-shrink:0;-webkit-appearance:none;-moz-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23aaa' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px;}
+  .sah-hs-btn{background:var(--accent);color:#fff;border:none;padding:0 26px;font-family:'DM Sans',sans-serif;font-weight:700;font-size:0.92rem;white-space:nowrap;transition:background 0.15s;flex-shrink:0;cursor:pointer;}
   .sah-hs-btn:hover{background:var(--accent-dark);}
 
   /* HERO TAGLINE */
   .sah-hero-tagline{text-align:center;margin-top:22px;margin-bottom:36px;}
   .sah-hero-tagline h2{font-family:'Playfair Display',serif;font-size:clamp(1.1rem,2.2vw,1.4rem);font-weight:800;color:#fff;margin-bottom:8px;line-height:1.25;}
-  .sah-hero-tagline p{font-size:0.92rem;color:rgba(255,255,255,0.78);max-width:580px;margin:0 auto 18px;line-height:1.7;}
-  .sah-hero-cta-btn{display:inline-flex;align-items:center;gap:8px;padding:11px 24px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);font-weight:700;font-size:0.92rem;transition:background 0.15s;cursor:pointer;}
-  .sah-hero-cta-btn:hover{background:var(--accent-dark);}
+  .sah-hero-tagline p{font-size:0.92rem;color:rgba(255,255,255,0.78);max-width:580px;margin:0 auto 22px;line-height:1.7;}
 
-  /* HERO PLAN CARDS */
-  .sah-hero-plans-wrap{margin-top:0;}
+  /* BECOME PROVIDER BUTTON */
+  .sah-become-btn{display:inline-flex;align-items:center;gap:10px;padding:13px 30px;background:var(--accent);color:#fff !important;border:none;border-radius:var(--radius);font-weight:700;font-size:0.97rem;transition:background 0.15s,transform 0.15s;cursor:pointer;box-shadow:0 8px 28px -4px rgba(201,98,26,0.55);text-decoration:none;}
+  .sah-become-btn:hover{background:var(--accent-dark);transform:translateY(-2px);}
+  .sah-become-btn.active{background:#3a3a3a;box-shadow:0 4px 16px rgba(0,0,0,0.25);}
+  .sah-become-btn.active:hover{background:#1e1e1e;transform:none;}
+  .sah-become-btn .sah-chev{font-size:0.78rem;transition:transform 0.3s ease;}
+  .sah-become-btn.active .sah-chev{transform:rotate(180deg);}
+
+  /* PLANS ACCORDION */
+  .sah-hero-plans-wrap{display:grid;grid-template-rows:0fr;transition:grid-template-rows 0.45s cubic-bezier(0.4,0,0.2,1);}
+  .sah-hero-plans-wrap.open{grid-template-rows:1fr;}
+  .sah-hero-plans-inner{overflow:hidden;}
+  .sah-hero-plans-grid-outer{padding-top:24px;padding-bottom:8px;}
   .sah-hero-plans-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
-  .sah-plan-item{border:1px solid rgba(255,255,255,0.28);border-radius:var(--radius-lg);background:rgba(255,255,255,0.13);transition:border-color 0.2s,background 0.2s;cursor:pointer;overflow:hidden;user-select:none;backdrop-filter:blur(6px);display:flex;flex-direction:column;}
-  .sah-plan-item:hover{border-color:rgba(201,98,26,0.65);background:rgba(255,255,255,0.18);}
-  .sah-plan-item.highlight{border-color:var(--accent);background:rgba(255,255,255,0.20);box-shadow:0 0 0 1px var(--accent);}
+
+  /* PLAN CARDS */
+  .sah-plan-item{border:1px solid rgba(255,255,255,0.28);border-radius:var(--radius-lg);background:rgba(20,20,20,0.58);transition:border-color 0.2s,background 0.2s;cursor:pointer;overflow:hidden;user-select:none;backdrop-filter:blur(6px);display:flex;flex-direction:column;}
+  .sah-plan-item:hover{border-color:rgba(201,98,26,0.65);background:rgba(20,20,20,0.68);}
+  .sah-plan-item.highlight{border-color:var(--accent);background:rgba(20,20,20,0.70);box-shadow:0 0 0 1px var(--accent);}
   .sah-plan-header{display:flex;align-items:flex-start;justify-content:space-between;padding:18px 18px 12px;}
   .sah-plan-info{flex:1;}
   .sah-plan-name{font-weight:700;font-size:0.95rem;color:#fff;}
@@ -163,10 +115,14 @@ const CSS = `
   .sah-plan-features li.no{color:rgba(255,255,255,0.32);}
   .sah-ico-yes{color:#4ade80;font-size:0.7rem;}
   .sah-ico-no{color:rgba(255,255,255,0.22);font-size:0.7rem;}
-  .sah-plan-cta-link{display:inline-flex;align-items:center;gap:7px;padding:8px 18px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);font-size:0.82rem;font-weight:700;transition:background 0.15s;cursor:pointer;text-decoration:none;}
+  .sah-plan-cta-link{display:inline-flex;align-items:center;gap:7px;padding:8px 18px;background:var(--accent);color:#fff !important;border:none;border-radius:var(--radius);font-size:0.82rem;font-weight:700;transition:background 0.15s;cursor:pointer;text-decoration:none;}
   .sah-plan-cta-link:hover{background:var(--accent-dark);}
 
-  /* FILTER BAR — larger font for pill labels */
+  /* FEATURED BANNER */
+  .sah-featured-banner{background:linear-gradient(135deg,#fff8f2,#fff3e8);border:1px solid rgba(201,98,26,0.18);border-radius:var(--radius-lg);padding:10px 18px;margin-bottom:18px;display:flex;align-items:center;gap:10px;font-size:0.82rem;color:#c9621a;font-weight:600;}
+  .sah-featured-banner i{font-size:0.85rem;}
+
+  /* FILTER BAR */
   .sah-filter-bar{background:var(--white);border-bottom:1px solid var(--border);}
   .sah-filter-bar-row{display:flex;align-items:center;gap:6px;padding:16px 0;overflow-x:auto;-webkit-overflow-scrolling:touch;}
   .sah-filter-bar-row::-webkit-scrollbar{display:none;}
@@ -188,6 +144,7 @@ const CSS = `
   .sah-provider-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;}
   .sah-provider-card{background:var(--white);border-radius:var(--radius-lg);overflow:hidden;border:1px solid var(--border);box-shadow:var(--shadow-sm);transition:box-shadow 0.2s,transform 0.2s;display:flex;flex-direction:column;}
   .sah-provider-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);}
+  .sah-provider-card.is-featured-slot{border-color:rgba(201,98,26,0.35);box-shadow:0 2px 12px rgba(201,98,26,0.12);}
   .sah-card-thumb{position:relative;height:165px;overflow:hidden;background:var(--accent-light);flex-shrink:0;}
   .sah-card-thumb img{width:100%;height:100%;object-fit:cover;transition:transform 0.35s;}
   .sah-provider-card:hover .sah-card-thumb img{transform:scale(1.04);}
@@ -195,6 +152,7 @@ const CSS = `
   .sah-card-badges{position:absolute;top:9px;left:9px;display:flex;gap:4px;}
   .sah-cbadge{padding:3px 9px;border-radius:3px;font-size:0.67rem;font-weight:700;text-transform:uppercase;letter-spacing:0.3px;}
   .sah-cbadge-featured{background:var(--red);color:#fff;}
+  .sah-cbadge-spotlight{background:var(--accent);color:#fff;}
   .sah-cbadge-new{background:#0d7d6c;color:#fff;}
   .sah-cbadge-verified{background:#3a3a3a;color:#fff;}
   .sah-card-save{position:absolute;top:9px;right:9px;width:28px;height:28px;border-radius:4px;background:rgba(255,255,255,0.9);border:none;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:0.8rem;transition:color 0.15s;}
@@ -220,6 +178,10 @@ const CSS = `
   .sah-grid-empty{grid-column:1/-1;text-align:center;padding:70px 20px;color:var(--muted);}
   .sah-grid-empty i{font-size:2.2rem;margin-bottom:12px;opacity:0.3;display:block;}
   .sah-grid-empty h3{font-family:'Playfair Display',serif;font-size:1.25rem;color:var(--dark);margin-bottom:7px;}
+
+  /* FEATURED SECTION DIVIDER */
+  .sah-section-label{display:flex;align-items:center;gap:12px;margin:0 0 16px;font-size:0.72rem;font-weight:800;text-transform:uppercase;letter-spacing:1.8px;color:var(--accent);}
+  .sah-section-label::after{content:'';flex:1;height:1px;background:rgba(201,98,26,0.2);}
 
   /* HOW IT WORKS */
   .sah-how-section{padding:76px 0;background:var(--white);}
@@ -279,14 +241,22 @@ const CSS = `
   .sah-modal-switch{text-align:center;margin-top:12px;font-size:0.85rem;color:var(--muted);}
   .sah-modal-switch a{color:var(--accent);font-weight:600;}
 
+  /* REGISTER CHOOSER LINKS */
+  .sah-reg-options{display:flex;flex-direction:column;gap:10px;margin-bottom:14px;}
+  .sah-reg-opt{display:flex;align-items:center;gap:12px;padding:13px 16px;border:1.5px solid var(--border);border-radius:var(--radius);text-decoration:none;color:var(--dark);transition:all 0.15s;background:#fafaf9;}
+  .sah-reg-opt:hover{border-color:var(--accent);background:#fff8f2;}
+  .sah-reg-opt-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:0.9rem;flex-shrink:0;}
+  .sah-reg-opt-icon.user{background:#ede9fe;color:#5b21b6;}
+  .sah-reg-opt-icon.provider{background:#fef3c7;color:#92400e;}
+  .sah-reg-opt-title{font-weight:700;font-size:0.9rem;margin-bottom:1px;}
+  .sah-reg-opt-desc{font-size:0.75rem;color:var(--muted);}
+
   /* TOAST */
   .sah-toast{position:fixed;bottom:22px;right:22px;background:var(--grey);color:#fff;padding:11px 18px;border-radius:var(--radius);font-size:0.88rem;font-weight:600;box-shadow:var(--shadow-lg);transform:translateY(60px);opacity:0;transition:all 0.26s;z-index:9999;display:flex;align-items:center;gap:8px;pointer-events:none;}
   .sah-toast.show{transform:translateY(0);opacity:1;}
   .sah-toast i{color:#4ade80;}
 
-  /* ── RESPONSIVE ─────────────────────────────────────────────────────── */
-
-  /* Large tablet */
+  /* RESPONSIVE */
   @media(max-width:1100px){
     .sah-provider-grid{grid-template-columns:repeat(2,1fr);}
     .sah-steps-grid{grid-template-columns:repeat(2,1fr);}
@@ -295,227 +265,111 @@ const CSS = `
     .sah-hero-plans-grid{grid-template-columns:repeat(3,1fr);}
     .sah-footer-grid{grid-template-columns:1fr 1fr;gap:32px;}
   }
-
-  /* Tablet — search bar stays horizontal, just scaled down */
   @media(max-width:768px){
     .sah-nav-links{display:none;}
     .sah-provider-grid{grid-template-columns:repeat(2,1fr);}
-
-    /* Keep search bar as a row — shrink select and button */
-    .sah-hero-search{flex-direction:row;}
-    .sah-hs-icon{padding:0 10px;}
-    .sah-hero-search input{padding:14px 4px;font-size:0.88rem;}
-    .sah-hero-search select{min-width:110px;font-size:0.8rem;padding:0 22px 0 10px;background-position:right 7px center;}
-    .sah-hs-btn{padding:0 16px;font-size:0.85rem;}
-    .sah-hs-sep{width:1px;height:auto;margin:10px 0;}
-
     .sah-steps-grid{grid-template-columns:1fr;}
     .sah-step{border-right:none!important;border-bottom:1px solid var(--border);}
     .sah-step:last-child{border-bottom:none;}
-    .sah-fpill{font-size:0.95rem;padding:9px 18px;}
     .sah-hero-plans-grid{grid-template-columns:1fr;}
   }
-
-  /* Small mobile — search bar stays horizontal but condenses further */
   @media(max-width:480px){
     .sah-provider-grid{grid-template-columns:1fr;}
     .sah-container{padding:0 16px;}
-    .sah-fpill{font-size:0.9rem;padding:8px 14px;}
-
-    .sah-hero-search{border-radius:var(--radius);}
-    .sah-hs-icon{padding:0 8px;font-size:0.8rem;}
-    .sah-hero-search input{padding:13px 4px;font-size:0.82rem;}
-    .sah-hero-search select{min-width:90px;font-size:0.75rem;padding:0 20px 0 8px;}
-    .sah-hs-btn{padding:0 12px;font-size:0.8rem;}
+    .sah-become-btn{padding:11px 20px;font-size:0.88rem;}
   }
-
   @media(max-width:640px){
-    .sah-footer{padding:44px 0 24px;}
     .sah-footer-grid{grid-template-columns:1fr;gap:28px;}
     .sah-footer-bottom{flex-direction:column;align-items:flex-start;gap:12px;}
     .sah-footer-bottom-links{flex-wrap:wrap;gap:12px;}
   }
 `;
 
-/* ─── DATA ──────────────────────────────────────────────────────────────────── */
+/* ─── SEED DATA ─────────────────────────────────────────────────────────────── */
 const SEED = [
-  {
-    id: "s1", name: "STEM Mastery Tutors", category: "tutor", location: "Johannesburg, Gauteng",
-    delivery: "Online & In-person",
-    image: "https://images.unsplash.com/photo-1522202176988-66273c2b033f?w=600&auto=format&fit=crop&q=75",
-    priceFrom: "R280/hr", badge: "featured", rating: 4.9, reviewCount: 62, tier: "featured",
-    registered: "2025-01-10T08:00:00Z", status: "approved",
-    primaryCategory: "Tutor", city: "Johannesburg", province: "Gauteng", deliveryMode: "Online & In-person",
-    bio: "Specialist STEM tutors for Grades 8–12. We focus on Mathematics, Physical Sciences and Life Sciences with a proven track record of improving results.",
-    tags: ["Mathematics", "Physical Sciences", "Life Sciences", "Grades 8–12"],
-    ageGroups: ["11–13", "14–18"], startingPrice: "R280/hr",
-    availabilityDays: ["Mon", "Tue", "Wed", "Thu", "Fri"],
-    availabilityNotes: "Weekday afternoons & Saturdays",
-    phone: "+27 11 000 1111", contactEmail: "info@stemmastery.co.za",
-    certifications: "SACE Registered, Honours in Mathematics Education",
-    listingPlan: "featured",
-    reviews: { average: 4.9, count: 62, items: [{ reviewer: "Nomsa P.", rating: 5, text: "My son went from 40% to 82% in Maths. Incredible tutors." }] }
-  },
-  {
-    id: "s2", name: "Creative Minds Curriculum", category: "curriculum", location: "Cape Town, Western Cape",
-    delivery: "Online",
-    image: "https://images.unsplash.com/photo-1509062522246-3755977927d7?w=600&auto=format&fit=crop&q=75",
-    priceFrom: "R4 200/term", badge: "verified", rating: 5.0, reviewCount: 34, tier: "pro",
-    registered: "2025-01-12T09:00:00Z", status: "approved",
-    primaryCategory: "Curriculum Provider", city: "Cape Town", province: "Western Cape", deliveryMode: "Online",
-    bio: "Award-winning home education curriculum aligned with CAPS and internationally accredited. Full Gr R–12 offerings with parent support included.",
-    tags: ["CAPS Aligned", "Full Curriculum", "Gr R–12", "Parent Support"],
-    ageGroups: ["5–7", "8–10", "11–13", "14–18"], startingPrice: "R4 200/term",
-    availabilityDays: ["Mon", "Tue", "Wed", "Thu", "Fri"],
-    availabilityNotes: "Online resources available 24/7",
-    phone: "+27 21 000 2222", contactEmail: "hello@creativeminds.co.za",
-    certifications: "Umalusi Accredited, Cambridge Affiliated",
-    listingPlan: "pro",
-    reviews: { average: 5.0, count: 34, items: [{ reviewer: "Riana V.", rating: 5, text: "The best investment we made for our homeschool journey." }] }
-  },
-  {
-    id: "s3", name: "EduTherapy SA", category: "therapist", location: "Durban, KwaZulu-Natal",
-    delivery: "Hybrid",
-    image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=600&auto=format&fit=crop&q=75",
-    priceFrom: "R650/session", badge: "featured", rating: 4.8, reviewCount: 47, tier: "featured",
-    registered: "2025-01-14T10:00:00Z", status: "approved",
-    primaryCategory: "Therapist", city: "Durban", province: "KwaZulu-Natal", deliveryMode: "Hybrid",
-    bio: "Educational therapists specialising in learning differences, ADHD, dyslexia, and occupational therapy for homeschooled children.",
-    tags: ["OT", "ADHD", "Dyslexia", "Learning Support", "Educational Therapy"],
-    ageGroups: ["5–7", "8–10", "11–13"], startingPrice: "R650/session",
-    availabilityDays: ["Mon", "Tue", "Wed", "Thu"],
-    availabilityNotes: "By appointment — contact to book",
-    phone: "+27 31 000 3333", contactEmail: "bookings@edutherapy.co.za",
-    certifications: "HPCSA Registered, BEd Honours (Learning Support)",
-    listingPlan: "featured",
-    reviews: { average: 4.8, count: 47, items: [{ reviewer: "Lerato M.", rating: 5, text: "Transformed our daughter's confidence and love of learning." }] }
-  },
-  {
-    id: "s4", name: "Future Leaders Academy", category: "school", location: "Online — National",
-    delivery: "Online",
-    image: "https://images.unsplash.com/photo-1529390079861-591de3547d13?w=600&auto=format&fit=crop&q=75",
-    priceFrom: "Custom quote", badge: "new", rating: 4.7, reviewCount: 18, tier: "pro",
-    registered: "2025-01-16T11:00:00Z", status: "approved",
-    primaryCategory: "Online / Hybrid School", city: "Online", province: "Gauteng", deliveryMode: "Online",
-    bio: "A fully accredited online school delivering quality education to homeschoolers across all 9 provinces. Live classes, recorded lessons and dedicated academic support.",
-    tags: ["Online School", "Live Classes", "National", "Accredited"],
-    ageGroups: ["8–10", "11–13", "14–18"], startingPrice: "Contact for quote",
-    availabilityDays: ["Mon", "Tue", "Wed", "Thu", "Fri"],
-    availabilityNotes: "Live classes Mon–Fri, 8:00–14:00",
-    phone: "+27 10 000 4444", contactEmail: "enrol@futureleaders.co.za",
-    certifications: "Umalusi Registered, ISASA Member",
-    listingPlan: "pro",
-    reviews: { average: 4.7, count: 18, items: [{ reviewer: "Sipho K.", rating: 5, text: "Our kids thrive in the structured online environment." }] }
-  },
-  {
-    id: "khan", name: "Khan Academy SA", category: "curriculum", location: "Johannesburg, Gauteng",
-    delivery: "Online",
-    image: "https://images.unsplash.com/photo-1501504905252-473c47e087f8?w=600&auto=format&fit=crop&q=75",
-    priceFrom: "Free", badge: "featured", rating: 4.9, reviewCount: 156, tier: "featured",
-    registered: "2025-01-01T00:00:00Z", status: "approved",
-    primaryCategory: "Curriculum Provider", city: "Johannesburg", province: "Gauteng", deliveryMode: "Online",
-    bio: "Free world-class education for anyone, anywhere. Our curriculum covers mathematics, science, computing, humanities and more. We provide video lessons, practice exercises, and personalised learning dashboards for homeschoolers across South Africa. Completely free, forever.",
-    tags: ["Mathematics", "Science", "Online Learning", "Free Curriculum", "Video Lessons", "All Ages"],
-    ageGroups: ["5–7", "8–10", "11–13", "14–18"], startingPrice: "Free",
-    availabilityDays: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-    availabilityNotes: "24/7 Online — self-paced learning available anytime",
-    phone: "+27 11 555 1234", contactEmail: "support@khanacademy.org.za",
-    email: "contact@khanacademy.org.za",
-    certifications: "Khan Academy Certified Content Provider, Google for Education Partner",
-    degrees: "BSc Computer Science (Stanford), MEd (Harvard)",
-    memberships: "SA Curriculum Association, Digital Learning Collective",
-    clearance: "Verified (2025)",
-    social: "https://www.khanacademy.org",
-    listingPlan: "featured",
-    reviews: { average: 4.9, count: 156, items: [
-      { reviewer: "Sarah J.", rating: 5, text: "Excellent resource for our homeschool curriculum." },
-      { reviewer: "Thabo M.", rating: 5, text: "My kids love the math challenges." }
-    ]}
-  },
+  { id:"s1",name:"STEM Mastery Tutors",category:"tutor",location:"Johannesburg, Gauteng",delivery:"Online & In-person",image:"https://images.unsplash.com/photo-1522202176988-66273c2b033f?w=600&auto=format&fit=crop&q=75",priceFrom:"R280/hr",badge:"featured",rating:4.9,reviewCount:62,tier:"featured",registered:"2025-01-10T08:00:00Z",status:"approved",primaryCategory:"Tutor",city:"Johannesburg",province:"Gauteng",deliveryMode:"Online & In-person",bio:"Specialist STEM tutors for Grades 8–12.",tags:["Mathematics","Physical Sciences","Life Sciences","Grades 8–12"],ageGroups:["11–13","14–18"],startingPrice:"R280/hr",availabilityDays:["Mon","Tue","Wed","Thu","Fri"],phone:"+27 11 000 1111",contactEmail:"info@stemmastery.co.za",certifications:"SACE Registered",listingPlan:"featured",reviews:{average:4.9,count:62,items:[{reviewer:"Nomsa P.",rating:5,text:"My son went from 40% to 82% in Maths."}]} },
+  { id:"s2",name:"Creative Minds Curriculum",category:"curriculum",location:"Cape Town, Western Cape",delivery:"Online",image:"https://images.unsplash.com/photo-1509062522246-3755977927d7?w=600&auto=format&fit=crop&q=75",priceFrom:"R4 200/term",badge:"verified",rating:5.0,reviewCount:34,tier:"pro",registered:"2025-01-12T09:00:00Z",status:"approved",primaryCategory:"Curriculum Provider",city:"Cape Town",province:"Western Cape",deliveryMode:"Online",bio:"Award-winning home education curriculum.",tags:["CAPS Aligned","Full Curriculum","Gr R–12"],ageGroups:["5–7","8–10","11–13","14–18"],startingPrice:"R4 200/term",phone:"+27 21 000 2222",contactEmail:"hello@creativeminds.co.za",certifications:"Umalusi Accredited",listingPlan:"pro",reviews:{average:5.0,count:34,items:[{reviewer:"Riana V.",rating:5,text:"Best investment for our homeschool journey."}]} },
+  { id:"s3",name:"EduTherapy SA",category:"therapist",location:"Durban, KwaZulu-Natal",delivery:"Hybrid",image:"https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=600&auto=format&fit=crop&q=75",priceFrom:"R650/session",badge:"featured",rating:4.8,reviewCount:47,tier:"featured",registered:"2025-01-14T10:00:00Z",status:"approved",primaryCategory:"Therapist",city:"Durban",province:"KwaZulu-Natal",deliveryMode:"Hybrid",bio:"Educational therapists specialising in learning differences.",tags:["OT","ADHD","Dyslexia","Learning Support"],ageGroups:["5–7","8–10","11–13"],startingPrice:"R650/session",phone:"+27 31 000 3333",contactEmail:"bookings@edutherapy.co.za",certifications:"HPCSA Registered",listingPlan:"featured",reviews:{average:4.8,count:47,items:[{reviewer:"Lerato M.",rating:5,text:"Transformed our daughter's confidence."}]} },
+  { id:"s4",name:"Future Leaders Academy",category:"school",location:"Online — National",delivery:"Online",image:"https://images.unsplash.com/photo-1529390079861-591de3547d13?w=600&auto=format&fit=crop&q=75",priceFrom:"Custom quote",badge:"new",rating:4.7,reviewCount:18,tier:"pro",registered:"2025-01-16T11:00:00Z",status:"approved",primaryCategory:"Online / Hybrid School",city:"Online",province:"Gauteng",deliveryMode:"Online",bio:"A fully accredited online school.",tags:["Online School","Live Classes","National","Accredited"],ageGroups:["8–10","11–13","14–18"],startingPrice:"Contact for quote",phone:"+27 10 000 4444",contactEmail:"enrol@futureleaders.co.za",certifications:"Umalusi Registered",listingPlan:"pro",reviews:{average:4.7,count:18,items:[{reviewer:"Sipho K.",rating:5,text:"Our kids thrive in the structure."}]} },
+  { id:"khan",name:"Khan Academy SA",category:"curriculum",location:"Johannesburg, Gauteng",delivery:"Online",image:"https://images.unsplash.com/photo-1501504905252-473c47e087f8?w=600&auto=format&fit=crop&q=75",priceFrom:"Free",badge:"featured",rating:4.9,reviewCount:156,tier:"featured",registered:"2025-01-01T00:00:00Z",status:"approved",primaryCategory:"Curriculum Provider",city:"Johannesburg",province:"Gauteng",deliveryMode:"Online",bio:"Free world-class education for anyone.",tags:["Mathematics","Science","Online Learning","Free"],ageGroups:["5–7","8–10","11–13","14–18"],startingPrice:"Free",phone:"+27 11 555 1234",contactEmail:"support@khanacademy.org.za",email:"contact@khanacademy.org.za",certifications:"Khan Academy Certified",listingPlan:"featured",reviews:{average:4.9,count:156,items:[{reviewer:"Sarah J.",rating:5,text:"Excellent resource for homeschool."}]} },
 ];
 
-const CAT_ICON = { tutor: "fa-chalkboard-teacher", therapist: "fa-heart", curriculum: "fa-book-open", school: "fa-school", consultant: "fa-user-tie", extracurricular: "fa-palette" };
-const TIER_LBL = { featured: "Deluxe Package", pro: "Trusted Provider", free: "Community Member" };
+const CAT_ICON = { tutor:"fa-chalkboard-teacher", therapist:"fa-heart", curriculum:"fa-book-open", school:"fa-school", consultant:"fa-user-tie", extracurricular:"fa-palette" };
+const TIER_LBL = { featured:"Deluxe Package", pro:"Trusted Provider", free:"Community Member" };
 
-// ── UPDATED PLANS — Deluxe Package (formerly Featured Partner) ──
 const PLANS = [
-  {
-    id: "community",
-    name: "Community Member",
-    desc: "Basic profile — always free",
-    price: "R0",
-    highlight: false,
-    features: [
-      { text: "Public profile listing", yes: true },
-      { text: "1 service category", yes: true },
-      { text: "Basic contact form", yes: true },
-      { text: "No direct contact details", yes: false },
-      { text: "No featured placement", yes: false },
-    ],
-    cta: "Get Started Free",
-    planParam: "Free Listing – basic profile",
-  },
-  {
-    id: "trusted",
-    name: "Trusted Provider",
-    desc: "Full profile + direct contact details",
-    price: "R149",
-    highlight: true,
-    features: [
-      { text: "Everything in Community", yes: true },
-      { text: "Direct phone & email visible", yes: true },
-      { text: "Up to 3 service categories", yes: true },
-      { text: "Verified badge on profile", yes: true },
-      { text: "Priority in search results", yes: true },
-    ],
-    cta: "Start Trusted Plan",
-    planParam: "Professional Listing – R149/month (full contact, direct enquiries)",
-  },
-  {
-    id: "featured",
-    name: "Deluxe Package",
-    desc: "3-month campaign · maximum exposure",
-    price: "R399",
-    highlight: false,
-    features: [
-      { text: "24x Billboard banners", yes: true },
-      { text: "24x Leaderboard banners", yes: true },
-      { text: "24x Skyscrapers / side panels", yes: true },
-      { text: "1x Business listing", yes: true },
-      { text: "6x Newsletter banner ads", yes: true },
-      { text: "6x Facebook post / reel", yes: true },
-      { text: "6x Instagram posts / reels", yes: true },
-      { text: "4x Newsletter ad posting", yes: true },
-      { text: "2x Full page ad in PDF per magazine", yes: true },
-      { text: "1x Native article per month", yes: true },
-    ],
-    cta: "Get the Deluxe Package",
-    planParam: "Deluxe Package – R399/month (3-month campaign, max exposure)",
-  },
+  { id:"community", name:"Community Member", desc:"Basic profile — always free", price:"R0", highlight:false,
+    features:[{text:"Public profile listing",yes:true},{text:"1 service category",yes:true},{text:"Basic contact form",yes:true},{text:"No direct contact details",yes:false},{text:"No featured placement",yes:false}],
+    cta:"Get Started Free", planParam:"Free Listing – basic profile" },
+  { id:"trusted", name:"Trusted Provider", desc:"Full profile + direct contact details", price:"R149", highlight:true,
+    features:[{text:"Everything in Community",yes:true},{text:"Direct phone & email visible",yes:true},{text:"Up to 3 service categories",yes:true},{text:"Verified badge on profile",yes:true},{text:"Priority in search results",yes:true}],
+    cta:"Start Trusted Plan", planParam:"Professional Listing – R149/month" },
+  { id:"featured", name:"Deluxe Package", desc:"3-month campaign · maximum exposure", price:"R399", highlight:false,
+    features:[{text:"24x Billboard banners",yes:true},{text:"24x Leaderboard banners",yes:true},{text:"24x Skyscrapers / side panels",yes:true},{text:"1x Business listing",yes:true},{text:"6x Newsletter banner ads",yes:true},{text:"6x Facebook post / reel",yes:true},{text:"6x Instagram posts / reels",yes:true},{text:"4x Newsletter ad posting",yes:true},{text:"2x Full page ad in PDF per magazine",yes:true},{text:"1x Native article per month",yes:true}],
+    cta:"Get the Deluxe Package", planParam:"Deluxe Package – R399/month" },
 ];
 
-/* ─── HELPERS ───────────────────────────────────────────────────────────────── */
-function starsStr(r) { return "★".repeat(Math.floor(r)) + (r % 1 >= 0.5 ? "½" : ""); }
-
-function getAll() {
+/* ─── FEATURED SLOT HELPERS ─────────────────────────────────────────────────── */
+function getFeaturedSlotProviderIds() {
   try {
-    const stored = JSON.parse(localStorage.getItem("sah_providers") || "[]");
-    return [...stored, ...SEED]
-      .filter(p => (p.status || "approved") === "approved")
-      .sort((a, b) => {
-        const o = { featured: 0, pro: 1, free: 2 };
-        const d = (o[a.tier] ?? 2) - (o[b.tier] ?? 2);
-        return d !== 0 ? d : new Date(b.registered) - new Date(a.registered);
-      });
-  } catch { return SEED.filter(p => p.status === "approved"); }
+    const slots = JSON.parse(localStorage.getItem("sah_featured_slots") || "[]");
+    // Return array of provider IDs (and names) that are in active slots
+    return slots
+      .filter(s => s.provider && s.providerId)
+      .map(s => ({ id: s.providerId, name: s.provider, slotId: s.id }));
+  } catch { return []; }
 }
 
-/* ─── SUB-COMPONENTS ────────────────────────────────────────────────────────── */
+function getFeaturedSlotProviderNames() {
+  try {
+    const slots = JSON.parse(localStorage.getItem("sah_featured_slots") || "[]");
+    return slots.filter(s => s.provider).map(s => s.provider);
+  } catch { return []; }
+}
 
-function Badge({ badge }) {
+/* ─── GET ALL PROVIDERS — featured slots FIRST ──────────────────────────────── */
+function getAll() {
+  try {
+    const stored   = JSON.parse(localStorage.getItem("sah_providers") || "[]");
+    const allRaw   = [...stored, ...SEED].filter(p => (p.status || "approved") === "approved");
+
+    // Deduplicate by id
+    const seen = new Set();
+    const all  = allRaw.filter(p => { if (seen.has(p.id)) return false; seen.add(p.id); return true; });
+
+    // Get provider IDs/names currently in featured slots
+    const slotIds   = getFeaturedSlotProviderIds();
+    const slotNames = getFeaturedSlotProviderNames();
+    const slotIdSet = new Set(slotIds.map(s => s.id));
+
+    // Mark providers that are in featured slots
+    const marked = all.map(p => {
+      const inSlotById   = slotIdSet.has(p.id);
+      const inSlotByName = slotNames.includes(p.name);
+      return { ...p, _inFeaturedSlot: inSlotById || inSlotByName };
+    });
+
+    // Sort: featured-slot providers first → then by tier → then by date
+    return marked.sort((a, b) => {
+      if (a._inFeaturedSlot && !b._inFeaturedSlot) return -1;
+      if (!a._inFeaturedSlot && b._inFeaturedSlot) return 1;
+      const tierOrder = { featured: 0, pro: 1, free: 2 };
+      const td = (tierOrder[a.tier] ?? 2) - (tierOrder[b.tier] ?? 2);
+      if (td !== 0) return td;
+      return new Date(b.registered) - new Date(a.registered);
+    });
+  } catch { return SEED; }
+}
+
+/* ─── HELPERS ────────────────────────────────────────────────────────────── */
+function starsStr(r) { return "★".repeat(Math.floor(r)) + (r % 1 >= 0.5 ? "½" : ""); }
+
+/* ─── SUB-COMPONENTS ─────────────────────────────────────────────────────── */
+function Badge({ badge, inSlot }) {
+  if (inSlot) return <span className="sah-cbadge sah-cbadge-spotlight"><i className="fas fa-star" style={{ marginRight:3, fontSize:'0.6rem' }} />Spotlight</span>;
   if (!badge) return null;
   if (badge === "featured") return <span className="sah-cbadge sah-cbadge-featured">Featured</span>;
-  if (badge === "new") return <span className="sah-cbadge sah-cbadge-new">New</span>;
+  if (badge === "new")      return <span className="sah-cbadge sah-cbadge-new">New</span>;
   if (badge === "verified") return <span className="sah-cbadge sah-cbadge-verified">Verified</span>;
   return null;
 }
@@ -524,12 +378,14 @@ function ProviderCard({ p, onView }) {
   const [imgErr, setImgErr] = useState(false);
   const ic = CAT_ICON[p.category] || "fa-star";
   return (
-    <article className="sah-provider-card" data-cat={p.category}>
+    <article className={`sah-provider-card${p._inFeaturedSlot ? " is-featured-slot" : ""}`} data-cat={p.category}>
       <div className="sah-card-thumb">
         {p.image && !imgErr
           ? <img src={p.image} alt={p.name} loading="lazy" onError={() => setImgErr(true)} />
           : <div className="sah-card-thumb-fallback"><i className={`fas ${ic}`} /></div>}
-        <div className="sah-card-badges"><Badge badge={p.badge} /></div>
+        <div className="sah-card-badges">
+          <Badge badge={p.badge} inSlot={p._inFeaturedSlot} />
+        </div>
         <button className="sah-card-save"><i className="far fa-heart" /></button>
       </div>
       <div className="sah-card-provider-row">
@@ -553,10 +409,7 @@ function ProviderCard({ p, onView }) {
           </div>
         )}
         <div className="sah-card-foot">
-          <div>
-            <div className="sah-from-label">Starting from</div>
-            <div className="sah-card-price">{p.priceFrom || "Contact"}</div>
-          </div>
+          <div><div className="sah-from-label">Starting from</div><div className="sah-card-price">{p.priceFrom || "Contact"}</div></div>
           <button className="sah-card-cta" onClick={() => onView(p.id)}>View Profile</button>
         </div>
       </div>
@@ -567,17 +420,14 @@ function ProviderCard({ p, onView }) {
 function PlanCard({ plan, openId, onToggle, allOpen }) {
   const isOpen = allOpen || openId === plan.id;
   return (
-    <div
-      className={`sah-plan-item${plan.highlight ? " highlight" : ""}`}
-      onClick={() => onToggle(plan.id)}
-    >
+    <div className={`sah-plan-item${plan.highlight ? " highlight" : ""}`} onClick={() => onToggle(plan.id)}>
       <div className="sah-plan-header">
         <div className="sah-plan-info">
           <div className="sah-plan-name">{plan.name}</div>
           <div className="sah-plan-desc">{plan.desc}</div>
         </div>
         <div className="sah-plan-right">
-          <div className="sah-plan-price">{plan.price} <small>/ month</small></div>
+          <div className="sah-plan-price">{plan.price}<small>/ month</small></div>
           <i className={`fas fa-chevron-down sah-plan-chevron${isOpen ? " open" : ""}`} />
         </div>
       </div>
@@ -587,15 +437,13 @@ function PlanCard({ plan, openId, onToggle, allOpen }) {
             <ul className="sah-plan-features">
               {plan.features.map((f, i) => (
                 <li key={i} className={f.yes ? "" : "no"}>
-                  {f.yes
-                    ? <i className="fas fa-check sah-ico-yes" />
-                    : <i className="fas fa-times sah-ico-no" />}
+                  {f.yes ? <i className="fas fa-check sah-ico-yes" /> : <i className="fas fa-times sah-ico-no" />}
                   {f.text}
                 </li>
               ))}
             </ul>
             <Link
-              to={`/register?plan=${encodeURIComponent(plan.planParam)}`}
+              to={`/register/provider?plan=${encodeURIComponent(plan.planParam)}`}
               className="sah-plan-cta-link"
               onClick={e => e.stopPropagation()}
             >
@@ -608,42 +456,49 @@ function PlanCard({ plan, openId, onToggle, allOpen }) {
   );
 }
 
-/* ─── MAIN COMPONENT ────────────────────────────────────────────────────────── */
+/* ─── MAIN COMPONENT ─────────────────────────────────────────────────────── */
 export default function HomePage() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [searchCat, setSearchCat] = useState("");
-  const [activeCat, setActiveCat] = useState("all");
-  const [providers, setProviders] = useState([]);
-  const [showAllProviders, setShowAllProviders] = useState(false);
-  const [openPlanId, setOpenPlanId] = useState(null);
-  const [allPlansOpen, setAllPlansOpen] = useState(false);
-  const [loginModal, setLoginModal] = useState(false);
-  const [loginEmail, setLoginEmail] = useState("");
-  const [loginPass, setLoginPass] = useState("");
-  const [nlEmail, setNlEmail] = useState("");
-  const [nlMsg, setNlMsg] = useState({ text: "", type: "" });
-  const [toast, setToast] = useState({ show: false, msg: "", err: false });
+  const navigate = useNavigate();
 
-  // Inject CSS + fonts once
+  const [searchTerm, setSearchTerm]     = useState("");
+  const [searchCat, setSearchCat]       = useState("");
+  const [activeCat, setActiveCat]       = useState("all");
+  const [providers, setProviders]       = useState([]);
+  const [showAll, setShowAll]           = useState(false);
+  const [openPlanId, setOpenPlanId]     = useState(null);
+  const [allPlansOpen, setAllPlansOpen] = useState(false);
+  const [plansVisible, setPlansVisible] = useState(false);
+  const [loginModal, setLoginModal]     = useState(false);
+  const [regModal, setRegModal]         = useState(false);
+  const [loginEmail, setLoginEmail]     = useState("");
+  const [loginPass, setLoginPass]       = useState("");
+  const [nlEmail, setNlEmail]           = useState("");
+  const [nlMsg, setNlMsg]               = useState({ text: "", type: "" });
+  const [toast, setToast]               = useState({ show: false, msg: "", err: false });
+
+  // Count how many are in featured slots for the banner
+  const [featuredSlotCount, setFeaturedSlotCount] = useState(0);
+
   useEffect(() => {
     injectHead();
     if (!document.getElementById("sah-styles")) {
       const s = document.createElement("style");
-      s.id = "sah-styles";
-      s.textContent = CSS;
+      s.id = "sah-styles"; s.textContent = CSS;
       document.head.appendChild(s);
     }
   }, []);
 
-  // Keyboard: Escape closes modal
   useEffect(() => {
-    const handler = (e) => { if (e.key === "Escape") setLoginModal(false); };
+    const handler = (e) => { if (e.key === "Escape") { setLoginModal(false); setRegModal(false); } };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, []);
 
-  // Initial load
-  useEffect(() => { setProviders(getAll()); }, []);
+  useEffect(() => {
+    const all = getAll();
+    setProviders(all);
+    setFeaturedSlotCount(all.filter(p => p._inFeaturedSlot).length);
+  }, []);
 
   const showToast = useCallback((msg, err = false) => {
     setToast({ show: true, msg, err });
@@ -654,59 +509,91 @@ export default function HomePage() {
     const term = searchTerm.trim().toLowerCase();
     let list = getAll();
     if (searchCat) list = list.filter(p => p.category === searchCat);
-    if (term) list = list.filter(p => p.name.toLowerCase().includes(term) || (p.location || "").toLowerCase().includes(term));
-    setProviders(list.slice(0, 8));
-    setShowAllProviders(false);
+    if (term) list = list.filter(p =>
+      p.name.toLowerCase().includes(term) ||
+      (p.location || "").toLowerCase().includes(term) ||
+      (p.tags || []).some(t => t.toLowerCase().includes(term))
+    );
+    setProviders(list);
+    setShowAll(false);
     document.getElementById("sah-providers")?.scrollIntoView({ behavior: "smooth" });
   };
 
   const filterCat = (cat) => {
     setActiveCat(cat);
-    setShowAllProviders(false);
+    setShowAll(false);
     let list = getAll();
     if (cat !== "all") list = list.filter(p => p.category === cat);
-    setProviders(list.slice(0, 8));
+    setProviders(list);
   };
 
-  const navigate = useNavigate();
+  const togglePlan = (id) => { setAllPlansOpen(false); setOpenPlanId(prev => prev === id ? null : id); };
 
-  const togglePlan = (id) => {
-    setAllPlansOpen(false);
-    setOpenPlanId(prev => prev === id ? null : id);
+  const handleBecomeProvider = (e) => {
+    if (e) e.preventDefault();
+    const next = !plansVisible;
+    setPlansVisible(next);
+    if (next) {
+      setAllPlansOpen(true);
+      setTimeout(() => document.getElementById("sah-plans-anchor")?.scrollIntoView({ behavior: "smooth", block: "center" }), 80);
+    }
   };
 
-  const handleViewPackages = (e) => {
-    e.preventDefault();
-    setAllPlansOpen(true);
-    setOpenPlanId(null);
-    document.getElementById("sah-list")?.scrollIntoView({ behavior: "smooth" });
-  };
+  const viewProfile = (id) => { navigate("/profile?id=" + id); };
 
-  const viewProfile = (id) => {
-    navigate("/profile?id=" + id);
+  // Log auth event
+  const logAuthEvent = (email, role, event) => {
+    try {
+      const logs = JSON.parse(localStorage.getItem("sah_auth_logs") || "[]");
+      logs.unshift({ email, role, event, timestamp: new Date().toISOString() });
+      localStorage.setItem("sah_auth_logs", JSON.stringify(logs.slice(0, 500)));
+    } catch {}
   };
 
   const handleLogin = () => {
     const email = loginEmail.trim().toLowerCase();
     if (!email) { showToast("Please enter your email.", true); return; }
+
+    // Admin login
     if (email === "admin@sahomeschooling.co.za" && loginPass === "admin123") {
       localStorage.setItem("sah_current_user", JSON.stringify({ role: "admin", email }));
-      setLoginModal(false); showToast("Admin login! Redirecting...");
-      setTimeout(() => navigate("/admin-dashboard"), 1000); return;
+      logAuthEvent(email, "ADMIN", "LOGIN");
+      setLoginModal(false);
+      showToast("Admin login! Redirecting…");
+      setTimeout(() => navigate("/admin-dashboard"), 1000);
+      return;
     }
+
+    // User (simple browser) login
+    const users = JSON.parse(localStorage.getItem("sah_users") || "[]");
+    const matchUser = users.find(u => u.email?.toLowerCase() === email);
+    if (matchUser) {
+      const updatedUsers = users.map(u => u.email?.toLowerCase() === email ? { ...u, lastLogin: new Date().toISOString() } : u);
+      localStorage.setItem("sah_users", JSON.stringify(updatedUsers));
+      localStorage.setItem("sah_current_user", JSON.stringify({ role: "user", email, id: matchUser.id }));
+      localStorage.setItem("sah_token", "local_" + matchUser.id);
+      logAuthEvent(email, "USER", "LOGIN");
+      setLoginModal(false);
+      showToast("Welcome back!");
+      setTimeout(() => navigate("/"), 800);
+      return;
+    }
+
+    // Provider login
     const stored = JSON.parse(localStorage.getItem("sah_providers") || "[]");
-    const match = stored.find(p => (p.email || "").toLowerCase() === email);
-    if (match) {
-      localStorage.setItem("sah_current_user", JSON.stringify({ role: "client", email, id: match.id, name: match.name }));
-      setLoginModal(false); showToast("Welcome back, " + match.name + "!");
-      setTimeout(() => navigate("/client-dashboard"), 1000); return;
+    const matchProv = stored.find(p => (p.email || "").toLowerCase() === email);
+    if (matchProv) {
+      const updated = stored.map(p => (p.email || "").toLowerCase() === email ? { ...p, lastLogin: new Date().toISOString() } : p);
+      localStorage.setItem("sah_providers", JSON.stringify(updated));
+      localStorage.setItem("sah_current_user", JSON.stringify({ role: "client", email, id: matchProv.id, name: matchProv.name }));
+      logAuthEvent(email, "PROVIDER", "LOGIN");
+      setLoginModal(false);
+      showToast("Welcome back, " + matchProv.name + "!");
+      setTimeout(() => navigate("/client-dashboard"), 1000);
+      return;
     }
-    if (loginPass && loginPass.length >= 6) {
-      localStorage.setItem("sah_current_user", JSON.stringify({ role: "client", email }));
-      setLoginModal(false); showToast("Login successful!");
-      setTimeout(() => navigate("/client-dashboard"), 1000); return;
-    }
-    showToast("Invalid credentials. Try again.", true);
+
+    showToast("Account not found. Please register first.", true);
   };
 
   const handleNewsletter = () => {
@@ -726,10 +613,14 @@ export default function HomePage() {
     { cat: "extracurricular", label: "Enrichment", icon: "fa-palette" },
   ];
 
+  // Split providers: featured-slot first, then rest
+  const featuredSlotProviders = providers.filter(p => p._inFeaturedSlot);
+  const displayed = showAll ? providers : providers.slice(0, 8);
+
   return (
     <div className="sah-wrap">
 
-      {/* ── HEADER ─────────────────────────────────────────────────────────── */}
+      {/* HEADER */}
       <header className="sah-header">
         <div className="sah-container sah-nav-inner">
           <Link to="/" className="sah-brand">
@@ -742,19 +633,21 @@ export default function HomePage() {
           <nav className="sah-nav-links">
             <a href="#sah-providers">Find Services</a>
             <a href="#sah-how">How It Works</a>
-            <a href="#sah-list" onClick={handleViewPackages}>View Packages</a>
+            <a href="#sah-plans-anchor" onClick={handleBecomeProvider}>Become a Provider</a>
             <a href="https://sahomeschooling.com" target="_blank" rel="noreferrer">
-              Magazine <i className="fas fa-arrow-up-right-from-square" style={{ fontSize: "0.65rem" }} />
+              Magazine <i className="fas fa-arrow-up-right-from-square" style={{ fontSize:"0.65rem" }} />
             </a>
           </nav>
           <div className="sah-nav-ctas">
-            <button className="sah-btn-ghost-nav" onClick={() => navigate('/login')}>Log In</button>
-            <Link to="/register" className="sah-btn-solid-nav">Register</Link>
+            <button className="sah-btn-ghost-nav" onClick={() => setLoginModal(true)}>Log In</button>
+            <button className="sah-btn-solid-nav" onClick={() => setRegModal(true)}>
+              <i className="fas fa-user-plus" style={{ marginRight:6, fontSize:'0.8rem' }} /> Register
+            </button>
           </div>
         </div>
       </header>
 
-      {/* ── HERO ───────────────────────────────────────────────────────────── */}
+      {/* HERO */}
       <section className="sah-hero">
         <div className="sah-hero-bg" />
         <div className="sah-container">
@@ -766,8 +659,7 @@ export default function HomePage() {
               <div className="sah-hero-search">
                 <div className="sah-hs-icon"><i className="fas fa-search" /></div>
                 <input
-                  type="text"
-                  value={searchTerm}
+                  type="text" value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
                   onKeyDown={e => e.key === "Enter" && handleSearch()}
                   placeholder="Search subjects, services or provider names..."
@@ -785,39 +677,44 @@ export default function HomePage() {
                 <button className="sah-hs-btn" onClick={handleSearch}>Search</button>
               </div>
 
-              {/* Tagline */}
-              <div className="sah-hero-tagline">
-                <h2>Start Reaching Homeschooling Families Today</h2>
-                <p>List your educational services on South Africa's dedicated homeschooling directory. Free to start — with paid plans for greater visibility and lead generation.</p>
-                <a href="#sah-list" className="sah-hero-cta-btn" onClick={handleViewPackages}>
-                  <i className="fas fa-layer-group" /> View Packages
-                </a>
+              <div className="sah-hero-tagline" id="sah-plans-anchor">
+                <h2>Are You a Homeschooling Service Provider?</h2>
+                <p>Reach thousands of South African homeschooling families. List your services on our dedicated directory — free to start.</p>
+                <button
+                  className={`sah-become-btn${plansVisible ? " active" : ""}`}
+                  onClick={handleBecomeProvider}
+                >
+                  <i className="fas fa-store" />
+                  {plansVisible ? "Hide Packages" : "Become a Service Provider"}
+                  <i className="fas fa-chevron-down sah-chev" />
+                </button>
               </div>
             </div>
 
-            {/* Plan cards */}
-            <div className="sah-hero-plans-wrap" id="sah-list">
-              <div className="sah-hero-plans-grid">
-                {PLANS.map(plan => (
-                  <PlanCard key={plan.id} plan={plan} openId={openPlanId} onToggle={togglePlan} allOpen={allPlansOpen} />
-                ))}
+            {/* PLANS */}
+            <div className={`sah-hero-plans-wrap${plansVisible ? " open" : ""}`}>
+              <div className="sah-hero-plans-inner">
+                <div className="sah-hero-plans-grid-outer">
+                  <div className="sah-hero-plans-grid">
+                    {PLANS.map(plan => (
+                      <PlanCard key={plan.id} plan={plan} openId={openPlanId} onToggle={togglePlan} allOpen={allPlansOpen} />
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ── FILTER BAR ─────────────────────────────────────────────────────── */}
+      {/* FILTER BAR */}
       <div className="sah-filter-bar">
         <div className="sah-container">
           <div className="sah-filter-bar-row">
             <span className="sah-filter-label">Browse:</span>
             {FILTER_PILLS.map(pill => (
-              <button
-                key={pill.cat}
-                className={`sah-fpill${activeCat === pill.cat ? " active" : ""}`}
-                onClick={() => filterCat(pill.cat)}
-              >
+              <button key={pill.cat} className={`sah-fpill${activeCat === pill.cat ? " active" : ""}`}
+                onClick={() => filterCat(pill.cat)}>
                 {pill.icon && <i className={`fas ${pill.icon}`} />} {pill.label}
               </button>
             ))}
@@ -825,62 +722,100 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* ── PROVIDERS ──────────────────────────────────────────────────────── */}
+      {/* PROVIDERS SECTION */}
       <section className="sah-providers-section" id="sah-providers">
         <div className="sah-container">
           <div className="sah-sec-header">
             <div>
               <span className="sah-sec-eyebrow">Service Providers</span>
-              <h2>Recently Added Providers</h2>
+              <h2>
+                {featuredSlotCount > 0
+                  ? `${featuredSlotCount} Spotlight Provider${featuredSlotCount > 1 ? "s" : ""} + More`
+                  : "Recently Added Providers"}
+              </h2>
             </div>
             <div className="sah-sec-right">
-              {providers.length > 4 && !showAllProviders && (
-                <button className="sah-link-btn" onClick={() => setShowAllProviders(true)}>
+              {providers.length > 8 && !showAll && (
+                <button className="sah-link-btn" onClick={() => setShowAll(true)}>
                   Show all {providers.length} providers →
                 </button>
               )}
-              {showAllProviders && providers.length > 4 && (
-                <button className="sah-link-btn" onClick={() => setShowAllProviders(false)}>
-                  ← Show fewer
-                </button>
+              {showAll && providers.length > 8 && (
+                <button className="sah-link-btn" onClick={() => setShowAll(false)}>← Show fewer</button>
               )}
             </div>
           </div>
-          <div className="sah-provider-grid">
-            {providers.length === 0 ? (
+
+          {/* Featured slot banner */}
+          {featuredSlotCount > 0 && (
+            <div className="sah-featured-banner">
+              <i className="fas fa-star" />
+              <span>
+                <strong>{featuredSlotCount} Spotlight Provider{featuredSlotCount > 1 ? "s" : ""}</strong> — admin-featured and shown first
+              </span>
+            </div>
+          )}
+
+          {/* If there are featured-slot providers, show dividers */}
+          {providers.length === 0 ? (
+            <div className="sah-provider-grid">
               <div className="sah-grid-empty">
                 <i className="fas fa-search" />
                 <h3>No providers found</h3>
                 <p>Be the first to list — it's free.</p>
                 <br />
-                <Link to="/register" className="sah-hero-cta-btn" style={{ fontSize: "0.88rem" }}>
+                <button className="sah-plan-cta-link" onClick={() => setRegModal(true)} style={{ marginTop:12 }}>
                   <i className="fas fa-plus" /> Add Your Listing
-                </Link>
+                </button>
               </div>
-            ) : (
-              (showAllProviders ? providers : providers.slice(0, 4)).map(p => (
-                <ProviderCard key={p.id} p={p} onView={viewProfile} />
-              ))
-            )}
-          </div>
+            </div>
+          ) : (
+            <>
+              {/* Spotlight providers first */}
+              {featuredSlotCount > 0 && (
+                <>
+                  <div className="sah-section-label">
+                    <i className="fas fa-star" style={{ color:"var(--accent)" }} /> Spotlight Providers
+                  </div>
+                  <div className="sah-provider-grid" style={{ marginBottom: 28 }}>
+                    {featuredSlotProviders.map(p => (
+                      <ProviderCard key={p.id} p={p} onView={viewProfile} />
+                    ))}
+                  </div>
+                  <div className="sah-section-label">
+                    <i className="fas fa-list" style={{ color:"#999" }} /> All Providers
+                  </div>
+                </>
+              )}
+              {/* All (or non-featured if split) */}
+              <div className="sah-provider-grid">
+                {(featuredSlotCount > 0
+                  ? (showAll ? providers.filter(p => !p._inFeaturedSlot) : providers.filter(p => !p._inFeaturedSlot).slice(0, 8))
+                  : displayed
+                ).map(p => (
+                  <ProviderCard key={p.id} p={p} onView={viewProfile} />
+                ))}
+              </div>
+            </>
+          )}
         </div>
       </section>
 
-      {/* ── HOW IT WORKS ───────────────────────────────────────────────────── */}
+      {/* HOW IT WORKS */}
       <section className="sah-how-section" id="sah-how">
         <div className="sah-container">
           <div className="sah-how-header">
             <span className="sah-sec-eyebrow">How It Works</span>
-            <h2 style={{ fontFamily: "'Playfair Display',serif", fontSize: "clamp(1.5rem,3vw,2rem)", fontWeight: 800, color: "var(--dark)" }}>
+            <h2 style={{ fontFamily:"'Playfair Display',serif", fontSize:"clamp(1.5rem,3vw,2rem)", fontWeight:800, color:"var(--dark)" }}>
               Get Listed in Four Simple Steps
             </h2>
           </div>
           <div className="sah-steps-grid">
             {[
-              { n: "01", t: "Create Your Profile", d: "Complete our registration: your details, services, location, qualifications, pricing and availability." },
-              { n: "02", t: "Get Verified", d: "Our team reviews your credentials to ensure quality and trust for all homeschooling families on the platform." },
-              { n: "03", t: "Appear in Search", d: "Your listing goes live. Families searching your area and subject will find and contact you directly." },
-              { n: "04", t: "Grow Your Reach", d: "Upgrade to the Deluxe Package for homepage placement, a 3-month campaign, analytics dashboard and newsletter exposure." },
+              { n:"01", t:"Create Your Profile", d:"Complete our registration: your details, services, location, qualifications, pricing and availability." },
+              { n:"02", t:"Get Verified", d:"Our team reviews your credentials to ensure quality and trust for all homeschooling families on the platform." },
+              { n:"03", t:"Appear in Search", d:"Your listing goes live. Families searching your area and subject will find and contact you directly." },
+              { n:"04", t:"Grow Your Reach", d:"Upgrade to the Deluxe Package for homepage placement, a 3-month campaign, analytics dashboard and newsletter exposure." },
             ].map(s => (
               <div key={s.n} className="sah-step">
                 <span className="sah-step-num">{s.n}</span>
@@ -892,7 +827,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── FOOTER ─────────────────────────────────────────────────────────── */}
+      {/* FOOTER */}
       <footer className="sah-footer">
         <div className="sah-container">
           <div className="sah-footer-grid">
@@ -914,9 +849,9 @@ export default function HomePage() {
               <li><a href="#sah-providers">Online Schools</a></li>
             </ul></div>
             <div className="sah-footer-col"><h4>For Providers</h4><ul>
-              <li><a href="#sah-list">List a Service</a></li>
-              <li><a href="#sah-list">Pricing Plans</a></li>
-              <li><Link to="/login">Provider Login</Link></li>
+              <li><a href="#sah-plans-anchor" onClick={handleBecomeProvider}>List a Service</a></li>
+              <li><a href="#sah-plans-anchor" onClick={handleBecomeProvider}>Pricing Plans</a></li>
+              <li><button className="sah-link-btn" style={{ color:"rgba(255,255,255,0.55)", fontWeight:400 }} onClick={() => setLoginModal(true)}>Provider Login</button></li>
               <li><a href="#sah-how">Verification Process</a></li>
             </ul></div>
             <div className="sah-footer-col"><h4>SA Homeschooling</h4><ul>
@@ -927,29 +862,22 @@ export default function HomePage() {
             </ul></div>
           </div>
           <div className="sah-footer-trust">
-            {[["fa-shield-alt", "All providers manually verified"], ["fa-lock", "Secure & private enquiries"], ["fa-star", "4.9 average provider rating"]].map(([ic, txt]) => (
+            {[["fa-shield-alt","All providers manually verified"],["fa-lock","Secure & private enquiries"],["fa-star","4.9 average provider rating"]].map(([ic,txt]) => (
               <div key={txt} className="sah-footer-trust-item"><i className={`fas ${ic}`} /> {txt}</div>
             ))}
-            <div className="sah-footer-trust-item" style={{ marginLeft: "auto" }}>
+            <div className="sah-footer-trust-item" style={{ marginLeft:"auto" }}>
               <i className="fas fa-map-marker-alt" />
-              <span><strong style={{ color: "rgba(255,255,255,0.65)" }}>OUR OFFICE:</strong> Tshimologong Digital Precinct, 41 Juta Street, Braamfontein, Johannesburg, South Africa</span>
+              <span><strong style={{ color:"rgba(255,255,255,0.65)" }}>OFFICE:</strong> Tshimologong, 41 Juta Street, Braamfontein, Johannesburg</span>
             </div>
           </div>
           <div className="sah-footer-bottom">
             <p>&copy; 2025 SA Homeschooling Directory. All rights reserved.</p>
             <div className="sah-footer-bottom-links">
               <a href="https://sahomeschooling.com/privacy-policy-for-sa-homeschooling-beyond/" target="_blank" rel="noreferrer">Privacy</a>
-              {["Terms", "Cookies", "Sitemap"].map(l => (
-                <Link key={l} to={`/${l.toLowerCase()}`}>{l}</Link>
-              ))}
+              {["Terms","Cookies","Sitemap"].map(l => <Link key={l} to={`/${l.toLowerCase()}`}>{l}</Link>)}
             </div>
             <div className="sah-footer-socials">
-              {[
-                ["fab fa-facebook-f", "https://www.facebook.com/SAHomeschoolingMagazine"],
-                ["fab fa-instagram", "https://www.instagram.com/sahomeschoolingmag"],
-                ["fab fa-linkedin-in", "https://www.linkedin.com"],
-                ["fab fa-x-twitter", "https://x.com/SAH_andBeyond"],
-              ].map(([ic, href]) => (
+              {[["fab fa-facebook-f","https://www.facebook.com/SAHomeschoolingMagazine"],["fab fa-instagram","https://www.instagram.com/sahomeschoolingmag"],["fab fa-linkedin-in","https://www.linkedin.com"],["fab fa-x-twitter","https://x.com/SAH_andBeyond"]].map(([ic,href]) => (
                 <a key={ic} href={href} className="sah-footer-soc" target="_blank" rel="noreferrer"><i className={ic} /></a>
               ))}
             </div>
@@ -957,29 +885,72 @@ export default function HomePage() {
         </div>
       </footer>
 
-      {/* ── LOGIN MODAL ────────────────────────────────────────────────────── */}
-      <div className={`sah-modal-overlay${loginModal ? " open" : ""}`} onClick={e => { if (e.target === e.currentTarget) setLoginModal(false); }}>
+      {/* ── REGISTER CHOOSER MODAL ── */}
+      <div className={`sah-modal-overlay${regModal ? " open" : ""}`} onClick={e => { if (e.target === e.currentTarget) setRegModal(false); }}>
         <div className="sah-modal-box">
           <div className="sah-modal-head">
-            <h2>Log In</h2>
-            <p>Access your provider dashboard</p>
-            <button className="sah-modal-close" onClick={() => setLoginModal(false)}><i className="fas fa-times" /></button>
+            <h2>Create an Account</h2>
+            <p>Choose how you'd like to join</p>
+            <button className="sah-modal-close" onClick={() => setRegModal(false)}><i className="fas fa-times" /></button>
           </div>
           <div className="sah-modal-body">
-            <div className="sah-fld"><label>Email Address</label><input type="email" value={loginEmail} onChange={e => setLoginEmail(e.target.value)} placeholder="you@example.co.za" /></div>
-            <div className="sah-fld"><label>Password</label><input type="password" value={loginPass} onChange={e => setLoginPass(e.target.value)} placeholder="Your password" /></div>
-            <div style={{ textAlign: "right", marginBottom: 6 }}>
-              <button className="sah-link-btn" style={{ fontSize: "0.8rem", color: "var(--accent)", fontWeight: 600 }}>Forgot password?</button>
+            <div className="sah-reg-options">
+              <Link to="/register/user" className="sah-reg-opt" onClick={() => setRegModal(false)}>
+                <div className="sah-reg-opt-icon user"><i className="fas fa-user" /></div>
+                <div>
+                  <div className="sah-reg-opt-title">I'm a Parent / Family</div>
+                  <div className="sah-reg-opt-desc">Email + password only — browse all provider profiles</div>
+                </div>
+                <i className="fas fa-chevron-right" style={{ marginLeft:"auto", color:"#ccc", fontSize:"0.8rem" }} />
+              </Link>
+              <Link to="/register/provider" className="sah-reg-opt" onClick={() => setRegModal(false)}>
+                <div className="sah-reg-opt-icon provider"><i className="fas fa-store" /></div>
+                <div>
+                  <div className="sah-reg-opt-title">I'm a Service Provider</div>
+                  <div className="sah-reg-opt-desc">Full profile — tutor, therapist, school, curriculum etc.</div>
+                </div>
+                <i className="fas fa-chevron-right" style={{ marginLeft:"auto", color:"#ccc", fontSize:"0.8rem" }} />
+              </Link>
             </div>
-            <button className="sah-modal-btn" onClick={handleLogin}>Log In</button>
-            <div className="sah-modal-switch">New here? <Link to="/register">Create a free account</Link></div>
+            <div className="sah-modal-switch">
+              Already have an account? <button className="sah-link-btn" onClick={() => { setRegModal(false); setLoginModal(true); }}>Log in</button>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* ── TOAST ──────────────────────────────────────────────────────────── */}
+      {/* ── LOGIN MODAL ── */}
+      <div className={`sah-modal-overlay${loginModal ? " open" : ""}`} onClick={e => { if (e.target === e.currentTarget) setLoginModal(false); }}>
+        <div className="sah-modal-box">
+          <div className="sah-modal-head">
+            <h2>Log In</h2>
+            <p>Access your account</p>
+            <button className="sah-modal-close" onClick={() => setLoginModal(false)}><i className="fas fa-times" /></button>
+          </div>
+          <div className="sah-modal-body">
+            <div className="sah-fld">
+              <label>Email Address</label>
+              <input type="email" value={loginEmail} onChange={e => setLoginEmail(e.target.value)} placeholder="you@example.co.za" />
+            </div>
+            <div className="sah-fld">
+              <label>Password</label>
+              <input type="password" value={loginPass} onChange={e => setLoginPass(e.target.value)}
+                placeholder="Your password" onKeyDown={e => e.key === "Enter" && handleLogin()} />
+            </div>
+            <div style={{ textAlign:"right", marginBottom:6 }}>
+              <button className="sah-link-btn" style={{ fontSize:"0.8rem" }}>Forgot password?</button>
+            </div>
+            <button className="sah-modal-btn" onClick={handleLogin}>Log In</button>
+            <div className="sah-modal-switch">
+              New here? <button className="sah-link-btn" onClick={() => { setLoginModal(false); setRegModal(true); }}>Create a free account</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* TOAST */}
       <div className={`sah-toast${toast.show ? " show" : ""}`} style={{ background: toast.err ? "#b91c1c" : "var(--grey)" }}>
-        <i className="fas fa-check-circle" />
+        <i className={`fas ${toast.err ? "fa-exclamation-circle" : "fa-check-circle"}`} />
         <span>{toast.msg}</span>
       </div>
 

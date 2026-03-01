@@ -13,6 +13,94 @@ import { PLAN_LIMITS, DAYS_OF_WEEK, PRICING_MODELS, PROVINCES } from '../utils/c
 import { getPlanLimits } from '../utils/helpers';
 import '../assets/css/dashboard.css';
 
+// Add custom CSS for spacing
+const dashboardSpacingCSS = `
+  .profile-field {
+    margin-bottom: 24px !important;
+  }
+  
+  .inline-group {
+    display: flex;
+    gap: 24px !important;
+    margin-bottom: 24px !important;
+  }
+  
+  .inline-group > * {
+    flex: 1;
+  }
+  
+  .qualification-item {
+    margin-bottom: 24px !important;
+  }
+  
+  .service-item {
+    margin-bottom: 32px !important;
+    padding: 24px !important;
+    background: #f9f9f9;
+    border-radius: 12px;
+  }
+  
+  .days-multi {
+    margin-bottom: 16px !important;
+  }
+  
+  .contact-block {
+    margin-bottom: 24px !important;
+  }
+  
+  .contact-details {
+    display: flex;
+    gap: 12px !important;
+    margin-top: 12px !important;
+  }
+  
+  .contact-details input,
+  .contact-details span {
+    padding: 8px 12px !important;
+  }
+  
+  .social-links-preview {
+    margin-top: 12px !important;
+  }
+  
+  .reviews-section {
+    margin-top: 32px !important;
+    margin-bottom: 24px !important;
+  }
+  
+  .review-item {
+    margin-bottom: 16px !important;
+    padding: 16px !important;
+    background: #f5f5f5;
+    border-radius: 8px;
+  }
+  
+  .section-label {
+    margin: 32px 0 16px 0 !important;
+    padding-bottom: 8px !important;
+    border-bottom: 1px solid #e0e0e0;
+  }
+  
+  .profile-field input,
+  .profile-field select,
+  .profile-field textarea {
+    margin-top: 6px !important;
+  }
+  
+  .add-service-btn {
+    margin-right: 16px !important;
+  }
+  
+  .service-counter {
+    margin-left: 8px !important;
+  }
+  
+  .card-footer {
+    margin-top: 32px !important;
+    padding-top: 24px !important;
+  }
+`;
+
 // ── Read/write the logged-in provider's data from localStorage ──
 function getCurrentUser() {
   try { return JSON.parse(localStorage.getItem('sah_current_user') || 'null'); }
@@ -364,6 +452,10 @@ const ClientDashboard = () => {
     const stored = currentUser.id ? getProviderById(currentUser.id) : null;
     if (stored) {
       setProfileData({ ...EMPTY_PROFILE, ...stored });
+      // Set photo preview if exists
+      if (stored.profilePhoto) {
+        setPhotoPreview(stored.profilePhoto);
+      }
     } else {
       setProfileData(prev => ({
         ...prev,
