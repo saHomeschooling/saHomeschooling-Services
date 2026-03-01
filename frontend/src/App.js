@@ -3,6 +3,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 import Login from './pages/Login';
 import Registration from './pages/Registration';
+import Registration from './pages/UserRegister';
 import './App.css';
 import HomePage from './pages/HomePage';
 import AdminDashboard from './pages/AdminDashboard';
@@ -20,6 +21,8 @@ function App() {
             <Route path="/client-dashboard" element={<ClientDashboard />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Registration />} />
+            <Route path="/register/user" element={<UserRegister />} />
+            <Route path="/register/provider" element={<Registration />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
