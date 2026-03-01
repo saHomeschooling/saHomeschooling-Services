@@ -298,7 +298,32 @@ const CSS = `
   }
 `;
 
-/* ─── FEATURED SLOT HELPERS — restored from old code ───────────────────────── */
+/* ─── SEED DATA ─────────────────────────────────────────────────────────────── */
+const SEED = [
+  { id:"s1",name:"STEM Mastery Tutors",category:"tutor",location:"Johannesburg, Gauteng",delivery:"Online & In-person",image:"https://images.unsplash.com/photo-1522202176988-66273c2b033f?w=600&auto=format&fit=crop&q=75",priceFrom:"R280/hr",badge:"featured",rating:4.9,reviewCount:62,tier:"featured",registered:"2025-01-10T08:00:00Z",status:"approved",primaryCategory:"Tutor",city:"Johannesburg",province:"Gauteng",deliveryMode:"Online & In-person",bio:"Specialist STEM tutors for Grades 8–12.",tags:["Mathematics","Physical Sciences","Life Sciences","Grades 8–12"],ageGroups:["11–13","14–18"],startingPrice:"R280/hr",availabilityDays:["Mon","Tue","Wed","Thu","Fri"],phone:"+27 11 000 1111",contactEmail:"info@stemmastery.co.za",certifications:"SACE Registered",listingPlan:"featured",reviews:{average:4.9,count:62,items:[{reviewer:"Nomsa P.",rating:5,text:"My son went from 40% to 82% in Maths."}]} },
+  { id:"s2",name:"Creative Minds Curriculum",category:"curriculum",location:"Cape Town, Western Cape",delivery:"Online",image:"https://images.unsplash.com/photo-1509062522246-3755977927d7?w=600&auto=format&fit=crop&q=75",priceFrom:"R4 200/term",badge:"verified",rating:5.0,reviewCount:34,tier:"pro",registered:"2025-01-12T09:00:00Z",status:"approved",primaryCategory:"Curriculum Provider",city:"Cape Town",province:"Western Cape",deliveryMode:"Online",bio:"Award-winning home education curriculum.",tags:["CAPS Aligned","Full Curriculum","Gr R–12"],ageGroups:["5–7","8–10","11–13","14–18"],startingPrice:"R4 200/term",phone:"+27 21 000 2222",contactEmail:"hello@creativeminds.co.za",certifications:"Umalusi Accredited",listingPlan:"pro",reviews:{average:5.0,count:34,items:[{reviewer:"Riana V.",rating:5,text:"Best investment for our homeschool journey."}]} },
+  { id:"s3",name:"EduTherapy SA",category:"therapist",location:"Durban, KwaZulu-Natal",delivery:"Hybrid",image:"https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=600&auto=format&fit=crop&q=75",priceFrom:"R650/session",badge:"featured",rating:4.8,reviewCount:47,tier:"featured",registered:"2025-01-14T10:00:00Z",status:"approved",primaryCategory:"Therapist",city:"Durban",province:"KwaZulu-Natal",deliveryMode:"Hybrid",bio:"Educational therapists specialising in learning differences.",tags:["OT","ADHD","Dyslexia","Learning Support"],ageGroups:["5–7","8–10","11–13"],startingPrice:"R650/session",phone:"+27 31 000 3333",contactEmail:"bookings@edutherapy.co.za",certifications:"HPCSA Registered",listingPlan:"featured",reviews:{average:4.8,count:47,items:[{reviewer:"Lerato M.",rating:5,text:"Transformed our daughter's confidence."}]} },
+  { id:"s4",name:"Future Leaders Academy",category:"school",location:"Online — National",delivery:"Online",image:"https://images.unsplash.com/photo-1529390079861-591de3547d13?w=600&auto=format&fit=crop&q=75",priceFrom:"Custom quote",badge:"new",rating:4.7,reviewCount:18,tier:"pro",registered:"2025-01-16T11:00:00Z",status:"approved",primaryCategory:"Online / Hybrid School",city:"Online",province:"Gauteng",deliveryMode:"Online",bio:"A fully accredited online school.",tags:["Online School","Live Classes","National","Accredited"],ageGroups:["8–10","11–13","14–18"],startingPrice:"Contact for quote",phone:"+27 10 000 4444",contactEmail:"enrol@futureleaders.co.za",certifications:"Umalusi Registered",listingPlan:"pro",reviews:{average:4.7,count:18,items:[{reviewer:"Sipho K.",rating:5,text:"Our kids thrive in the structure."}]} },
+  { id:"khan",name:"Khan Academy SA",category:"curriculum",location:"Johannesburg, Gauteng",delivery:"Online",image:"https://images.unsplash.com/photo-1501504905252-473c47e087f8?w=600&auto=format&fit=crop&q=75",priceFrom:"Free",badge:"featured",rating:4.9,reviewCount:156,tier:"featured",registered:"2025-01-01T00:00:00Z",status:"approved",primaryCategory:"Curriculum Provider",city:"Johannesburg",province:"Gauteng",deliveryMode:"Online",bio:"Free world-class education for anyone.",tags:["Mathematics","Science","Online Learning","Free"],ageGroups:["5–7","8–10","11–13","14–18"],startingPrice:"Free",phone:"+27 11 555 1234",contactEmail:"support@khanacademy.org.za",email:"contact@khanacademy.org.za",certifications:"Khan Academy Certified",listingPlan:"featured",reviews:{average:4.9,count:156,items:[{reviewer:"Sarah J.",rating:5,text:"Excellent resource for homeschool."}]} },
+];
+
+const CAT_ICON = { tutor:"fa-chalkboard-teacher", therapist:"fa-heart", curriculum:"fa-book-open", school:"fa-school", consultant:"fa-user-tie", extracurricular:"fa-palette" };
+const TIER_LBL = { featured:"Deluxe Package", pro:"Trusted Provider", free:"Community Member" };
+const MAX_FEATURED_SLOTS = 4;
+
+const PLANS = [
+  { id:"community", name:"Community Member", desc:"Basic profile — always free", price:"R0", highlight:false,
+    features:[{text:"Public profile listing",yes:true},{text:"1 service category",yes:true},{text:"Basic contact form",yes:true},{text:"No direct contact details",yes:false},{text:"No featured placement",yes:false}],
+    cta:"Get Started Free", planParam:"Free Listing – basic profile" },
+  { id:"trusted", name:"Trusted Provider", desc:"Full profile + direct contact details", price:"R149", highlight:true,
+    features:[{text:"Everything in Community",yes:true},{text:"Direct phone & email visible",yes:true},{text:"Up to 3 service categories",yes:true},{text:"Verified badge on profile",yes:true},{text:"Priority in search results",yes:true}],
+    cta:"Start Trusted Plan", planParam:"Professional Listing – R149/month" },
+  { id:"featured", name:"Deluxe Package", desc:"3-month campaign · maximum exposure", price:"R399", highlight:false,
+    features:[{text:"24x Billboard banners",yes:true},{text:"24x Leaderboard banners",yes:true},{text:"24x Skyscrapers / side panels",yes:true},{text:"1x Business listing",yes:true},{text:"6x Newsletter banner ads",yes:true},{text:"6x Facebook post / reel",yes:true},{text:"6x Instagram posts / reels",yes:true},{text:"4x Newsletter ad posting",yes:true},{text:"2x Full page ad in PDF per magazine",yes:true},{text:"1x Native article per month",yes:true}],
+    cta:"Get the Deluxe Package", planParam:"Deluxe Package – R399/month" },
+];
+
+/* ─── FEATURED SLOT HELPERS ─────────────────────────────────────────────────── */
 function getFeaturedSlotProviderIds() {
   try {
     const slots = JSON.parse(localStorage.getItem("sah_featured_slots") || "[]");
@@ -430,21 +455,18 @@ const PLANS = [
 /* ─── GET ALL PROVIDERS — featured slots FIRST (restored from old code) ─────── */
 function getAll() {
   try {
-    const stored = JSON.parse(localStorage.getItem("sah_providers") || "[]");
-    const allRaw = [...stored, ...SEED].filter(p => (p.status || "approved") === "approved");
+    const stored   = JSON.parse(localStorage.getItem("sah_providers") || "[]");
+    const allRaw   = [...stored, ...SEED].filter(p => (p.status || "approved") === "approved");
     const seen = new Set();
-    const all = allRaw.filter(p => { if (seen.has(p.id)) return false; seen.add(p.id); return true; });
-
+    const all  = allRaw.filter(p => { if (seen.has(p.id)) return false; seen.add(p.id); return true; });
     const slotIds   = getFeaturedSlotProviderIds();
     const slotNames = getFeaturedSlotProviderNames();
     const slotIdSet = new Set(slotIds.map(s => s.id));
-
     const marked = all.map(p => {
       const inSlotById   = slotIdSet.has(p.id);
       const inSlotByName = slotNames.includes(p.name);
       return { ...p, _inFeaturedSlot: inSlotById || inSlotByName };
     });
-
     return marked.sort((a, b) => {
       if (a._inFeaturedSlot && !b._inFeaturedSlot) return -1;
       if (!a._inFeaturedSlot && b._inFeaturedSlot)  return 1;
@@ -458,7 +480,6 @@ function getAll() {
 
 function starsStr(r) { return "★".repeat(Math.floor(r)) + (r % 1 >= 0.5 ? "½" : ""); }
 
-/* ─── SUB-COMPONENTS ─────────────────────────────────────────────────────── */
 function Badge({ badge, inSlot }) {
   if (inSlot) return (
     <span className="sah-cbadge sah-cbadge-spotlight">
@@ -561,7 +582,6 @@ function PlanCard({ plan, openId, onToggle, allOpen }) {
   );
 }
 
-/* ─── MAIN COMPONENT ─────────────────────────────────────────────────────── */
 export default function HomePage() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm]     = useState("");
@@ -575,9 +595,8 @@ export default function HomePage() {
   const [plansVisible, setPlansVisible] = useState(false);
   const [regModal, setRegModal]         = useState(false);
   const [nlEmail, setNlEmail]           = useState("");
-  const [nlMsg, setNlMsg]               = useState({ text:"", type:"" });
-  const [toast, setToast]               = useState({ show:false, msg:"", err:false });
-  // ── Restored from old code: count providers in featured slots for banner
+  const [nlMsg, setNlMsg]               = useState({ text: "", type: "" });
+  const [toast, setToast]               = useState({ show: false, msg: "", err: false });
   const [featuredSlotCount, setFeaturedSlotCount] = useState(0);
 
   useEffect(() => {
@@ -598,7 +617,8 @@ export default function HomePage() {
   useEffect(() => {
     const all = getAll();
     setProviders(all);
-    setFeaturedSlotCount(all.filter(p => p._inFeaturedSlot).length);
+    const featCount = all.filter(p => p._inFeaturedSlot).length;
+    setFeaturedSlotCount(Math.min(featCount, MAX_FEATURED_SLOTS));
   }, []);
 
   const showToast = useCallback((msg, err = false) => {
@@ -649,6 +669,57 @@ export default function HomePage() {
 
   const viewProfile = (id) => { navigate("/profile?id=" + id); };
 
+  const logAuthEvent = (email, role, event) => {
+    try {
+      const logs = JSON.parse(localStorage.getItem("sah_auth_logs") || "[]");
+      logs.unshift({ email, role, event, timestamp: new Date().toISOString() });
+      localStorage.setItem("sah_auth_logs", JSON.stringify(logs.slice(0, 500)));
+    } catch {}
+  };
+
+  const handleLogin = () => {
+    const email = loginEmail.trim().toLowerCase();
+    if (!email) { showToast("Please enter your email.", true); return; }
+
+    if (email === "admin@sahomeschooling.co.za" && loginPass === "admin123") {
+      localStorage.setItem("sah_current_user", JSON.stringify({ role: "admin", email }));
+      logAuthEvent(email, "ADMIN", "LOGIN");
+      setLoginModal(false);
+      showToast("Admin login! Redirecting…");
+      setTimeout(() => navigate("/admin-dashboard"), 1000);
+      return;
+    }
+
+    const users = JSON.parse(localStorage.getItem("sah_users") || "[]");
+    const matchUser = users.find(u => u.email?.toLowerCase() === email);
+    if (matchUser) {
+      const updatedUsers = users.map(u => u.email?.toLowerCase() === email ? { ...u, lastLogin: new Date().toISOString() } : u);
+      localStorage.setItem("sah_users", JSON.stringify(updatedUsers));
+      localStorage.setItem("sah_current_user", JSON.stringify({ role: "user", email, id: matchUser.id }));
+      localStorage.setItem("sah_token", "local_" + matchUser.id);
+      logAuthEvent(email, "USER", "LOGIN");
+      setLoginModal(false);
+      showToast("Welcome back!");
+      setTimeout(() => navigate("/"), 800);
+      return;
+    }
+
+    const stored = JSON.parse(localStorage.getItem("sah_providers") || "[]");
+    const matchProv = stored.find(p => (p.email || "").toLowerCase() === email);
+    if (matchProv) {
+      const updated = stored.map(p => (p.email || "").toLowerCase() === email ? { ...p, lastLogin: new Date().toISOString() } : p);
+      localStorage.setItem("sah_providers", JSON.stringify(updated));
+      localStorage.setItem("sah_current_user", JSON.stringify({ role: "client", email, id: matchProv.id, name: matchProv.name }));
+      logAuthEvent(email, "PROVIDER", "LOGIN");
+      setLoginModal(false);
+      showToast("Welcome back, " + matchProv.name + "!");
+      setTimeout(() => navigate("/client-dashboard"), 1000);
+      return;
+    }
+
+    showToast("Account not found. Please register first.", true);
+  };
+
   const handleNewsletter = () => {
     const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(nlEmail.trim());
     if (!nlEmail.trim() || !valid) {
@@ -669,12 +740,12 @@ export default function HomePage() {
     { cat:"extracurricular",label:"Enrichment",   icon:"fa-palette" },
   ];
 
-  const displayedProviders = showAllProviders ? providers : providers.slice(0, 4);
+  const featuredSlotProviders = providers.filter(p => p._inFeaturedSlot).slice(0, MAX_FEATURED_SLOTS);
+  const regularProviders = providers.filter(p => !p._inFeaturedSlot);
+  const displayed = showAll ? providers : [...featuredSlotProviders, ...regularProviders.slice(0, Math.max(0, 8 - featuredSlotProviders.length))];
 
   return (
     <div className="sah-wrap">
-
-      {/* HEADER */}
       <header className="sah-header">
         <div className="sah-container sah-nav-inner">
           <Link to="/" className="sah-brand">
@@ -699,7 +770,6 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* HERO */}
       <section className="sah-hero">
         <div className="sah-hero-bg" />
         <div className="sah-container">
@@ -751,8 +821,6 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* ── PLANS ACCORDION — grid-template-rows slide from old code ── */}
-            <div id="sah-plans-anchor" />
             <div className={`sah-hero-plans-wrap${plansVisible ? " open" : ""}`}>
               <div className="sah-hero-plans-inner">
                 <div className="sah-hero-plans-grid-outer">
@@ -782,7 +850,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* FILTER BAR */}
       <div className="sah-filter-bar">
         <div className="sah-container">
           <div className="sah-filter-bar-row">
@@ -800,7 +867,6 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* PROVIDERS */}
       <section className="sah-providers-section" id="sah-providers">
         <div className="sah-container">
           <div className="sah-sec-header">
@@ -809,9 +875,9 @@ export default function HomePage() {
               <h2>Recently Added Providers</h2>
             </div>
             <div className="sah-sec-right">
-              {providers.length > 4 && !showAllProviders && (
-                <button className="sah-link-btn" onClick={() => setShowAllProviders(true)}>
-                  Show all {providers.length} providers →
+              {providers.length > 8 && !showAll && (
+                <button className="sah-link-btn" onClick={() => setShowAll(true)}>
+                  View all {providers.length} providers →
                 </button>
               )}
               {showAllProviders && providers.length > 4 && (
@@ -821,8 +887,18 @@ export default function HomePage() {
               )}
             </div>
           </div>
-          <div className="sah-provider-grid">
-            {providers.length === 0 ? (
+
+          {featuredSlotCount > 0 && (
+            <div className="sah-featured-banner">
+              <i className="fas fa-star" />
+              <span>
+                <strong>{featuredSlotCount} Spotlight Provider{featuredSlotCount > 1 ? "s" : ""}</strong> — admin-featured and shown first
+              </span>
+            </div>
+          )}
+
+          {providers.length === 0 ? (
+            <div className="sah-provider-grid">
               <div className="sah-grid-empty">
                 <i className="fas fa-search" />
                 <h3>No providers found</h3>
@@ -833,16 +909,36 @@ export default function HomePage() {
                   style={{ fontSize:"0.88rem", marginTop:"12px", textDecoration:"none" }}
                 >
                   <i className="fas fa-plus" /> Add Your Listing
-                </Link>
+                </button>
               </div>
-            ) : (
-              displayedProviders.map(p => <ProviderCard key={p.id} p={p} onView={viewProfile} />)
-            )}
-          </div>
+            </div>
+          ) : (
+            <>
+              {featuredSlotCount > 0 && (
+                <>
+                  <div className="sah-section-label">
+                    <i className="fas fa-star" style={{ color:"var(--accent)" }} /> Spotlight Providers
+                  </div>
+                  <div className="sah-provider-grid" style={{ marginBottom: 28 }}>
+                    {featuredSlotProviders.map(p => (
+                      <ProviderCard key={p.id} p={p} onView={viewProfile} />
+                    ))}
+                  </div>
+                  <div className="sah-section-label">
+                    <i className="fas fa-list" style={{ color:"#999" }} /> All Providers
+                  </div>
+                </>
+              )}
+              <div className="sah-provider-grid">
+                {(showAll ? regularProviders : regularProviders.slice(0, Math.max(0, 8 - featuredSlotProviders.length))).map(p => (
+                  <ProviderCard key={p.id} p={p} onView={viewProfile} />
+                ))}
+              </div>
+            </>
+          )}
         </div>
       </section>
 
-      {/* HOW IT WORKS */}
       <section className="sah-how-section" id="sah-how">
         <div className="sah-container">
           <div className="sah-how-header">
@@ -868,7 +964,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* FOOTER */}
       <footer className="sah-footer">
         <div className="sah-container">
           <div className="sah-footer-grid">
@@ -947,11 +1042,7 @@ export default function HomePage() {
         </div>
       </footer>
 
-      {/* REGISTER CHOOSER MODAL */}
-      <div
-        className={`sah-modal-overlay${regModal ? " open" : ""}`}
-        onClick={e => { if (e.target === e.currentTarget) setRegModal(false); }}
-      >
+      <div className={`sah-modal-overlay${regModal ? " open" : ""}`} onClick={e => { if (e.target === e.currentTarget) setRegModal(false); }}>
         <div className="sah-modal-box">
           <div className="sah-modal-head">
             <h2>Create an Account</h2>
@@ -965,36 +1056,57 @@ export default function HomePage() {
               <Link to="/register/user" className="sah-reg-opt" onClick={() => setRegModal(false)}>
                 <div className="sah-reg-opt-icon user"><i className="fas fa-user" /></div>
                 <div>
-                  <div className="sah-reg-opt-title">I'm a User / Customer</div>
-                  <div className="sah-reg-opt-desc">Browse, search and save provider profiles</div>
+                  <div className="sah-reg-opt-title">Register as a User</div>
+                  <div className="sah-reg-opt-desc">Email + password only — browse all provider profiles</div>
                 </div>
                 <i className="fas fa-chevron-right" style={{ marginLeft:"auto", color:"#ccc", fontSize:"0.8rem" }} />
               </Link>
               <Link to="/register/provider" className="sah-reg-opt" onClick={() => setRegModal(false)}>
                 <div className="sah-reg-opt-icon provider"><i className="fas fa-store" /></div>
                 <div>
-                  <div className="sah-reg-opt-title">I'm a Service Provider</div>
-                  <div className="sah-reg-opt-desc">Create a full listing — tutor, therapist, school etc.</div>
+                  <div className="sah-reg-opt-title">Register as a Service Provider</div>
+                  <div className="sah-reg-opt-desc">Full profile — tutor, therapist, school, curriculum etc.</div>
                 </div>
                 <i className="fas fa-chevron-right" style={{ marginLeft:"auto", color:"#ccc", fontSize:"0.8rem" }} />
               </Link>
             </div>
             <div className="sah-modal-switch">
-              Already have an account?{" "}
-              <a href="#login" onClick={e => { e.preventDefault(); setRegModal(false); navigate('/login'); }}>
-                Log in
-              </a>
+              Already have an account? <button className="sah-link-btn" onClick={() => { setRegModal(false); setLoginModal(true); }}>Log in</button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* TOAST */}
-      <div
-        className={`sah-toast${toast.show ? " show" : ""}`}
-        style={{ background: toast.err ? "#b91c1c" : "var(--grey)" }}
-      >
-        <i className="fas fa-check-circle" />
+      <div className={`sah-modal-overlay${loginModal ? " open" : ""}`} onClick={e => { if (e.target === e.currentTarget) setLoginModal(false); }}>
+        <div className="sah-modal-box">
+          <div className="sah-modal-head">
+            <h2>Log In</h2>
+            <p>Access your account</p>
+            <button className="sah-modal-close" onClick={() => setLoginModal(false)}><i className="fas fa-times" /></button>
+          </div>
+          <div className="sah-modal-body">
+            <div className="sah-fld">
+              <label>Email Address</label>
+              <input type="email" value={loginEmail} onChange={e => setLoginEmail(e.target.value)} placeholder="you@example.co.za" />
+            </div>
+            <div className="sah-fld">
+              <label>Password</label>
+              <input type="password" value={loginPass} onChange={e => setLoginPass(e.target.value)}
+                placeholder="Your password" onKeyDown={e => e.key === "Enter" && handleLogin()} />
+            </div>
+            <div style={{ textAlign:"right", marginBottom:6 }}>
+              <button className="sah-link-btn" style={{ fontSize:"0.8rem" }}>Forgot password?</button>
+            </div>
+            <button className="sah-modal-btn" onClick={handleLogin}>Log In</button>
+            <div className="sah-modal-switch">
+              New here? <button className="sah-link-btn" onClick={() => { setLoginModal(false); setRegModal(true); }}>Create a free account</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className={`sah-toast${toast.show ? " show" : ""}`} style={{ background: toast.err ? "#b91c1c" : "var(--grey)" }}>
+        <i className={`fas ${toast.err ? "fa-exclamation-circle" : "fa-check-circle"}`} />
         <span>{toast.msg}</span>
       </div>
 
