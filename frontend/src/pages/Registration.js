@@ -348,7 +348,6 @@ const CSS = `
   .sah-spinner { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: sah-spin 0.7s linear infinite; }
   @keyframes sah-spin { to { transform: rotate(360deg); } }
 
-  /* Qual parsed success banner */
   .sah-qual-parsed {
     padding: 10px 14px; background: #ecfdf5; border-radius: 8px;
     border: 1px solid #a7f3d0; font-size: 0.8rem; color: #065f46;
@@ -372,14 +371,15 @@ const CSS = `
   }
 `;
 
+// ── Step 1 now has NO terms — step 1 desc updated accordingly ──
 const STEPS = [
-  { title: 'Select Plan', label: 'Select Plan', desc: 'Choose a listing plan and agree to terms', icon: 'fa-layer-group' },
-  { title: 'Account Setup', label: 'Account Setup', desc: 'Create your provider account credentials', icon: 'fa-user-circle' },
-  { title: 'Identity & Trust', label: 'Identity & Trust', desc: 'Build trust with your qualifications and bio', icon: 'fa-id-card' },
-  { title: 'Services Offered', label: 'Services Offered', desc: 'Tell families what you offer', icon: 'fa-briefcase' },
-  { title: 'Location & Reach', label: 'Location & Reach', desc: 'Where can you serve families?', icon: 'fa-map-marker-alt' },
-  { title: 'Pricing & Availability', label: 'Pricing', desc: 'Set your rates and schedule', icon: 'fa-calendar-alt' },
-  { title: 'Contact Details', label: 'Contact Details', desc: 'How families can reach you — final step', icon: 'fa-phone' },
+  { title: 'Select Plan',           label: 'Select Plan',      desc: 'Choose the listing plan that suits your business',      icon: 'fa-layer-group' },
+  { title: 'Account Setup',         label: 'Account Setup',    desc: 'Create your provider account credentials',              icon: 'fa-user-circle' },
+  { title: 'Identity & Trust',      label: 'Identity & Trust', desc: 'Build trust with your qualifications and bio',          icon: 'fa-id-card' },
+  { title: 'Services Offered',      label: 'Services Offered', desc: 'Tell families what you offer',                         icon: 'fa-briefcase' },
+  { title: 'Location & Reach',      label: 'Location & Reach', desc: 'Where can you serve families?',                       icon: 'fa-map-marker-alt' },
+  { title: 'Pricing & Availability',label: 'Pricing',          desc: 'Set your rates and schedule',                         icon: 'fa-calendar-alt' },
+  { title: 'Contact Details',       label: 'Contact Details',  desc: 'How families can reach you — agree to terms & submit', icon: 'fa-phone' },
 ];
 const TOTAL = STEPS.length;
 
@@ -438,11 +438,11 @@ const PRICING_UNIT_MAP = {
 const TIME_SLOT_REGEX = /^(\d{1,2}:\d{2}\s*[-–]\s*\d{1,2}:\d{2})(\s*,\s*\d{1,2}:\d{2}\s*[-–]\s*\d{1,2}:\d{2})*$/;
 
 const EXTRA_SOCIALS = [
-  { key: 'instagram', label: 'Instagram', icon: 'fab fa-instagram', placeholder: 'https://instagram.com/yourprofile' },
-  { key: 'linkedin', label: 'LinkedIn', icon: 'fab fa-linkedin-in', placeholder: 'https://linkedin.com/in/yourname' },
-  { key: 'tiktok', label: 'TikTok', icon: 'fab fa-tiktok', placeholder: 'https://tiktok.com/@yourhandle' },
-  { key: 'youtube', label: 'YouTube', icon: 'fab fa-youtube', placeholder: 'https://youtube.com/@yourchannel' },
-  { key: 'twitter', label: 'X / Twitter', icon: 'fab fa-x-twitter', placeholder: 'https://x.com/yourhandle' },
+  { key: 'instagram', label: 'Instagram',  icon: 'fab fa-instagram',  placeholder: 'https://instagram.com/yourprofile' },
+  { key: 'linkedin',  label: 'LinkedIn',   icon: 'fab fa-linkedin-in', placeholder: 'https://linkedin.com/in/yourname' },
+  { key: 'tiktok',    label: 'TikTok',     icon: 'fab fa-tiktok',      placeholder: 'https://tiktok.com/@yourhandle' },
+  { key: 'youtube',   label: 'YouTube',    icon: 'fab fa-youtube',     placeholder: 'https://youtube.com/@yourchannel' },
+  { key: 'twitter',   label: 'X / Twitter',icon: 'fab fa-x-twitter',   placeholder: 'https://x.com/yourhandle' },
 ];
 
 const FieldErr = ({ msg }) => msg
@@ -450,25 +450,25 @@ const FieldErr = ({ msg }) => msg
   : null;
 
 const Registration = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
+  const navigate  = useNavigate();
+  const location  = useLocation();
   const { register } = useAuth();
   const { showNotification } = useNotification();
 
-  const [step, setStep] = useState(1);
-  const [data, setData] = useState({ listingPlan: 'Free Listing – basic profile', terms: false });
+  const [step, setStep]               = useState(1);
+  // ── terms removed from initial state default; validated only on step 7 ──
+  const [data, setData]               = useState({ listingPlan: 'Free Listing – basic profile' });
   const [fieldErrors, setFieldErrors] = useState({});
-  const [showPw, setShowPw] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
+  const [showPw, setShowPw]           = useState(false);
+  const [submitting, setSubmitting]   = useState(false);
   const [showSecondary, setShowSecondary] = useState(false);
-  const [qualMode, setQualMode] = useState('text');
+  const [qualMode, setQualMode]       = useState('text');
   const [clearanceMode, setClearanceMode] = useState('text');
   const [timeSlotErr, setTimeSlotErr] = useState('');
   const [showSocialDropdown, setShowSocialDropdown] = useState(false);
   const [addedSocials, setAddedSocials] = useState([]);
-  // ── NEW: track parsed qualification filename ──
   const [parsedQualFileName, setParsedQualFileName] = useState('');
-  const topRef = useRef(null);
+  const topRef       = useRef(null);
   const socialDropRef = useRef(null);
 
   useEffect(() => {
@@ -517,53 +517,41 @@ const Registration = () => {
 
   const toggleServiceArea = (value) => {
     setData(p => {
-      const cur = p.serviceAreas || [];
+      const cur  = p.serviceAreas || [];
       const next = cur.includes(value) ? cur.filter(v => v !== value) : [...cur, value];
       return { ...p, serviceAreas: next };
     });
     setFieldErrors(prev => ({ ...prev, serviceAreas: '' }));
   };
 
-  const addSocial = (key) => {
-    if (!addedSocials.includes(key)) setAddedSocials(prev => [...prev, key]);
-    setShowSocialDropdown(false);
-  };
+  const addSocial    = (key) => { if (!addedSocials.includes(key)) setAddedSocials(prev => [...prev, key]); setShowSocialDropdown(false); };
+  const removeSocial = (key) => { setAddedSocials(prev => prev.filter(k => k !== key)); set(key, ''); };
 
-  const removeSocial = (key) => {
-    setAddedSocials(prev => prev.filter(k => k !== key));
-    set(key, '');
-  };
-
-  // ── Qualification file auto-parser ──
   const handleQualFileUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
     const nameWithoutExt = file.name.replace(/\.[^.]+$/, '');
     const segments = nameWithoutExt.replace(/[_\-\.]/g, ' ').replace(/\s+/g, ' ').trim();
     const lc = segments.toLowerCase();
     setParsedQualFileName(file.name);
-
-    const degreeKeywords = ['bed', 'bsc', 'ba ', 'honours', 'diploma', 'degree', 'masters', 'phd', 'med ', 'pgce', 'bachelor'];
-    const certKeywords = ['sace', 'umalusi', 'cert', 'accredited', 'registered'];
-    const memberKeywords = ['member', 'association', 'society', 'institute'];
-
+    const degreeKeywords = ['bed','bsc','ba ','honours','diploma','degree','masters','phd','med ','pgce','bachelor'];
+    const certKeywords   = ['sace','umalusi','cert','accredited','registered'];
+    const memberKeywords = ['member','association','society','institute'];
     const hasDegree = degreeKeywords.some(k => lc.includes(k));
-    const hasCert = certKeywords.some(k => lc.includes(k));
+    const hasCert   = certKeywords.some(k => lc.includes(k));
     const hasMember = memberKeywords.some(k => lc.includes(k));
-
     if (file.name.toLowerCase().endsWith('.txt')) {
       const reader = new FileReader();
       reader.onload = (ev) => {
         const text = ev.target.result;
         const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
-        const degLine = lines.find(l => degreeKeywords.some(k => l.toLowerCase().includes(k)));
-        const certLine = lines.find(l => certKeywords.some(k => l.toLowerCase().includes(k)));
+        const degLine    = lines.find(l => degreeKeywords.some(k => l.toLowerCase().includes(k)));
+        const certLine   = lines.find(l => certKeywords.some(k => l.toLowerCase().includes(k)));
         const memberLine = lines.find(l => memberKeywords.some(k => l.toLowerCase().includes(k)));
         setData(prev => ({
           ...prev,
-          qualDegree: degLine || prev.qualDegree || segments,
-          qualCerts: certLine || prev.qualCerts || '',
+          qualDegree:      degLine    || prev.qualDegree    || segments,
+          qualCerts:       certLine   || prev.qualCerts     || '',
           qualMemberships: memberLine || prev.qualMemberships || '',
         }));
       };
@@ -571,8 +559,8 @@ const Registration = () => {
     } else {
       setData(prev => ({
         ...prev,
-        qualDegree: hasDegree ? segments : (prev.qualDegree || segments),
-        qualCerts: hasCert ? segments : (prev.qualCerts || ''),
+        qualDegree:      hasDegree ? segments : (prev.qualDegree || segments),
+        qualCerts:       hasCert   ? segments : (prev.qualCerts  || ''),
         qualMemberships: hasMember ? segments : prev.qualMemberships,
       }));
     }
@@ -580,8 +568,9 @@ const Registration = () => {
 
   const validateStep = () => {
     const errs = {};
+    // ── Step 1: plan selection only — NO terms validation here ──
     if (step === 1) {
-      if (!data.terms) errs.terms = 'Please tick the box to agree to the Terms and Community Guidelines before continuing.';
+      // nothing required beyond selecting a plan (already pre-selected to free)
     }
     if (step === 2) {
       if (!data.fullName?.trim()) errs.fullName = 'Please enter your full name or business name.';
@@ -615,10 +604,12 @@ const Registration = () => {
         errs.timeSlots = 'Use the format HH:MM - HH:MM (e.g. 9:00 - 17:00).';
       }
     }
+    // ── Step 7: contact details + TERMS (moved here from step 1) ──
     if (step === 7) {
       if (!data.phoneLocal?.trim()) errs.phoneLocal = 'Please enter your phone number.';
       else if (data.phoneLocal.replace(/\D/g, '').length !== 9) errs.phoneLocal = 'Enter exactly 9 digits after +27.';
       if (!data.inquiryEmail?.trim() || !/^\S+@\S+\.\S+$/.test(data.inquiryEmail)) errs.inquiryEmail = 'Please enter a valid email address for enquiries.';
+      if (!data.terms) errs.terms = 'Please agree to the Terms and Community Guidelines before submitting.';
     }
     return errs;
   };
@@ -652,105 +643,64 @@ const Registration = () => {
       'Online / Hybrid School': 'school', 'Educational Consultant': 'consultant',
       'Extracurricular / Enrichment': 'extracurricular',
     };
-
-    const tier = planMap[data.listingPlan] || 'free';
-    const fullPhone = data.phoneLocal ? '+27' + data.phoneLocal.replace(/\D/g, '') : '';
-    const fullWhatsapp = data.whatsappLocal ? '+27' + data.whatsappLocal.replace(/\D/g, '') : fullPhone;
-    const priceUnit = PRICING_UNIT_MAP[data.pricingModel] || '';
-    const priceDisplay = data.startingPrice ? `R${data.startingPrice}${priceUnit}` : 'Contact';
-
-    // ── Qualifications — map parsed file data through to provider object ──
-    const qualDegree = data.qualDegree || '';
-    const qualCerts = data.qualCerts || '';
+    const tier          = planMap[data.listingPlan] || 'free';
+    const fullPhone     = data.phoneLocal    ? '+27' + data.phoneLocal.replace(/\D/g, '')    : '';
+    const fullWhatsapp  = data.whatsappLocal ? '+27' + data.whatsappLocal.replace(/\D/g, '') : fullPhone;
+    const priceUnit     = PRICING_UNIT_MAP[data.pricingModel] || '';
+    const priceDisplay  = data.startingPrice ? `R${data.startingPrice}${priceUnit}` : 'Contact';
+    const qualDegree    = data.qualDegree    || '';
+    const qualCerts     = data.qualCerts     || '';
     const qualMemberships = data.qualMemberships || '';
     const certificationsCombined = [qualDegree, qualCerts].filter(Boolean).join(' | ');
-
     let serviceAreaType = 'national';
     const svcAreas = data.serviceAreas || [];
     if (svcAreas.includes('Local') && svcAreas.length === 1) serviceAreaType = 'local';
     else if (svcAreas.includes('Online only') && svcAreas.length === 1) serviceAreaType = 'online';
     else if (svcAreas.includes('Local')) serviceAreaType = 'local';
-
     const services = [{
-      title: data.serviceTitle || '',
-      description: data.serviceDesc || '',
-      ageGroups: data.ageGroups || [],
-      deliveryMode: data.deliveryMode || 'Online',
-      subjects: data.subjects || '',
+      title: data.serviceTitle || '', description: data.serviceDesc || '',
+      ageGroups: data.ageGroups || [], deliveryMode: data.deliveryMode || 'Online', subjects: data.subjects || '',
     }];
-
     const newProvider = {
-      id: 'prov_' + Date.now(),
-      name: data.fullName || '',
-      email: data.email || '',
+      id: 'prov_' + Date.now(), name: data.fullName || '', email: data.email || '',
       accountType: data.accountType || 'Individual Provider',
-      plan: tier,
-      listingPlan: tier,
-      tier,
+      plan: tier, listingPlan: tier, tier,
       badge: tier === 'featured' ? 'featured' : tier === 'pro' ? 'verified' : null,
-      status: 'pending',
-      registered: new Date().toISOString(),
-      listingPublic: true,
-      publicToggle: true,
-      image: data.profilePhoto || null,
-      photo: data.profilePhoto || null,
-      category: catMap[data.primaryCat] || 'tutor',
-      primaryCategory: data.primaryCat || '',
+      status: 'pending', registered: new Date().toISOString(),
+      listingPublic: true, publicToggle: true,
+      image: data.profilePhoto || null, photo: data.profilePhoto || null,
+      category: catMap[data.primaryCat] || 'tutor', primaryCategory: data.primaryCat || '',
       secondaryCategories: data.secondaryCats || [],
-      bio: data.bio || '',
-      yearsExperience: data.experience || '',
-      // ── Qualifications — these come from either text input OR file auto-parse ──
-      degrees: qualDegree,
-      certifications: certificationsCombined,
-      qualCerts: qualCerts,
-      memberships: qualMemberships,
+      bio: data.bio || '', yearsExperience: data.experience || '',
+      degrees: qualDegree, certifications: certificationsCombined, qualCerts, memberships: qualMemberships,
       clearance: data.clearanceText || '',
       tags: data.subjects ? data.subjects.split(',').map(s => s.trim()).filter(Boolean) : [],
-      languages: data.languages || [],
-      services,
-      serviceTitle: data.serviceTitle || '',
-      serviceDesc: data.serviceDesc || '',
-      subjects: data.subjects || '',
-      ageGroups: data.ageGroups || [],
+      languages: data.languages || [], services,
+      serviceTitle: data.serviceTitle || '', serviceDesc: data.serviceDesc || '',
+      subjects: data.subjects || '', ageGroups: data.ageGroups || [],
       location: data.city ? `${data.city}, ${data.province}` : '',
-      city: data.city || '',
-      province: data.province || '',
-      delivery: data.deliveryMode || '',
-      deliveryMode: data.deliveryMode || '',
-      serviceAreas: svcAreas,
-      serviceAreaType,
+      city: data.city || '', province: data.province || '',
+      delivery: data.deliveryMode || '', deliveryMode: data.deliveryMode || '',
+      serviceAreas: svcAreas, serviceAreaType,
       radius: data.localRadiusNum ? `${data.localRadiusNum} ${data.localRadiusUnit || 'km'}` : '',
-      pricingModel: data.pricingModel || '',
-      startingPrice: priceDisplay,
-      priceFrom: priceDisplay,
+      pricingModel: data.pricingModel || '', startingPrice: priceDisplay, priceFrom: priceDisplay,
       availabilityDays: (data.daysAvailable || []).map(d => d.slice(0, 3)),
       availabilityNotes: data.timeSlots || '',
-      contactName: data.fullName || '',
-      phone: fullPhone,
-      whatsapp: fullWhatsapp,
+      contactName: data.fullName || '', phone: fullPhone, whatsapp: fullWhatsapp,
       contactEmail: data.inquiryEmail || data.email || '',
-      social: data.website || '',
-      website: data.website || '',
-      facebook: data.facebook || '',
-      rating: null,
-      reviewCount: 0,
-      reviews: { average: 0, count: 0, items: [] },
+      social: data.website || '', website: data.website || '', facebook: data.facebook || '',
+      rating: null, reviewCount: 0, reviews: { average: 0, count: 0, items: [] },
     };
-
     try {
       const existing = JSON.parse(localStorage.getItem('sah_providers') || '[]');
       existing.push(newProvider);
       localStorage.setItem('sah_providers', JSON.stringify(existing));
       localStorage.setItem('sah_current_user', JSON.stringify({
-        role: 'client',
-        email: newProvider.email,
-        id: newProvider.id,
-        name: newProvider.name,
-        plan: tier,
+        role: 'client', email: newProvider.email, id: newProvider.id, name: newProvider.name, plan: tier,
       }));
       showNotification?.('✅ Registration successful! Your profile is pending approval.', 'success');
       setTimeout(() => navigate('/client-dashboard'), 1800);
-    } catch (e) {
+    } catch {
       setFieldErrors({ _submit: 'Registration failed. Please try again.' });
       setSubmitting(false);
     }
@@ -758,65 +708,57 @@ const Registration = () => {
 
   const fe = fieldErrors;
 
+  // ── STEP 1: Plan selection only (NO terms) ──
   const renderPlanStep = () => (
-    <>
-      <div className="sah-plan-grid">
-        {PLANS.map(plan => {
-          const selected = data.listingPlan === plan.param;
-          return (
-            <div
-              key={plan.id}
-              className={`sah-plan-card${selected ? ' selected' : ''}`}
-              onClick={() => set('listingPlan', plan.param)}
-            >
-              <div className={`sah-plan-card-head${selected ? ' selected-bg' : ''}`}>
-                <div>
-                  <div className={`sah-plan-card-name${selected ? ' wt' : ''}`}>{plan.name}</div>
-                  <div className={`sah-plan-card-desc${selected ? ' wt' : ''}`}>{plan.desc}</div>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
-                  <div className="sah-plan-price-block">
-                    <div className={`sah-plan-price${selected ? ' wt' : ''}`}>
-                      {plan.price} <small className={selected ? 'wt' : ''}>/month</small>
-                    </div>
-                  </div>
-                  <input
-                    type="radio" className="sah-plan-radio"
-                    name="listingPlan" value={plan.param}
-                    checked={selected}
-                    onChange={() => set('listingPlan', plan.param)}
-                    onClick={e => e.stopPropagation()}
-                  />
-                </div>
+    <div className="sah-plan-grid">
+      {PLANS.map(plan => {
+        const selected = data.listingPlan === plan.param;
+        return (
+          <div
+            key={plan.id}
+            className={`sah-plan-card${selected ? ' selected' : ''}`}
+            onClick={() => set('listingPlan', plan.param)}
+          >
+            <div className={`sah-plan-card-head${selected ? ' selected-bg' : ''}`}>
+              <div>
+                <div className={`sah-plan-card-name${selected ? ' wt' : ''}`}>{plan.name}</div>
+                <div className={`sah-plan-card-desc${selected ? ' wt' : ''}`}>{plan.desc}</div>
               </div>
-              <div className="sah-plan-body">
-                <ul className="sah-plan-features">
-                  {plan.features.map((f, i) => (
-                    <li key={i} className={f.y ? '' : 'no'}>
-                      {f.y ? <i className="fas fa-check sah-ico-yes" /> : <i className="fas fa-times sah-ico-no" />}
-                      {f.t}
-                    </li>
-                  ))}
-                </ul>
-                <button
-                  className={`sah-plan-select-btn${selected ? ' selected' : ''}`}
-                  onClick={e => { e.stopPropagation(); set('listingPlan', plan.param); }}
-                >
-                  {selected ? <><i className="fas fa-check" /> Selected</> : plan.cta}
-                </button>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
+                <div className="sah-plan-price-block">
+                  <div className={`sah-plan-price${selected ? ' wt' : ''}`}>
+                    {plan.price} <small className={selected ? 'wt' : ''}>/month</small>
+                  </div>
+                </div>
+                <input
+                  type="radio" className="sah-plan-radio"
+                  name="listingPlan" value={plan.param}
+                  checked={selected}
+                  onChange={() => set('listingPlan', plan.param)}
+                  onClick={e => e.stopPropagation()}
+                />
               </div>
             </div>
-          );
-        })}
-      </div>
-      <label className={`sah-terms-row${data.terms ? ' checked' : ''}${fe.terms ? ' err-border' : ''}`}>
-        <input type="checkbox" checked={!!data.terms} onChange={e => set('terms', e.target.checked)} />
-        <span>
-          I agree to the <a href="/terms" target="_blank" rel="noreferrer">Terms and Community Guidelines</a> — by registering you confirm your details are accurate.
-        </span>
-      </label>
-      {fe.terms && <div className="sah-terms-err"><i className="fas fa-exclamation-circle" /> {fe.terms}</div>}
-    </>
+            <div className="sah-plan-body">
+              <ul className="sah-plan-features">
+                {plan.features.map((f, i) => (
+                  <li key={i} className={f.y ? '' : 'no'}>
+                    {f.y ? <i className="fas fa-check sah-ico-yes" /> : <i className="fas fa-times sah-ico-no" />}
+                    {f.t}
+                  </li>
+                ))}
+              </ul>
+              <button
+                className={`sah-plan-select-btn${selected ? ' selected' : ''}`}
+                onClick={e => { e.stopPropagation(); set('listingPlan', plan.param); }}
+              >
+                {selected ? <><i className="fas fa-check" /> Selected</> : plan.cta}
+              </button>
+            </div>
+          </div>
+        );
+      })}
+    </div>
   );
 
   const renderStep2 = () => (
@@ -841,7 +783,9 @@ const Registration = () => {
           <input type={showPw ? 'text' : 'password'} value={data.password || ''} placeholder="Min. 8 characters"
             className={fe.password ? 'err' : ''}
             onChange={e => set('password', e.target.value)} />
-          <button type="button" className="sah-pw-eye" onClick={() => setShowPw(s => !s)}><i className={`far fa-eye${showPw ? '-slash' : ''}`} /></button>
+          <button type="button" className="sah-pw-eye" onClick={() => setShowPw(s => !s)}>
+            <i className={`far fa-eye${showPw ? '-slash' : ''}`} />
+          </button>
         </div>
         <FieldErr msg={fe.password} />
       </div>
@@ -857,22 +801,17 @@ const Registration = () => {
     </div>
   );
 
-  // ── STEP 3: Identity & Trust — with improved qual file upload ──
   const renderStep3 = () => (
     <div className="sah-form-grid">
       <div className="sah-field">
         <label><i className="fas fa-upload" /> Profile Photo / Logo</label>
-        <input
-          type="file"
-          accept="image/*"
+        <input type="file" accept="image/*"
           onChange={e => {
-            const file = e.target.files[0];
-            if (!file) return;
+            const file = e.target.files[0]; if (!file) return;
             const reader = new FileReader();
             reader.onload = (ev) => { set('profilePhoto', ev.target.result); };
             reader.readAsDataURL(file);
-          }}
-        />
+          }} />
         {data.profilePhoto && (
           <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 12 }}>
             <img src={data.profilePhoto} alt="Profile preview"
@@ -889,7 +828,6 @@ const Registration = () => {
           </div>
         )}
       </div>
-
       <div className="sah-field">
         <label><i className="fas fa-hashtag" /> Years of Experience <em className="sah-req">*</em></label>
         <input type="number" value={data.experience ?? ''} placeholder="e.g. 8" min={0} max={60}
@@ -897,7 +835,6 @@ const Registration = () => {
           onChange={e => set('experience', e.target.value)} />
         <FieldErr msg={fe.experience} />
       </div>
-
       <div className="sah-field sah-full">
         <label><i className="fas fa-align-left" /> Short Bio (150–250 words) <em className="sah-req">*</em></label>
         <textarea value={data.bio || ''} placeholder="Tell families about your teaching philosophy, experience, and approach..."
@@ -905,8 +842,6 @@ const Registration = () => {
           onChange={e => set('bio', e.target.value)} />
         <FieldErr msg={fe.bio} />
       </div>
-
-      {/* ── QUALIFICATIONS with auto-fill file upload ── */}
       <div className="sah-field sah-full">
         <label><i className="fas fa-certificate" /> Qualifications / Certifications</label>
         <div className="sah-qual-tabs">
@@ -917,47 +852,37 @@ const Registration = () => {
             <i className="fas fa-upload" /> Upload File (auto-fill)
           </button>
         </div>
-
         {qualMode === 'text' ? (
           <div className="sah-qual-text-grid">
             <input type="text" value={data.qualDegree || ''} placeholder="Degree / Diploma (e.g. BEd Honours, Mathematics Education)" onChange={e => set('qualDegree', e.target.value)} />
-            <input type="text" value={data.qualCerts || ''} placeholder="Certifications (e.g. SACE Registered, Umalusi Accredited)" onChange={e => set('qualCerts', e.target.value)} />
-            <input type="text" value={data.qualMemberships || ''} placeholder="Memberships (e.g. SA Curriculum Association)" onChange={e => set('qualMemberships', e.target.value)} />
+            <input type="text" value={data.qualCerts  || ''} placeholder="Certifications (e.g. SACE Registered, Umalusi Accredited)"   onChange={e => set('qualCerts',  e.target.value)} />
+            <input type="text" value={data.qualMemberships || ''} placeholder="Memberships (e.g. SA Curriculum Association)"            onChange={e => set('qualMemberships', e.target.value)} />
           </div>
         ) : (
           <div>
-            <input
-              type="file"
-              accept=".pdf,.doc,.docx,.txt,.jpg,.png"
-              onChange={handleQualFileUpload}
-            />
+            <input type="file" accept=".pdf,.doc,.docx,.txt,.jpg,.png" onChange={handleQualFileUpload} />
             <div className="sah-field-hint" style={{ marginTop: 6 }}>
-              <i className="fas fa-info-circle" />
-              Upload a .txt file for best auto-fill results. PDF/DOC filenames are used to pre-fill fields.
+              <i className="fas fa-info-circle" /> Upload a .txt file for best auto-fill results. PDF/DOC filenames are used to pre-fill fields.
             </div>
-
             {parsedQualFileName && (
               <div className="sah-qual-parsed">
                 <i className="fas fa-check-circle" />
                 File parsed: <strong>{parsedQualFileName}</strong> — review the auto-filled fields below and edit as needed.
               </div>
             )}
-
-            {/* Always show editable fields when in file mode so user can review */}
             <div style={{ marginTop: 14 }}>
               <p style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--accent)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                 {parsedQualFileName ? 'Review & Edit Auto-filled Fields:' : 'Or enter manually:'}
               </p>
               <div className="sah-qual-text-grid">
                 <input type="text" value={data.qualDegree || ''} placeholder="Degree / Diploma" onChange={e => set('qualDegree', e.target.value)} />
-                <input type="text" value={data.qualCerts || ''} placeholder="Certifications" onChange={e => set('qualCerts', e.target.value)} />
+                <input type="text" value={data.qualCerts  || ''} placeholder="Certifications"   onChange={e => set('qualCerts',  e.target.value)} />
                 <input type="text" value={data.qualMemberships || ''} placeholder="Memberships" onChange={e => set('qualMemberships', e.target.value)} />
               </div>
             </div>
           </div>
         )}
       </div>
-
       <div className="sah-field sah-full">
         <label><i className="fas fa-shield-alt" /> Police Clearance (optional)</label>
         <div className="sah-qual-tabs">
@@ -972,12 +897,11 @@ const Registration = () => {
           <input type="text" value={data.clearanceText || ''} placeholder="e.g. Verified 2024 — Certificate No. 12345678" onChange={e => set('clearanceText', e.target.value)} />
         ) : (
           <>
-            <input type="file" accept=".pdf,.jpg,.png" onChange={e => handleFileUpload('clearanceFile', e.target.files[0])} />
-            {data.clearanceFile && <div className="sah-field-hint"><i className="fas fa-check-circle" style={{color: 'green'}} /> File uploaded</div>}
+            <input type="file" accept=".pdf,.jpg,.png" />
+            {data.clearanceFile && <div className="sah-field-hint"><i className="fas fa-check-circle" style={{ color: 'green' }} /> File uploaded</div>}
           </>
         )}
       </div>
-
       <div className="sah-field sah-full">
         <label><i className="fas fa-check-square" /> Languages Spoken</label>
         <div className="sah-check-group">
@@ -1002,18 +926,11 @@ const Registration = () => {
         </select>
         <FieldErr msg={fe.primaryCat} />
       </div>
-
       <div className="sah-field">
         <label><i className="fas fa-layer-group" /> Secondary Categories</label>
         <label className={`sah-secondary-toggle${showSecondary ? ' active' : ''}`}>
-          <input
-            type="checkbox"
-            checked={showSecondary}
-            onChange={e => {
-              setShowSecondary(e.target.checked);
-              if (!e.target.checked) set('secondaryCats', []);
-            }}
-          />
+          <input type="checkbox" checked={showSecondary}
+            onChange={e => { setShowSecondary(e.target.checked); if (!e.target.checked) set('secondaryCats', []); }} />
           {showSecondary ? 'I offer other services (click to collapse)' : 'I also offer other services'}
         </label>
         {showSecondary && (
@@ -1029,26 +946,22 @@ const Registration = () => {
           </div>
         )}
       </div>
-
       <div className="sah-field sah-full">
         <label><i className="fas fa-edit" /> Service Title <em className="sah-req">*</em></label>
         <input type="text" value={data.serviceTitle || ''} placeholder="e.g. Mathematics Tutor for Grades 10–12"
-          className={fe.serviceTitle ? 'err' : ''}
-          onChange={e => set('serviceTitle', e.target.value)} />
+          className={fe.serviceTitle ? 'err' : ''} onChange={e => set('serviceTitle', e.target.value)} />
         <FieldErr msg={fe.serviceTitle} />
       </div>
       <div className="sah-field sah-full">
         <label><i className="fas fa-align-left" /> Service Description <em className="sah-req">*</em></label>
         <textarea value={data.serviceDesc || ''} placeholder="Describe what you offer, your methods, and what makes you unique..."
-          className={fe.serviceDesc ? 'err' : ''}
-          onChange={e => set('serviceDesc', e.target.value)} />
+          className={fe.serviceDesc ? 'err' : ''} onChange={e => set('serviceDesc', e.target.value)} />
         <FieldErr msg={fe.serviceDesc} />
       </div>
       <div className="sah-field">
         <label><i className="fas fa-edit" /> Subjects / Specialisations <em className="sah-req">*</em></label>
         <input type="text" value={data.subjects || ''} placeholder="e.g. Mathematics, Phonics, OT, ADHD support"
-          className={fe.subjects ? 'err' : ''}
-          onChange={e => set('subjects', e.target.value)} />
+          className={fe.subjects ? 'err' : ''} onChange={e => set('subjects', e.target.value)} />
         <FieldErr msg={fe.subjects} />
       </div>
       <div className="sah-field">
@@ -1083,8 +996,7 @@ const Registration = () => {
       <div className="sah-field">
         <label><i className="fas fa-city" /> City <em className="sah-req">*</em></label>
         <input type="text" value={data.city || ''} placeholder="e.g. Cape Town"
-          className={fe.city ? 'err' : ''}
-          onChange={e => set('city', e.target.value)} />
+          className={fe.city ? 'err' : ''} onChange={e => set('city', e.target.value)} />
         <FieldErr msg={fe.city} />
       </div>
       <div className="sah-field">
@@ -1098,7 +1010,7 @@ const Registration = () => {
       <div className="sah-field sah-full">
         <label><i className="fas fa-dot-circle" /> Service Area <em className="sah-req">*</em></label>
         <div className="sah-check-group">
-          {['Local', 'National', 'Online only'].map(m => (
+          {['Local','National','Online only'].map(m => (
             <label key={m}>
               <input type="checkbox" value={m} checked={(data.serviceAreas || []).includes(m)} onChange={() => toggleServiceArea(m)} />
               {m}
@@ -1180,6 +1092,7 @@ const Registration = () => {
     );
   };
 
+  // ── Step 7: Contact details + TERMS AND CONDITIONS (moved from step 1) ──
   const renderStep7 = () => {
     const availableToAdd = EXTRA_SOCIALS.filter(s => !addedSocials.includes(s.key));
     return (
@@ -1215,8 +1128,7 @@ const Registration = () => {
         <div className="sah-field sah-full">
           <label><i className="fas fa-envelope" /> Email for Enquiries <em className="sah-req">*</em></label>
           <input type="email" value={data.inquiryEmail || ''} placeholder="contact@example.com"
-            className={fe.inquiryEmail ? 'err' : ''}
-            onChange={e => set('inquiryEmail', e.target.value)} />
+            className={fe.inquiryEmail ? 'err' : ''} onChange={e => set('inquiryEmail', e.target.value)} />
           <FieldErr msg={fe.inquiryEmail} />
         </div>
         <div className="sah-field">
@@ -1266,6 +1178,20 @@ const Registration = () => {
             </div>
           </div>
         )}
+
+        {/* ── TERMS AND CONDITIONS — moved here from step 1 ── */}
+        <div className="sah-full" style={{ marginTop: 8 }}>
+          <div style={{ height: 1, background: 'rgba(0,0,0,0.08)', marginBottom: 20 }} />
+          <label className={`sah-terms-row${data.terms ? ' checked' : ''}${fe.terms ? ' err-border' : ''}`}>
+            <input type="checkbox" checked={!!data.terms} onChange={e => set('terms', e.target.checked)} />
+            <span>
+              I agree to the{' '}
+              <a href="/terms" target="_blank" rel="noreferrer">Terms and Community Guidelines</a>
+              {' '}— by registering you confirm your details are accurate.
+            </span>
+          </label>
+          {fe.terms && <div className="sah-terms-err"><i className="fas fa-exclamation-circle" /> {fe.terms}</div>}
+        </div>
       </div>
     );
   };
@@ -1278,7 +1204,6 @@ const Registration = () => {
       <header className="sah-rhdr">
         <div className="sah-rhdr-inner">
           <div className="sah-rhdr-left">
-            {/* Back to Directory → homepage */}
             <button className="sah-rhdr-back" onClick={() => navigate('/')}>
               <i className="fas fa-arrow-left" /> Back to Directory
             </button>
@@ -1297,14 +1222,15 @@ const Registration = () => {
       <section className="sah-reg-hero">
         <div className="sah-reg-hero-bg" />
         <div className="sah-reg-hero-inner">
+          {/* ── CHANGED: "Trusted Provider" → "Service Provider" ── */}
           <h1 className="sah-reg-hero-title">
-            Become a <em>Trusted Provider</em>
+            Become a <em>Service Provider</em>
           </h1>
           <div className="sah-step-trail">
             {STEPS.map((s, i) => {
               const n = i + 1;
               const isActive = n === step;
-              const isDone = n < step;
+              const isDone   = n < step;
               return (
                 <div key={n} className="sah-trail-item">
                   <div className={`sah-trail-dot${isActive ? ' active' : isDone ? ' done' : ''}`}>
