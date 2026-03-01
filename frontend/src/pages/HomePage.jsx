@@ -897,8 +897,8 @@ export default function HomePage() {
         <div className="sah-container">
           <div className="sah-footer-grid">
             <div className="sah-footer-brand">
-              <span className="sah-footer-logo">SA Homeschooling Directory</span>
-              <p>Connecting South African homeschooling families with verified tutors, therapists, curriculum providers and education specialists nationwide.</p>
+              
+              
               <div className="sah-footer-newsletter">
                 <div className="sah-footer-newsletter-row">
                   <input type="email" value={nlEmail} onChange={e => setNlEmail(e.target.value)} placeholder="Your email address…" />

@@ -428,7 +428,51 @@ const AdminDashboard = () => {
     setProviders(updated);
     saveStoredProviders(updated);
     const provider = providers.find(p => p.id === providerId);
-    showNotification(`Badge "${badgeType}" assigned to ${provider?.name || providerId}.`, 'success');
+    const providerName = provider?.name || providerId;
+
+    if (badgeType === 'featured') {
+      // Find an empty featured slot and assign this provider automatically
+      setFeaturedSlots(prev => {
+        const emptySlotIdx = prev.findIndex(slot => !slot.provider);
+        if (emptySlotIdx !== -1) {
+          // Assign to the first empty slot
+          const next = prev.map((slot, idx) =>
+            idx === emptySlotIdx
+              ? { ...slot, provider: providerName, addedDaysAgo: 0, daysRemaining: 7 }
+              : slot
+          );
+          showNotification(`⭐ "${providerName}" marked as Featured and added to slot #${prev[emptySlotIdx].id}.`, 'success');
+          return next;
+        } else {
+          // All slots are full — replace the oldest (slot with most addedDaysAgo or least daysRemaining)
+          const oldestIdx = prev.reduce((minIdx, slot, idx, arr) =>
+            slot.daysRemaining < arr[minIdx].daysRemaining ? idx : minIdx, 0);
+          const next = prev.map((slot, idx) =>
+            idx === oldestIdx
+              ? { ...slot, provider: providerName, addedDaysAgo: 0, daysRemaining: 7 }
+              : slot
+          );
+          showNotification(`⭐ "${providerName}" marked as Featured — replaced oldest provider in slot #${prev[oldestIdx].id}.`, 'success');
+          return next;
+        }
+      });
+    } else {
+      // If downgraded FROM featured, remove from featured slots
+      setFeaturedSlots(prev => {
+        const wasInSlot = prev.find(slot => slot.provider === providerName);
+        if (wasInSlot) {
+          const next = prev.map(slot =>
+            slot.provider === providerName
+              ? { ...slot, provider: null, addedDaysAgo: 0, daysRemaining: 0 }
+              : slot
+          );
+          showNotification(`Badge "${badgeType}" assigned to ${providerName}. Removed from featured slots.`, 'info');
+          return next;
+        }
+        showNotification(`Badge "${badgeType}" assigned to ${providerName}.`, 'success');
+        return prev;
+      });
+    }
   };
 
   const handlePromote = (providerName) => {
@@ -638,27 +682,116 @@ const AdminDashboard = () => {
           {/* ── FEATURED SLOTS ── */}
           {activeTab === 'featured' && (
             <div className="tab-pane active" role="tabpanel">
-              <p className="section-heading">
-                <i className="fas fa-star"></i>
-                Global Featured Slots — rotate every 7 days
-              </p>
-              <div className="featured-slots">
-                {(featuredSlots || []).map(slot => (
-                  <FeaturedSlotCard
-                    key={slot.id}
-                    slot={slot}
-                    onRemove={handleRemoveFeatured}
-                    onAssign={handleAssignFeatured}
-                    onRotate={handleRotateFeatured}
-                  />
-                ))}
+              {/* Header */}
+              <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:28, flexWrap:'wrap', gap:12 }}>
+                <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                  <div style={{ width:36, height:36, borderRadius:10, background:'linear-gradient(135deg,#f59e0b,#c9621a)', display:'flex', alignItems:'center', justifyContent:'center', boxShadow:'0 4px 12px rgba(245,158,11,0.35)' }}>
+                    <i className="fas fa-crown" style={{ color:'#fff', fontSize:'0.9rem' }}></i>
+                  </div>
+                  <div>
+                    <div style={{ fontWeight:800, fontSize:'1rem', color:'#1a1a1a' }}>Global Featured Slots</div>
+                    <div style={{ fontSize:'0.72rem', color:'#888', marginTop:1 }}>Listings rotate every 7 days · {featuredSlots.filter(s=>s.provider).length}/{featuredSlots.length} slots occupied</div>
+                  </div>
+                </div>
+                <div style={{ display:'inline-flex', alignItems:'center', gap:6, padding:'7px 14px', borderRadius:8, background:'#ecfdf5', border:'1px solid #a7f3d0', fontSize:'0.75rem', fontWeight:700, color:'#059669' }}>
+                  <i className="fas fa-rotate" style={{ fontSize:'0.7rem' }}></i> Auto-rotation active
+                </div>
               </div>
-              <div className="manual-override-note">
-                <i className="fas fa-circle-info"></i>
-                <p>
-                  <strong>7‑day rotation active:</strong> Featured listings auto‑rotate after 7 days unless no new listings are available.
-                  Admin can manually rotate or assign any provider.
-                </p>
+
+              {/* Slot grid */}
+              <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(240px,1fr))', gap:16, marginBottom:24 }}>
+                {(featuredSlots || []).map((slot) => {
+                  const occupied = !!slot.provider;
+                  const urgencyColor = slot.daysRemaining <= 2 ? '#ef4444' : slot.daysRemaining <= 4 ? '#f59e0b' : '#10b981';
+                  const urgencyBg   = slot.daysRemaining <= 2 ? '#fee2e2' : slot.daysRemaining <= 4 ? '#fffbeb' : '#ecfdf5';
+                  const progressPct = occupied ? Math.round((slot.daysRemaining/7)*100) : 0;
+                  return (
+                    <div key={slot.id} style={{ borderRadius:14, overflow:'hidden', border: occupied ? '1.5px solid #e5e0d8' : '1.5px dashed #d1d5db', background: occupied ? '#fff' : '#fafafa', boxShadow: occupied ? '0 2px 12px rgba(0,0,0,0.07)' : 'none', transition:'box-shadow 0.2s,transform 0.2s' }}
+                      onMouseEnter={e=>{ e.currentTarget.style.boxShadow='0 8px 24px rgba(0,0,0,0.12)'; e.currentTarget.style.transform='translateY(-2px)'; }}
+                      onMouseLeave={e=>{ e.currentTarget.style.boxShadow=occupied?'0 2px 12px rgba(0,0,0,0.07)':'none'; e.currentTarget.style.transform='none'; }}
+                    >
+                      {/* Ribbon */}
+                      <div style={{ background: occupied ? 'linear-gradient(135deg,#3a3a3a,#5a5a5a)' : 'linear-gradient(135deg,#e5e7eb,#d1d5db)', padding:'12px 16px', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+                        <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                          <span style={{ width:26, height:26, borderRadius:7, background: occupied ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'0.72rem', fontWeight:800, color: occupied ? '#fff' : '#6b7280' }}>{slot.id}</span>
+                          <span style={{ fontSize:'0.72rem', fontWeight:700, letterSpacing:'0.5px', color: occupied ? 'rgba(255,255,255,0.7)' : '#9ca3af', textTransform:'uppercase' }}>Slot #{slot.id}</span>
+                        </div>
+                        {occupied ? <i className="fas fa-crown" style={{ color:'#f59e0b', fontSize:'0.8rem' }}></i>
+                          : <span style={{ fontSize:'0.65rem', fontWeight:700, padding:'2px 8px', borderRadius:4, background:'rgba(0,0,0,0.08)', color:'#9ca3af', textTransform:'uppercase', letterSpacing:'0.5px' }}>Empty</span>}
+                      </div>
+                      {/* Body */}
+                      <div style={{ padding:'16px 16px 14px' }}>
+                        {occupied ? (
+                          <>
+                            <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:12 }}>
+                              <div style={{ width:40, height:40, borderRadius:10, flexShrink:0, background:'linear-gradient(135deg,#c9621a,#e07a35)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:800, fontSize:'1rem', boxShadow:'0 3px 10px rgba(201,98,26,0.3)' }}>
+                                {(slot.provider||'?')[0].toUpperCase()}
+                              </div>
+                              <div style={{ minWidth:0 }}>
+                                <div style={{ fontWeight:700, fontSize:'0.9rem', color:'#1a1a1a', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{slot.provider}</div>
+                                <div style={{ fontSize:'0.7rem', color:'#888', marginTop:1 }}>Featured Provider</div>
+                              </div>
+                            </div>
+                            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
+                              <span style={{ fontSize:'0.72rem', color:'#888', display:'flex', alignItems:'center', gap:4 }}>
+                                <i className="far fa-clock"></i> Added {slot.addedDaysAgo ?? 0}d ago
+                              </span>
+                              <span style={{ fontSize:'0.7rem', fontWeight:700, padding:'2px 9px', borderRadius:20, background:urgencyBg, color:urgencyColor }}>{slot.daysRemaining}d left</span>
+                            </div>
+                            <div style={{ height:5, background:'#f0ece5', borderRadius:3, overflow:'hidden', marginBottom:14 }}>
+                              <div style={{ height:'100%', borderRadius:3, width:progressPct+'%', background:urgencyColor, transition:'width 0.5s' }} />
+                            </div>
+                            <div style={{ display:'flex', gap:6 }}>
+                              <button onClick={()=>handleRotateFeatured(slot.id)} style={{ flex:1, padding:'8px 0', borderRadius:8, cursor:'pointer', border:'1.5px solid #e5e0d8', background:'#faf9f7', fontSize:'0.75rem', fontWeight:700, color:'#555', fontFamily:'inherit', display:'flex', alignItems:'center', justifyContent:'center', gap:5, transition:'all 0.15s' }}
+                                onMouseEnter={e=>{e.currentTarget.style.borderColor='#c9621a';e.currentTarget.style.color='#c9621a';e.currentTarget.style.background='#fef3e8';}}
+                                onMouseLeave={e=>{e.currentTarget.style.borderColor='#e5e0d8';e.currentTarget.style.color='#555';e.currentTarget.style.background='#faf9f7';}}>
+                                <i className="fas fa-rotate"></i> Rotate
+                              </button>
+                              <button onClick={()=>handleRemoveFeatured(slot.id,slot.provider)} style={{ flex:1, padding:'8px 0', borderRadius:8, cursor:'pointer', border:'1.5px solid #fee2e2', background:'#fff5f5', fontSize:'0.75rem', fontWeight:700, color:'#ef4444', fontFamily:'inherit', display:'flex', alignItems:'center', justifyContent:'center', gap:5, transition:'all 0.15s' }}
+                                onMouseEnter={e=>{e.currentTarget.style.background='#fee2e2';}}
+                                onMouseLeave={e=>{e.currentTarget.style.background='#fff5f5';}}>
+                                <i className="fas fa-xmark"></i> Remove
+                              </button>
+                            </div>
+                          </>
+                        ) : (
+                          <div style={{ textAlign:'center', padding:'12px 0 8px' }}>
+                            <div style={{ width:48, height:48, borderRadius:12, background:'#f3f4f6', border:'2px dashed #d1d5db', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 10px', color:'#d1d5db', fontSize:'1.1rem' }}>
+                              <i className="fas fa-plus"></i>
+                            </div>
+                            <div style={{ fontSize:'0.8rem', fontWeight:600, color:'#9ca3af', marginBottom:12 }}>No provider assigned</div>
+                            <button onClick={()=>handleAssignFeatured(slot.id)} style={{ width:'100%', padding:'9px 0', borderRadius:8, cursor:'pointer', border:'none', background:'linear-gradient(135deg,#c9621a,#e07a35)', fontSize:'0.78rem', fontWeight:700, color:'#fff', fontFamily:'inherit', display:'flex', alignItems:'center', justifyContent:'center', gap:6, boxShadow:'0 4px 12px rgba(201,98,26,0.3)', transition:'opacity 0.15s' }}
+                              onMouseEnter={e=>e.currentTarget.style.opacity='0.88'}
+                              onMouseLeave={e=>e.currentTarget.style.opacity='1'}>
+                              <i className="fas fa-plus-circle"></i> Assign Provider
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Summary bar */}
+              <div style={{ display:'flex', alignItems:'center', gap:12, padding:'14px 18px', borderRadius:10, background:'linear-gradient(135deg,#faf9f7,#f5f0e8)', border:'1px solid #e5e0d8', flexWrap:'wrap' }}>
+                <i className="fas fa-circle-info" style={{ color:'#c9621a', fontSize:'0.85rem' }}></i>
+                <span style={{ flex:1, minWidth:200, fontSize:'0.8rem', color:'#555', lineHeight:1.6 }}>
+                  <strong style={{ color:'#1a1a1a' }}>7-day rotation active</strong> — Featured listings auto-rotate after 7 days.
+                  Set a provider badge to <strong>Featured</strong> in All Listings to automatically fill a slot.
+                </span>
+                <div style={{ display:'flex', gap:20, flexShrink:0 }}>
+                  {[
+                    { label:'Occupied', val:featuredSlots.filter(s=>s.provider).length, color:'#10b981' },
+                    { label:'Empty', val:featuredSlots.filter(s=>!s.provider).length, color:'#9ca3af' },
+                    { label:'Expiring', val:featuredSlots.filter(s=>s.provider&&s.daysRemaining<=2).length, color:'#ef4444' },
+                  ].map(({label,val,color})=>(
+                    <div key={label} style={{ textAlign:'center' }}>
+                      <div style={{ fontSize:'1.1rem', fontWeight:800, color, lineHeight:1 }}>{val}</div>
+                      <div style={{ fontSize:'0.65rem', color:'#aaa', fontWeight:600, textTransform:'uppercase', letterSpacing:'0.4px', marginTop:2 }}>{label}</div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           )}
