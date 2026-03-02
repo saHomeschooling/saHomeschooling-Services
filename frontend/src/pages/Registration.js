@@ -392,6 +392,19 @@ const CSS = `
   .sah-spinner { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: sah-spin 0.7s linear infinite; }
   @keyframes sah-spin { to { transform: rotate(360deg); } }
 
+  /* ── Day quick-select buttons ── */
+  .sah-day-shortcuts { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+  .sah-day-shortcut-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 14px; border-radius: 6px;
+    border: 1.5px solid var(--border); background: var(--card-white);
+    font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 700;
+    color: var(--mid); cursor: pointer; transition: all 0.14s;
+  }
+  .sah-day-shortcut-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(201,98,26,0.06); }
+  .sah-day-shortcut-btn.clear-btn { border-style: dashed; }
+  .sah-day-shortcut-btn.clear-btn:hover { border-color: #dc2626; color: #dc2626; background: #fff0f0; }
+
   /* ── Responsive ── */
   @media (max-width: 900px) {
     .sah-reg-panel { max-width: 100%; padding: 0 16px 80px; }
@@ -497,6 +510,10 @@ const SECONDARY_CAT_MAP = {
   'Enrichment':  'Extracurricular / Enrichment',
 };
 
+const ALL_DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const WEEKDAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday'];
+const WEEKEND  = ['Saturday','Sunday'];
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const planToTier = (param) => {
   if (param?.includes('R399') || param?.includes('Deluxe'))       return 'featured';
@@ -580,7 +597,8 @@ const Registration = () => {
   const { login } = useAuth();
 
   const [step, setStep]                   = useState(1);
-  const [data, setData]                   = useState({ listingPlan: 'Free Listing – basic profile', terms: false });
+  // CHANGE 1: No default plan selected
+  const [data, setData]                   = useState({ terms: false });
   const [fieldErrors, setFieldErrors]     = useState({});
   const [showPw, setShowPw]               = useState(false);
   const [submitting, setSubmitting]       = useState(false);
@@ -864,14 +882,11 @@ const Registration = () => {
       });
 
       if (registerResponse.status === 409) {
-        // User exists in DB but not localStorage — still let them proceed via localStorage
         console.warn('409 from API — falling through to localStorage-only registration');
       } else if (!registerResponse.ok) {
         const errData = await registerResponse.json().catch(() => ({}));
-        // Non-fatal: fall through to localStorage fallback below
         console.warn('Register API error:', errData.message);
       } else {
-        // API success — also create provider profile
         const userData = await registerResponse.json().catch(() => ({}));
         const dbUserId = userData?.user?.id || userData?.userId || providerId;
 
@@ -923,7 +938,6 @@ const Registration = () => {
           console.warn('Provider API failed — will use localStorage');
         }
 
-        // Save with DB user ID
         const sessionUser = saveToLocalStorage({
           userId: dbUserId,
           email: emailLower,
@@ -934,7 +948,6 @@ const Registration = () => {
         });
 
         if (sessionUser) {
-          // Update AuthContext state directly
           login(sessionUser);
         }
 
@@ -943,7 +956,6 @@ const Registration = () => {
         return;
       }
     } catch (apiErr) {
-      // Network error — continue to localStorage fallback
       console.warn('API unreachable, using localStorage fallback:', apiErr.message);
     }
 
@@ -981,12 +993,21 @@ const Registration = () => {
   // ─────────────────────────────────────────────────────────────────────────
   //  STEP RENDERERS
   // ─────────────────────────────────────────────────────────────────────────
+
+  // CHANGE 1: Plan click auto-selects and advances to step 2; no Next button on step 1
   const renderStep1 = () => (
     <div className="sah-plan-grid" style={{ marginTop: 8 }}>
       {PLANS.map(plan => {
         const selected = data.listingPlan === plan.param;
         return (
-          <div key={plan.id} className={`sah-plan-card${selected ? ' selected' : ''}`} onClick={() => set('listingPlan', plan.param)}>
+          <div
+            key={plan.id}
+            className={`sah-plan-card${selected ? ' selected' : ''}`}
+            onClick={() => {
+              set('listingPlan', plan.param);
+              setStep(2);
+            }}
+          >
             <div className="sah-plan-card-head">
               <div>
                 <div className="sah-plan-card-name">{plan.name}</div>
@@ -996,9 +1017,16 @@ const Registration = () => {
                 <div className="sah-plan-price-block">
                   <div className="sah-plan-price">{plan.price} <small>/month</small></div>
                 </div>
-                <input type="radio" className="sah-plan-radio" name="listingPlan" value={plan.param}
-                  checked={selected} onChange={() => set('listingPlan', plan.param)}
-                  onClick={e => e.stopPropagation()} />
+                <input
+                  type="radio"
+                  className="sah-plan-radio"
+                  name="listingPlan"
+                  value={plan.param}
+                  checked={selected}
+                  onChange={() => {}}
+                  onClick={e => e.stopPropagation()}
+                  readOnly
+                />
               </div>
             </div>
             <div className="sah-plan-body">
@@ -1010,8 +1038,14 @@ const Registration = () => {
                   </li>
                 ))}
               </ul>
-              <button className={`sah-plan-select-btn${selected ? ' selected' : ''}`}
-                onClick={e => { e.stopPropagation(); set('listingPlan', plan.param); }}>
+              <button
+                className={`sah-plan-select-btn${selected ? ' selected' : ''}`}
+                onClick={e => {
+                  e.stopPropagation();
+                  set('listingPlan', plan.param);
+                  setStep(2);
+                }}
+              >
                 {selected ? <><i className="fas fa-check" /> Selected</> : plan.cta}
               </button>
             </div>
@@ -1058,6 +1092,7 @@ const Registration = () => {
     </div>
   );
 
+  // CHANGE 2: Profile Photo and Years of Experience are now side-by-side (no sah-full on either)
   const renderStep3 = () => (
     <div className="sah-form-grid">
       <div className="sah-field">
@@ -1324,8 +1359,15 @@ const Registration = () => {
     </div>
   );
 
+  // CHANGE 3: Pricing Model and Starting Price side-by-side; day shortcut buttons added
   const renderStep6 = () => {
     const priceUnit = PRICING_UNIT_MAP[data.pricingModel] || '';
+
+    const setDays = (days) => {
+      setData(p => ({ ...p, daysAvailable: days }));
+      setFieldErrors(prev => ({ ...prev, daysAvailable: '' }));
+    };
+
     return (
       <div className="sah-form-grid">
         <div className="sah-field">
@@ -1351,8 +1393,39 @@ const Registration = () => {
         </div>
         <div className="sah-field sah-full">
           <label><i className="fas fa-check-square" /> Days Available <em className="sah-req">*</em></label>
+          {/* CHANGE 3: Quick-select shortcut buttons */}
+          <div className="sah-day-shortcuts">
+            <button
+              type="button"
+              className="sah-day-shortcut-btn"
+              onClick={() => setDays([...ALL_DAYS])}
+            >
+              <i className="fas fa-calendar-check" /> Everyday
+            </button>
+            <button
+              type="button"
+              className="sah-day-shortcut-btn"
+              onClick={() => setDays([...WEEKDAYS])}
+            >
+              <i className="fas fa-briefcase" /> Weekdays
+            </button>
+            <button
+              type="button"
+              className="sah-day-shortcut-btn"
+              onClick={() => setDays([...WEEKEND])}
+            >
+              <i className="fas fa-umbrella-beach" /> Weekend
+            </button>
+            <button
+              type="button"
+              className="sah-day-shortcut-btn clear-btn"
+              onClick={() => setDays([])}
+            >
+              <i className="fas fa-times-circle" /> Clear
+            </button>
+          </div>
           <div className="sah-check-group">
-            {['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'].map(d => (
+            {ALL_DAYS.map(d => (
               <label key={d}><input type="checkbox" value={d} checked={(data.daysAvailable || []).includes(d)} onChange={e => toggleMulti('daysAvailable', d, e.target.checked)} />{d}</label>
             ))}
           </div>
@@ -1376,6 +1449,7 @@ const Registration = () => {
     );
   };
 
+  // CHANGE 4: Phone Number and WhatsApp Number are now side-by-side (removed sah-full from phone field)
   const renderStep7 = () => {
     const availableToAdd = EXTRA_SOCIALS.filter(s => !addedSocials.includes(s.key));
     return (
@@ -1605,27 +1679,41 @@ const Registration = () => {
           </div>
         </div>
 
-        <div className="sah-form-nav-wrap">
-          {step > 1
-            ? <button className="sah-nav-prev" onClick={prev}><i className="fas fa-arrow-left" /> Previous</button>
-            : <div />}
-          <div className="sah-nav-counter">
-            <strong>{step}</strong> of {TOTAL} steps
-            <div className="sah-nav-progress">
-              <div className="sah-nav-progress-fill" style={{ width: `${pct}%` }} />
+        {/* CHANGE 1: On step 1, show no Next button — navigation is via plan card click */}
+        {step === 1 ? (
+          <div className="sah-form-nav-wrap">
+            <div />
+            <div className="sah-nav-counter">
+              <strong>{step}</strong> of {TOTAL} steps
+              <div className="sah-nav-progress">
+                <div className="sah-nav-progress-fill" style={{ width: `${pct}%` }} />
+              </div>
             </div>
+            <div />
           </div>
-          <button
-            className={`sah-nav-next${step === TOTAL ? ' sah-nav-submit' : ''}`}
-            onClick={next}
-            disabled={submitting || (step === 3 && overLimit)}
-          >
-            {submitting ? <span className="sah-spinner" /> : null}
-            {step < TOTAL
-              ? <><span>Next</span> <i className="fas fa-arrow-right" /></>
-              : <><i className="fas fa-check-circle" /> <span>{submitting ? 'Creating Profile…' : 'Create My Profile'}</span></>}
-          </button>
-        </div>
+        ) : (
+          <div className="sah-form-nav-wrap">
+            {step > 1
+              ? <button className="sah-nav-prev" onClick={prev}><i className="fas fa-arrow-left" /> Previous</button>
+              : <div />}
+            <div className="sah-nav-counter">
+              <strong>{step}</strong> of {TOTAL} steps
+              <div className="sah-nav-progress">
+                <div className="sah-nav-progress-fill" style={{ width: `${pct}%` }} />
+              </div>
+            </div>
+            <button
+              className={`sah-nav-next${step === TOTAL ? ' sah-nav-submit' : ''}`}
+              onClick={next}
+              disabled={submitting || (step === 3 && overLimit)}
+            >
+              {submitting ? <span className="sah-spinner" /> : null}
+              {step < TOTAL
+                ? <><span>Next</span> <i className="fas fa-arrow-right" /></>
+                : <><i className="fas fa-check-circle" /> <span>{submitting ? 'Creating Profile…' : 'Create My Profile'}</span></>}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
