@@ -1,4 +1,3 @@
-// frontend/src/pages/Login.js
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -19,405 +18,223 @@ const injectHead = () => {
 
 const CSS = `
   :root {
-    --accent: #c9621a;
-    --accent-dark: #a84e12;
-    --accent-light: #f0dcc8;
-    --dark: #3a3a3a;
-    --mid: #555;
-    --muted: #888;
-    --card-gray: #d6d0c8;
-    --card-white: #ede9e3;
-    --border: rgba(0,0,0,0.10);
-    --header-h: 68px;
+    --accent: #c9621a; --accent-dark: #a84e12; --accent-light: #f0dcc8;
+    --dark: #3a3a3a; --mid: #555; --muted: #888;
+    --card-gray: #d6d0c8; --card-white: #ede9e3;
+    --border: rgba(0,0,0,0.10); --header-h: 68px;
     --shadow-md: 0 4px 20px rgba(0,0,0,0.10);
-    --shadow-lg: 0 16px 48px rgba(0,0,0,0.14);
-    --radius: 8px;
-    --radius-lg: 12px;
+    --radius: 8px; --radius-lg: 12px;
   }
-
   .sah-login-wrap * { box-sizing: border-box; margin: 0; padding: 0; }
-  .sah-login-wrap {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--card-white);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    -webkit-font-smoothing: antialiased;
-  }
-
-  /* ── HEADER ── */
-  .sah-lhdr {
-    position: sticky; top: 0; z-index: 100;
-    height: var(--header-h); background: #5a5a5a;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.22);
-    display: flex; align-items: center;
-    flex-shrink: 0;
-  }
-  .sah-lhdr-inner {
-    max-width: 1280px; margin: 0 auto; padding: 0 32px;
-    width: 100%; display: flex; align-items: center; justify-content: space-between;
-  }
+  .sah-login-wrap { font-family: 'DM Sans', sans-serif; background: var(--card-white); min-height: 100vh; display: flex; flex-direction: column; -webkit-font-smoothing: antialiased; }
+  .sah-lhdr { position: sticky; top: 0; z-index: 100; height: var(--header-h); background: #5a5a5a; box-shadow: 0 2px 12px rgba(0,0,0,0.22); display: flex; align-items: center; flex-shrink: 0; }
+  .sah-lhdr-inner { max-width: 1280px; margin: 0 auto; padding: 0 32px; width: 100%; display: flex; align-items: center; justify-content: space-between; }
   .sah-lhdr-left { display: flex; align-items: center; gap: 0; }
-  .sah-lhdr-back {
-    display: inline-flex; align-items: center; gap: 8px;
-    background: none; border: none; color: rgba(255,255,255,0.88);
-    font-size: 0.88rem; font-weight: 600; font-family: 'DM Sans', sans-serif;
-    cursor: pointer; padding: 6px 0; text-decoration: none; white-space: nowrap;
-  }
+  .sah-lhdr-back { display: inline-flex; align-items: center; gap: 8px; background: none; border: none; color: rgba(255,255,255,0.88); font-size: 0.88rem; font-weight: 600; font-family: 'DM Sans', sans-serif; cursor: pointer; padding: 6px 0; text-decoration: none; white-space: nowrap; }
   .sah-lhdr-back:hover { color: #fff; }
   .sah-lhdr-div { width: 1px; height: 28px; background: rgba(255,255,255,0.28); margin: 0 16px; }
   .sah-lhdr-brand { text-decoration: none; }
   .sah-lhdr-brand-name { font-family: 'Playfair Display', serif; font-weight: 800; font-size: 1.02rem; color: #fff; display: block; }
   .sah-lhdr-brand-tag { font-size: 0.66rem; color: rgba(255,255,255,0.68); font-weight: 500; letter-spacing: 0.45px; display: block; }
   .sah-lhdr-right { display: flex; align-items: center; gap: 10px; }
-  .sah-lhdr-solid {
-    padding: 7px 18px; border-radius: 6px; background: var(--accent); color: #fff;
-    font-weight: 700; font-size: 0.86rem; border: none; cursor: pointer;
-    font-family: 'DM Sans', sans-serif; text-decoration: none;
-    display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
-    transition: background 0.15s;
-  }
+  .sah-lhdr-solid { padding: 7px 18px; border-radius: 6px; background: var(--accent); color: #fff; font-weight: 700; font-size: 0.86rem; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; transition: background 0.15s; }
   .sah-lhdr-solid:hover { background: var(--accent-dark); }
-
-  /* ── MAIN — horizontal two-column layout, fits the viewport ── */
-  .sah-login-main {
-    flex: 1;
-    display: flex;
-    align-items: stretch;
-    overflow: hidden;
-  }
-
-  /* Left panel — decorative hero side — now 48% so content is fully visible */
-  .sah-login-left {
-    flex: 0 0 48%;
-    position: relative;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    min-width: 0;
-  }
-  .sah-login-left-bg {
-    position: absolute; inset: 0; z-index: 0;
-    background-image: url('https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=1200&auto=format&fit=crop&q=80');
-    background-size: cover; background-position: center 30%;
-  }
-  .sah-login-left-bg::after {
-    content: ''; position: absolute; inset: 0;
-    background: linear-gradient(160deg, rgba(10,10,10,0.55) 0%, rgba(30,20,10,0.82) 100%);
-  }
-  .sah-login-left-content {
-    position: relative; z-index: 2;
-    padding: 40px 36px;
-  }
-  .sah-login-left-title {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(1.7rem, 2.6vw, 2.6rem);
-    font-weight: 900; color: #fff;
-    line-height: 1.08; margin-bottom: 16px;
-  }
+  .sah-login-main { flex: 1; display: flex; align-items: stretch; overflow: hidden; }
+  .sah-login-left { flex: 0 0 48%; position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; min-width: 0; }
+  .sah-login-left-bg { position: absolute; inset: 0; z-index: 0; background-image: url('https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=1200&auto=format&fit=crop&q=80'); background-size: cover; background-position: center 30%; }
+  .sah-login-left-bg::after { content: ''; position: absolute; inset: 0; background: linear-gradient(160deg, rgba(10,10,10,0.55) 0%, rgba(30,20,10,0.82) 100%); }
+  .sah-login-left-content { position: relative; z-index: 2; padding: 40px 36px; }
+  .sah-login-left-title { font-family: 'Playfair Display', serif; font-size: clamp(1.7rem, 2.6vw, 2.6rem); font-weight: 900; color: #fff; line-height: 1.08; margin-bottom: 16px; }
   .sah-login-left-title em { font-style: italic; color: var(--accent-light); }
-  .sah-login-left-desc {
-    font-size: 0.88rem; color: rgba(255,255,255,0.75);
-    line-height: 1.7; max-width: 340px; margin-bottom: 28px;
-  }
-  .sah-login-left-perks {
-    display: flex; flex-direction: column; gap: 10px;
-  }
-  .sah-login-left-perk {
-    display: flex; align-items: center; gap: 11px;
-    font-size: 0.84rem; font-weight: 600; color: rgba(255,255,255,0.88);
-  }
-  .sah-login-left-perk i {
-    width: 28px; height: 28px; border-radius: 50%;
-    background: rgba(255,255,255,0.12);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 0.7rem; color: var(--accent-light); flex-shrink: 0;
-  }
-
-  /* Right panel — the form */
-  .sah-login-right {
-    flex: 1;
-    min-width: 0;
-    background: var(--card-white);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 32px 48px;
-    overflow-y: auto;
-  }
-
-  .sah-login-heading {
-    font-family: 'Playfair Display', serif; font-size: 1.9rem; font-weight: 800;
-    color: var(--dark); margin-bottom: 3px; line-height: 1.15;
-  }
-  .sah-login-sub {
-    color: var(--muted); font-size: 0.88rem; margin-bottom: 18px;
-  }
-
-  /* Alert */
-  .sah-login-alert {
-    display: none; padding: 11px 16px; border-radius: 8px;
-    font-weight: 600; font-size: 0.86rem; margin-bottom: 16px;
-    border: 1px solid transparent;
-  }
+  .sah-login-left-desc { font-size: 0.88rem; color: rgba(255,255,255,0.75); line-height: 1.7; max-width: 340px; margin-bottom: 28px; }
+  .sah-login-left-perks { display: flex; flex-direction: column; gap: 10px; }
+  .sah-login-left-perk { display: flex; align-items: center; gap: 11px; font-size: 0.84rem; font-weight: 600; color: rgba(255,255,255,0.88); }
+  .sah-login-left-perk i { width: 28px; height: 28px; border-radius: 50%; background: rgba(255,255,255,0.12); display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: var(--accent-light); flex-shrink: 0; }
+  .sah-login-right { flex: 1; min-width: 0; background: var(--card-white); display: flex; flex-direction: column; justify-content: center; padding: 32px 48px; overflow-y: auto; }
+  .sah-login-heading { font-family: 'Playfair Display', serif; font-size: 1.9rem; font-weight: 800; color: var(--dark); margin-bottom: 3px; line-height: 1.15; }
+  .sah-login-sub { color: var(--muted); font-size: 0.88rem; margin-bottom: 18px; }
+  .sah-login-alert { display: none; padding: 11px 16px; border-radius: 8px; font-weight: 600; font-size: 0.86rem; margin-bottom: 16px; border: 1px solid transparent; }
   .sah-login-alert.error { background: #fee9e9; color: #a00c2c; border-color: #f5b3b3; }
   .sah-login-alert.success { background: #e6f7ec; color: #0d7d6c; border-color: #a3e0b5; }
   .sah-login-alert.show { display: flex; align-items: center; gap: 8px; }
-
-  /* Card */
-  .sah-login-card {
-    background: var(--card-gray);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-md);
-    overflow: hidden;
-  }
-  .sah-login-card-head {
-    background: #5a5a5a; padding: 18px 24px 14px;
-  }
-  .sah-login-card-head h3 {
-    font-family: 'Playfair Display', serif; font-size: 1.05rem; font-weight: 800; color: #fff;
-    display: flex; align-items: center; gap: 8px;
-  }
+  .sah-login-card { background: var(--card-gray); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); overflow: hidden; }
+  .sah-login-card-head { background: #5a5a5a; padding: 18px 24px 14px; }
+  .sah-login-card-head h3 { font-family: 'Playfair Display', serif; font-size: 1.05rem; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 8px; }
   .sah-login-card-head p { font-size: 0.78rem; color: rgba(255,255,255,0.65); margin-top: 2px; }
   .sah-login-card-body { padding: 18px 22px 16px; }
-
-  /* Fields */
   .sah-lfield { margin-bottom: 11px; }
-  .sah-lfield label {
-    display: flex; align-items: center; gap: 6px;
-    font-weight: 600; font-size: 0.75rem; text-transform: uppercase;
-    letter-spacing: 0.6px; color: var(--mid); margin-bottom: 5px;
-  }
+  .sah-lfield label { display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.6px; color: var(--mid); margin-bottom: 5px; }
   .sah-lfield label i { color: var(--accent); font-size: 0.72rem; }
   .sah-lfield label span { color: var(--accent); font-size: 1rem; }
-  .sah-lfield input {
-    width: 100%; padding: 10px 13px;
-    border: 1.5px solid rgba(0,0,0,0.12);
-    border-radius: var(--radius);
-    background: var(--card-white);
-    font-family: 'DM Sans', sans-serif; font-size: 0.91rem; color: var(--dark);
-    outline: none; transition: border-color 0.15s, box-shadow 0.15s;
-  }
+  .sah-lfield input { width: 100%; padding: 10px 13px; border: 1.5px solid rgba(0,0,0,0.12); border-radius: var(--radius); background: var(--card-white); font-family: 'DM Sans', sans-serif; font-size: 0.91rem; color: var(--dark); outline: none; transition: border-color 0.15s, box-shadow 0.15s; }
   .sah-lfield input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(201,98,26,0.15); }
   .sah-lfield input.error { border-color: #dc2626; background: #fff8f8; }
-  .sah-field-err {
-    color: #dc2626; font-size: 0.72rem; font-weight: 500;
-    display: flex; align-items: center; gap: 4px; margin-top: 4px;
-  }
-
-  /* Password wrapper */
+  .sah-field-err { margin-top: 4px; font-size: 0.73rem; color: #dc2626; display: flex; align-items: center; gap: 4px; }
   .sah-pw-wrap { position: relative; }
   .sah-pw-wrap input { padding-right: 42px; }
-  .sah-pw-toggle {
-    position: absolute; right: 11px; top: 50%; transform: translateY(-50%);
-    background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.88rem; padding: 4px;
-  }
+  .sah-pw-toggle { position: absolute; right: 0; top: 0; bottom: 0; width: 42px; background: none; border: none; cursor: pointer; color: var(--muted); font-size: 0.85rem; display: flex; align-items: center; justify-content: center; transition: color 0.15s; }
   .sah-pw-toggle:hover { color: var(--accent); }
-
-  /* Extras row */
-  .sah-login-extras {
-    display: flex; align-items: center; justify-content: space-between;
-    flex-wrap: wrap; gap: 8px; margin: 2px 0 4px;
-  }
-  .sah-remember { display: flex; align-items: center; gap: 6px; font-size: 0.83rem; font-weight: 500; color: var(--mid); cursor: pointer; }
-  .sah-remember input[type="checkbox"] { accent-color: var(--accent); width: auto; }
-  .sah-forgot { color: var(--accent); font-size: 0.83rem; font-weight: 600; text-decoration: none; background: none; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+  .sah-login-extras { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .sah-remember { display: flex; align-items: center; gap: 7px; font-size: 0.82rem; color: var(--mid); cursor: pointer; user-select: none; }
+  .sah-remember input { accent-color: var(--accent); width: 14px; height: 14px; }
+  .sah-forgot { background: none; border: none; color: var(--accent); font-size: 0.82rem; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; padding: 0; }
   .sah-forgot:hover { text-decoration: underline; }
-
-  /* Submit */
-  .sah-login-submit-wrap { text-align: center; margin-top: 14px; }
-  .sah-login-btn {
-    width: 100%; padding: 12px; border: none; border-radius: 50px;
-    background: var(--accent); color: #fff; font-family: 'DM Sans', sans-serif;
-    font-size: 1rem; font-weight: 700; cursor: pointer;
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-    transition: background 0.15s, transform 0.15s;
-    box-shadow: 0 8px 24px -6px rgba(201,98,26,0.45);
-  }
-  .sah-login-btn:hover { background: var(--accent-dark); transform: translateY(-2px); }
-  .sah-login-btn:active { transform: translateY(0); }
-  .sah-login-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-
-  .sah-secure-note {
-    display: flex; align-items: center; justify-content: center; gap: 6px;
-    font-size: 0.75rem; color: var(--muted); margin-top: 10px;
-  }
-  .sah-secure-note i { color: var(--accent); }
-
-  /* Divider */
-  .sah-login-divider {
-    display: flex; align-items: center; gap: 12px;
-    margin: 12px 0; font-size: 0.74rem; color: var(--muted); font-weight: 600;
-    text-transform: uppercase; letter-spacing: 0.8px;
-  }
-  .sah-login-divider::before,
-  .sah-login-divider::after { content: ''; flex: 1; height: 1px; background: rgba(0,0,0,0.10); }
-
-  /* Register prompt */
-  .sah-login-prompt {
-    text-align: center; font-size: 0.87rem; color: var(--mid); margin-top: 10px;
-  }
-  .sah-login-prompt a {
-    color: var(--accent); font-weight: 700; text-decoration: none;
-    border-bottom: 2px solid transparent; transition: border-color 0.1s;
-  }
-  .sah-login-prompt a:hover { border-bottom-color: var(--accent); }
-
-  /* Demo credentials */
-  .sah-demo-box {
-    background: rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.08);
-    border-radius: var(--radius); padding: 10px 14px; margin-top: 10px;
-  }
-  .sah-demo-box h4 { font-size: 0.72rem; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
-  .sah-demo-box p { font-size: 0.74rem; color: var(--mid); line-height: 1.7; }
-  .sah-demo-box code {
-    background: rgba(0,0,0,0.06); border-radius: 3px; padding: 1px 5px;
-    font-size: 0.72rem; font-family: monospace; color: var(--dark);
-  }
-
-  /* Loading spinner */
-  .sah-spinner {
-    width: 15px; height: 15px; border: 2px solid rgba(255,255,255,0.4);
-    border-top-color: #fff; border-radius: 50%;
-    animation: sah-spin 0.7s linear infinite;
-  }
-  @keyframes sah-spin { to { transform: rotate(360deg); } }
-
-  /* ── RESPONSIVE — stack on mobile ── */
-  @media (max-width: 768px) {
-    .sah-login-main { flex-direction: column; overflow: visible; }
-    .sah-login-left { min-height: 260px; flex: none; }
-    .sah-login-right { width: 100%; padding: 28px 24px 40px; }
-    .sah-lhdr-inner { padding: 0 16px; }
-  }
+  .sah-login-submit-wrap { display: flex; flex-direction: column; gap: 8px; }
+  .sah-login-btn { width: 100%; padding: 12px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius); font-family: 'DM Sans', sans-serif; font-size: 1rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 9px; transition: background 0.15s, transform 0.15s; }
+  .sah-login-btn:hover:not(:disabled) { background: var(--accent-dark); transform: translateY(-1px); }
+  .sah-login-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+  .sah-spinner { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.35); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .sah-secure-note { text-align: center; font-size: 0.73rem; color: var(--muted); display: flex; align-items: center; justify-content: center; gap: 5px; }
+  .sah-secure-note i { color: #10b981; }
+  .sah-login-divider { text-align: center; margin: 14px 0 10px; font-size: 0.78rem; color: var(--muted); position: relative; }
+  .sah-login-divider::before, .sah-login-divider::after { content: ''; position: absolute; top: 50%; width: 40%; height: 1px; background: rgba(0,0,0,0.10); }
+  .sah-login-divider::before { left: 0; }
+  .sah-login-divider::after { right: 0; }
+  .sah-login-prompt { text-align: center; font-size: 0.86rem; color: var(--mid); margin-bottom: 10px; }
+  .sah-login-prompt a { color: var(--accent); font-weight: 600; text-decoration: none; }
+  .sah-login-prompt a:hover { text-decoration: underline; }
+  .sah-demo-box { background: #f5f1eb; border: 1px solid rgba(0,0,0,0.08); border-radius: var(--radius); padding: 11px 14px; margin-top: 10px; }
+  .sah-demo-box h4 { font-size: 0.75rem; font-weight: 700; color: var(--mid); display: flex; align-items: center; gap: 6px; margin-bottom: 5px; }
+  .sah-demo-box h4 i { color: var(--accent); }
+  .sah-demo-box p { font-size: 0.78rem; color: var(--muted); line-height: 1.65; }
+  .sah-demo-box code { background: rgba(0,0,0,0.07); border-radius: 3px; padding: 1px 5px; font-size: 0.76rem; color: var(--accent); }
+  @media (max-width: 768px) { .sah-login-left { display: none; } .sah-login-right { padding: 24px 20px; } }
 `;
 
-const API_URL = 'http://localhost:5000/api';
-
 const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [remember, setRemember] = useState(true);
-  const [loading, setLoading] = useState(false);
-  const [alert, setAlert] = useState({ msg: '', type: '' });
-  const [errors, setErrors] = useState({});
   const navigate = useNavigate();
   const { login } = useAuth();
   const { showNotification } = useNotification();
 
+  const [email,        setEmail]        = useState('');
+  const [password,     setPassword]     = useState('');
+  const [remember,     setRemember]     = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [alert,        setAlert]        = useState({ msg: '', type: '' });
+  const [errors,       setErrors]       = useState({});
+  const [loading,      setLoading]      = useState(false);
+
   useEffect(() => {
     injectHead();
-    if (!document.getElementById('sah-login-css')) {
+    if (!document.getElementById('sah-login-styles')) {
       const s = document.createElement('style');
-      s.id = 'sah-login-css';
-      s.textContent = CSS;
+      s.id = 'sah-login-styles'; s.textContent = CSS;
       document.head.appendChild(s);
     }
   }, []);
 
   const validate = () => {
-    const errs = {};
-    if (!email.trim()) errs.email = 'Email address is required';
-    else if (!/^\S+@\S+\.\S+$/.test(email)) errs.email = 'Enter a valid email address';
-    if (!password) errs.password = 'Password is required';
-    else if (password.length < 6) errs.password = 'Password must be at least 6 characters';
-    setErrors(errs);
-    return Object.keys(errs).length === 0;
+    const e = {};
+    if (!email.trim()) e.email = 'Email is required.';
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) e.email = 'Enter a valid email address.';
+    if (!password) e.password = 'Password is required.';
+    else if (password.length < 6) e.password = 'Password must be at least 6 characters.';
+    setErrors(e);
+    return Object.keys(e).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setAlert({ msg: '', type: '' });
-    if (!validate()) {
-      return;
-    }
+    if (!validate()) return;
 
     setLoading(true);
     const trimmedEmail = email.trim().toLowerCase();
 
     try {
-      // Try API login first
-      const response = await fetch(`${API_URL}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: trimmedEmail,
-          password: password
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        // Successful login
-        const userData = {
-          role: data.user.role.toLowerCase(),
-          email: data.user.email,
-          id: data.user.id,
-          name: data.user.name || data.user.email.split('@')[0]
-        };
-
-        localStorage.setItem('sah_current_user', JSON.stringify(userData));
-        localStorage.setItem('sah_token', data.token);
-        
-        if (login) login(userData);
-        
-        setAlert({ msg: 'Login successful! Redirecting...', type: 'success' });
-        
-        // Redirect based on role
-        if (userData.role === 'admin') {
-          setTimeout(() => navigate('/admin-dashboard'), 1200);
-        } else if (userData.role === 'provider' || userData.role === 'client') {
-          setTimeout(() => navigate('/client-dashboard'), 1200);
-        } else {
-          setTimeout(() => navigate('/'), 1200);
-        }
-        return;
-      }
-
-      // If API fails, try localStorage fallback for development
-      console.warn('API login failed, trying localStorage fallback:', data.message);
-
-      // Admin check (localStorage)
+      // ── Admin shortcut ──
       if (trimmedEmail === 'admin@sahomeschooling.co.za' && password === 'admin123') {
-        const userData = { role: 'admin', email: trimmedEmail };
-        localStorage.setItem('sah_current_user', JSON.stringify(userData));
+        localStorage.setItem('sah_current_user', JSON.stringify({ role: 'admin', email: trimmedEmail }));
         setAlert({ msg: 'Admin login successful! Redirecting...', type: 'success' });
         setTimeout(() => navigate('/admin-dashboard'), 1200);
         return;
       }
 
-      // Check localStorage providers
-      const stored = JSON.parse(localStorage.getItem('sah_providers') || '[]');
-      const match = stored.find(p => (p.email || '').toLowerCase() === trimmedEmail || (p.contactEmail || '').toLowerCase() === trimmedEmail);
+      // Helper: check if a record's email fields match the login email
+      const emailMatch = (p) => {
+        const candidates = [p.email, p.contactEmail, p.inquiryEmail]
+          .map(v => (v || '').toLowerCase().trim())
+          .filter(Boolean);
+        return candidates.includes(trimmedEmail);
+      };
 
-      if (match && password.length >= 6) {
-        const userData = { role: 'client', email: trimmedEmail, id: match.id, name: match.name };
+      // Helper: verify password (if no password stored, accept any valid password)
+      const passwordOk = (record) => {
+        const savedPw = (record.password || '').trim();
+        if (!savedPw) return true; // no password stored — accept any
+        return savedPw === password;
+      };
+
+      // ── 1. Check sah_providers (provider/business registrations) ──
+      let storedProviders = [];
+      try { storedProviders = JSON.parse(localStorage.getItem('sah_providers') || '[]'); } catch {}
+
+      const providerMatch = storedProviders.find(emailMatch);
+      if (providerMatch) {
+        if (!passwordOk(providerMatch)) {
+          setAlert({ msg: 'Invalid email or password. Please try again.', type: 'error' });
+          setLoading(false);
+          return;
+        }
+        const userData = {
+          role: 'client',
+          email: trimmedEmail,
+          id: providerMatch.id,
+          name: providerMatch.name || '',
+          plan: providerMatch.plan || 'free',
+        };
         localStorage.setItem('sah_current_user', JSON.stringify(userData));
         if (login) login(userData);
-        setAlert({ msg: `Welcome back, ${match.name}! Redirecting to your dashboard...`, type: 'success' });
+        setAlert({ msg: `Welcome back, ${providerMatch.name || 'Provider'}! Redirecting…`, type: 'success' });
         setTimeout(() => navigate('/client-dashboard'), 1200);
         return;
       }
 
-      // Check localStorage users
-      const users = JSON.parse(localStorage.getItem('sah_users') || '[]');
-      const matchUser = users.find(u => u.email?.toLowerCase() === trimmedEmail);
-      if (matchUser && password.length >= 6) {
-        const userData = { role: 'user', email: trimmedEmail, id: matchUser.id, name: matchUser.name || trimmedEmail.split('@')[0] };
+      // ── 2. Check sah_users (parent/family registrations) ──
+      let storedUsers = [];
+      try { storedUsers = JSON.parse(localStorage.getItem('sah_users') || '[]'); } catch {}
+
+      const userMatch = storedUsers.find(emailMatch);
+      if (userMatch) {
+        if (!passwordOk(userMatch)) {
+          setAlert({ msg: 'Invalid email or password. Please try again.', type: 'error' });
+          setLoading(false);
+          return;
+        }
+        const userData = {
+          role: userMatch.role || 'client',
+          email: trimmedEmail,
+          id: userMatch.id,
+          name: userMatch.name || '',
+          plan: userMatch.plan || 'free',
+        };
         localStorage.setItem('sah_current_user', JSON.stringify(userData));
         if (login) login(userData);
-        setAlert({ msg: 'Login successful! Redirecting...', type: 'success' });
-        setTimeout(() => navigate('/'), 1200);
+        setAlert({ msg: `Welcome back! Redirecting…`, type: 'success' });
+        setTimeout(() => navigate('/client-dashboard'), 1200);
         return;
       }
 
-      setAlert({ msg: 'Invalid email or password. Please try again.', type: 'error' });
+      // ── 3. Demo seed provider ──
+      if (trimmedEmail === 'contact@khanacademy.org.za') {
+        const userData = { role: 'client', email: trimmedEmail, id: 'khan', name: 'Khan Academy SA' };
+        localStorage.setItem('sah_current_user', JSON.stringify(userData));
+        if (login) login(userData);
+        setAlert({ msg: 'Login successful! Redirecting…', type: 'success' });
+        setTimeout(() => navigate('/client-dashboard'), 1200);
+        return;
+      }
+
+      // ── 4. Not found in any storage ──
+      setAlert({
+        msg: 'No account found for that email. Please register first, or check your spelling.',
+        type: 'error',
+      });
+
     } catch (err) {
       console.error('Login error:', err);
-      setAlert({ msg: 'Network error. Please check your connection and try again.', type: 'error' });
+      setAlert({ msg: 'An unexpected error occurred. Please try again.', type: 'error' });
     } finally {
       setLoading(false);
     }
@@ -426,7 +243,6 @@ const Login = () => {
   return (
     <div className="sah-login-wrap">
 
-      {/* Header */}
       <header className="sah-lhdr">
         <div className="sah-lhdr-inner">
           <div className="sah-lhdr-left">
@@ -445,10 +261,7 @@ const Login = () => {
         </div>
       </header>
 
-      {/* Main — horizontal two-column layout */}
       <main className="sah-login-main">
-
-        {/* Left — decorative hero */}
         <div className="sah-login-left">
           <div className="sah-login-left-bg" />
           <div className="sah-login-left-content">
@@ -461,8 +274,8 @@ const Login = () => {
             <div className="sah-login-left-perks">
               {[
                 ['fa-shield-alt', 'All providers manually verified'],
-                ['fa-lock', 'Secure & private enquiries'],
-                ['fa-star', '4.9 average provider rating'],
+                ['fa-lock',       'Secure & private enquiries'],
+                ['fa-star',       '4.9 average provider rating'],
                 ['fa-map-marker-alt', 'Nationwide coverage across all 9 provinces'],
               ].map(([icon, text]) => (
                 <div key={text} className="sah-login-left-perk">
@@ -474,29 +287,25 @@ const Login = () => {
           </div>
         </div>
 
-        {/* Right — login form */}
         <div className="sah-login-right">
           <h1 className="sah-login-heading">Welcome Back</h1>
           <p className="sah-login-sub">Sign in to your SA Homeschooling Directory account</p>
 
-          {/* Alert */}
           {alert.msg && (
             <div className={`sah-login-alert show ${alert.type}`}>
-              <i className={`fas ${alert.type === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation'}`} /> {alert.msg}
+              <i className={`fas ${alert.type === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation'}`} />
+              {' '}{alert.msg}
             </div>
           )}
 
           <div className="sah-login-card">
-            {/* Card header */}
             <div className="sah-login-card-head">
               <h3><i className="fas fa-lock" /> Sign in with your credentials</h3>
               <p>Access your provider dashboard and manage your listings</p>
             </div>
 
-            {/* Card body */}
             <div className="sah-login-card-body">
               <form onSubmit={handleSubmit} noValidate>
-
                 <div className="sah-lfield">
                   <label><i className="fas fa-envelope" /> Email Address <span>*</span></label>
                   <input
@@ -552,13 +361,11 @@ const Login = () => {
                 New to the community? <Link to="/register">Create a free account</Link> — it's free
               </p>
 
-              {/* Demo credentials */}
               <div className="sah-demo-box">
                 <h4><i className="fas fa-flask" /> Demo Credentials</h4>
                 <p>
                   <strong>Admin:</strong> <code>admin@sahomeschooling.co.za</code> / <code>admin123</code><br />
-                  <strong>Provider:</strong> Use any provider email from the database<br />
-                  <strong>User:</strong> Use any user email from the database
+                  <strong>Client:</strong> <code>contact@khanacademy.org.za</code> + any password (6+ chars)
                 </p>
               </div>
             </div>

@@ -1,1124 +1,993 @@
-// frontend/src/pages/ClientDashboard.js
-import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { useNotification } from '../contexts/NotificationContext';
-import Header from '../components/common/Header';
-import Footer from '../components/common/Footer';
-import ProfileSection from '../components/client/ProfileSection';
-import ServiceItem from '../components/client/ServiceItem';
-import PlanSelector from '../components/client/PlanSelector';
-import TagsInput from '../components/client/TagsInput';
-import { PLAN_LIMITS, DAYS_OF_WEEK, PRICING_MODELS, PROVINCES } from '../utils/constants';
-import { getPlanLimits } from '../utils/helpers';
-import '../assets/css/dashboard.css';
+import { useState, useEffect, useCallback } from "react";
+import { useNavigate, Link } from "react-router-dom";
 
-/* ─────────────── localStorage helpers ─────────────── */
-function getCurrentUser() {
-  try { return JSON.parse(localStorage.getItem('sah_current_user') || 'null'); }
-  catch { return null; }
-}
-function getProviderById(id) {
-  try {
-    const all = JSON.parse(localStorage.getItem('sah_providers') || '[]');
-    return all.find(p => p.id === id) || null;
-  } catch { return null; }
-}
-function saveProviderById(updated) {
-  try {
-    const all = JSON.parse(localStorage.getItem('sah_providers') || '[]');
-    const idx = all.findIndex(p => p.id === updated.id);
-    if (idx !== -1) all[idx] = updated; else all.push(updated);
-    localStorage.setItem('sah_providers', JSON.stringify(all));
-  } catch {}
-}
-
-/* ─────────────── empty profile shape ─────────────── */
-const EMPTY_PROFILE = {
-  id: '', name: '', email: '', accountType: 'Individual Provider',
-  yearsExperience: '', languages: [], primaryCategory: '', secondaryCategories: [],
-  tags: [], bio: '', degrees: '', certifications: '', memberships: '', clearance: '',
-  services: [{ title: '', description: '', ageGroups: [], deliveryMode: 'Online', subjects: '' }],
-  serviceTitle: '', serviceDesc: '', subjects: '', ageGroups: [],
-  province: '', city: '', serviceAreas: [], serviceAreaType: 'national', radius: '',
-  deliveryMode: '', pricingModel: '', startingPrice: '',
-  availabilityDays: [], availabilityNotes: '',
-  contactName: '', phone: '', whatsapp: '', contactEmail: '',
-  social: '', website: '', facebook: '', publicToggle: true,
-  plan: 'free', listingPublic: true, status: 'pending',
-  image: null, photo: null, profilePhoto: null,
-  reviews: { average: 0, count: 0, items: [] },
+const injectHead = () => {
+  if (document.getElementById("sah-fonts")) return;
+  const fonts = document.createElement("link");
+  fonts.id = "sah-fonts"; fonts.rel = "stylesheet";
+  fonts.href = "https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700&family=DM+Sans:wght@400;500;600;700&display=swap";
+  document.head.appendChild(fonts);
+  const fa = document.createElement("link");
+  fa.rel = "stylesheet";
+  fa.href = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css";
+  document.head.appendChild(fa);
 };
 
-/* ─────────────── plan definitions ─────────────── */
-const PLAN_CARDS = [
-  {
-    id: 'free',
-    name: 'Community Member',
-    desc: 'Basic profile — always free',
-    price: 'R0',
-    features: [
-      'Basic profile information',
-      '1 service listing',
-      'Contact form only',
-      'Max 1 service',
-    ],
-  },
-  {
-    id: 'pro',
-    name: 'Trusted Provider',
-    desc: 'Full profile + direct contact details',
-    price: 'R149',
-    features: [
-      'Everything in Community',
-      'Up to 5 services',
-      'Direct contact details',
-      'Phone & WhatsApp visible',
-      'Max 5 services',
-    ],
-  },
-  {
-    id: 'featured',
-    name: 'Featured Partner',
-    desc: 'Homepage placement + analytics',
-    price: 'R399',
-    features: [
-      'Everything in Trusted',
-      'Homepage featured slot',
-      'Priority in search results',
-      'Basic analytics',
-      'Max 10 services',
-    ],
-  },
-];
+const CSS = `
+  :root {
+    --accent:#c9621a; --accent-dark:#a84e12; --accent-light:#f5e0cc;
+    --red:#c0234a; --red-dark:#96183a; --red-light:#f5d0d8;
+    --dark:#3a3a3a; --mid:#555; --muted:#888;
+    --grey:#b5b5b5; --grey-dark:#7a7a7a; --light-bg:#f2f2f2; --white:#fff;
+    --border:rgba(0,0,0,0.08);
+    --shadow-sm:0 1px 4px rgba(0,0,0,0.06);
+    --shadow-md:0 4px 20px rgba(0,0,0,0.09);
+    --shadow-lg:0 12px 48px rgba(0,0,0,0.12);
+    --radius:8px; --radius-lg:12px; --header-h:68px;
+  }
+  .sah-wrap *,.sah-wrap *::before,.sah-wrap *::after{box-sizing:border-box;margin:0;padding:0;}
+  .sah-wrap{font-family:'DM Sans',sans-serif;background:var(--white);color:var(--dark);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden;}
+  .sah-wrap a{color:inherit;text-decoration:none;}
+  .sah-wrap button{cursor:pointer;font-family:inherit;}
+  .sah-wrap img{display:block;max-width:100%;}
+  .sah-container{max-width:1280px;margin:0 auto;padding:0 32px;}
 
-/* ─────────────── tabs ─────────────── */
-const TABS = [
-  { id: 'profile',  label: 'Profile',            icon: 'fa-user' },
-  { id: 'services', label: 'Services',            icon: 'fa-briefcase' },
-  { id: 'location', label: 'Location & Pricing',  icon: 'fa-map-marker-alt' },
-  { id: 'contact',  label: 'Contact & Social',    icon: 'fa-address-card' },
-  { id: 'plan',     label: 'Plan & Reviews',      icon: 'fa-crown' },
-];
-
-/* ─────────────── inline CSS ─────────────── */
-const DASH_CSS = `
-  .cd-wrap { font-family:'DM Sans','Segoe UI',sans-serif; background:#f4f1ec; min-height:100vh; -webkit-font-smoothing:antialiased; }
-  .cd-wrap * { box-sizing:border-box; }
+  /* HEADER */
+  .sah-header{position:sticky;top:0;z-index:1000;height:var(--header-h);background:#5a5a5a;}
+  .sah-nav-inner{height:100%;display:flex;justify-content:space-between;align-items:center;}
+  .sah-brand{display:flex;align-items:center;gap:12px;}
+  .sah-brand-divider{width:2px;height:30px;background:rgba(255,255,255,0.5);border-radius:1px;}
+  .sah-brand-text{display:flex;flex-direction:column;line-height:1.15;}
+  .sah-brand-name{font-family:'Playfair Display',serif;font-weight:800;font-size:1rem;color:#fff;letter-spacing:0.2px;}
+  .sah-brand-tag{font-size:0.66rem;color:rgba(255,255,255,0.75);font-weight:500;letter-spacing:0.5px;}
+  .sah-nav-links{display:flex;align-items:center;gap:2px;}
+  .sah-nav-links a{padding:8px 14px;border-radius:5px;font-weight:600;font-size:1rem;color:rgba(255,255,255,0.85);transition:all 0.15s;}
+  .sah-nav-links a:hover{color:#fff;background:rgba(255,255,255,0.2);}
+  .sah-nav-ctas{display:flex;align-items:center;gap:8px;}
+  .sah-btn-ghost-nav{padding:7px 16px;border-radius:5px;border:1.5px solid rgba(255,255,255,0.6);background:transparent;color:#fff;font-weight:600;font-size:0.85rem;transition:all 0.15s;cursor:pointer;}
+  .sah-btn-ghost-nav:hover{border-color:#fff;background:rgba(255,255,255,0.2);}
+  .sah-btn-solid-nav{
+    padding:7px 18px;border-radius:5px;background:var(--accent);
+    color:#fff !important;font-weight:700;font-size:0.85rem;border:none;
+    transition:background 0.15s;box-shadow:none !important;
+    display:inline-block;cursor:pointer;text-decoration:none;
+  }
+  .sah-btn-solid-nav:hover{background:var(--accent-dark);}
 
   /* HERO */
-  .cd-hero {
-    background:linear-gradient(135deg,#3a3a3a 0%,#5a5a5a 55%,#c9621a 100%);
-    padding:32px 0 0; position:relative; overflow:hidden;
+  .sah-hero{position:relative;min-height:88vh;display:flex;align-items:center;overflow:hidden;background:#1e1e1e;}
+  .sah-hero-bg{position:absolute;inset:0;z-index:0;
+    background-image:url('https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=1600&auto=format&fit=crop&q=80');
+    background-size:cover;background-position:center 30%;}
+  .sah-hero-bg::after{content:'';position:absolute;inset:0;background:linear-gradient(100deg,rgba(20,20,20,0.90) 0%,rgba(50,50,50,0.80) 45%,rgba(15,15,15,0.62) 100%);}
+  .sah-hero-inner{position:relative;z-index:2;padding:60px 0;width:100%;}
+  .sah-hero-top{text-align:center;margin-bottom:36px;}
+  .sah-hero-h1{font-family:'Playfair Display',serif;font-size:clamp(2.5rem,5.5vw,4.4rem);font-weight:900;line-height:1.07;color:#fff;margin-bottom:22px;letter-spacing:-0.3px;}
+  .sah-hero-h1 em{font-style:italic;color:rgba(255,255,255,0.9);}
+
+  /* SEARCH BAR */
+  .sah-hero-search{display:flex;flex-direction:row;align-items:stretch;background:#fff;border-radius:var(--radius);overflow:hidden;max-width:780px;margin:0 auto;box-shadow:0 8px 40px rgba(0,0,0,0.4);width:100%;}
+  .sah-hs-icon{display:flex;align-items:center;padding:0 14px;color:#aaa;font-size:0.9rem;flex-shrink:0;}
+  .sah-hero-search input{flex:1;min-width:0;border:none;outline:none;padding:16px 6px;font-family:'DM Sans',sans-serif;font-size:0.95rem;color:var(--dark);background:transparent;-webkit-appearance:none;appearance:none;}
+  .sah-hero-search input::placeholder{color:#bbb;}
+  .sah-hs-sep{width:1px;background:var(--border);margin:10px 0;flex-shrink:0;}
+  .sah-hero-search select{border:none;outline:none;padding:0 14px;background:transparent;font-family:'DM Sans',sans-serif;font-size:0.88rem;color:var(--muted);cursor:pointer;min-width:140px;flex-shrink:0;-webkit-appearance:none;-moz-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23aaa' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px;}
+  .sah-hs-btn{background:var(--accent);color:#fff;border:none;padding:0 26px;font-family:'DM Sans',sans-serif;font-weight:700;font-size:0.92rem;white-space:nowrap;transition:background 0.15s;flex-shrink:0;cursor:pointer;}
+  .sah-hs-btn:hover{background:var(--accent-dark);}
+
+  /* HERO TAGLINE */
+  .sah-hero-tagline{text-align:center;margin-top:22px;margin-bottom:36px;}
+  .sah-hero-tagline h2{
+    font-family:'Playfair Display',serif;
+    font-size:clamp(1.1rem,2.2vw,1.4rem);
+    font-weight:800;color:#fff;margin-bottom:8px;line-height:1.25;
   }
-  .cd-hero::before {
-    content:''; position:absolute; inset:0;
-    background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%23fff' fill-opacity='.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  .sah-hero-tagline p{
+    font-family:'Playfair Display',serif;
+    font-style:italic;
+    font-size:clamp(0.88rem,1.3vw,0.98rem);
+    color:rgba(255,255,255,0.78);
+    max-width:580px;margin:0 auto 22px;line-height:1.7;
   }
-  .cd-hero-top { max-width:1280px; margin:0 auto; padding:0 32px 28px; position:relative; z-index:1; display:flex; align-items:flex-start; justify-content:space-between; gap:20px; flex-wrap:wrap; }
-  .cd-hero-left { flex:1; min-width:0; }
-  .cd-hero-eyebrow { font-size:0.67rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:rgba(255,255,255,0.5); margin-bottom:7px; display:flex; align-items:center; gap:8px; }
-  .cd-hero-eyebrow span { width:20px; height:1px; background:rgba(255,255,255,0.3); display:inline-block; }
-  .cd-hero-title { font-size:clamp(1.4rem,2.5vw,1.9rem); font-weight:800; color:#fff; margin:0 0 10px; line-height:1.15; font-family:'Playfair Display',Georgia,serif; }
-  .cd-hero-title em { font-style:italic; color:#f0c89a; }
-  .cd-hero-meta { display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
-  .cd-status-pill { display:inline-flex; align-items:center; gap:6px; padding:5px 14px; border-radius:50px; font-size:0.75rem; font-weight:700; }
-  .cd-status-pill.pending  { background:rgba(245,158,11,.2); color:#fbbf24; border:1px solid rgba(245,158,11,.35); }
-  .cd-status-pill.approved { background:rgba(16,185,129,.2); color:#34d399; border:1px solid rgba(16,185,129,.35); }
-  .cd-status-pill.rejected { background:rgba(239,68,68,.2);  color:#f87171; border:1px solid rgba(239,68,68,.35); }
-  .cd-hero-right { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
 
-  /* hero action buttons */
-  .cd-btn-ghost { display:inline-flex; align-items:center; gap:6px; padding:8px 16px; border-radius:7px; border:1.5px solid rgba(255,255,255,.38); background:rgba(255,255,255,.07); color:#fff; font-size:0.81rem; font-weight:600; cursor:pointer; font-family:inherit; transition:all .17s; text-decoration:none; white-space:nowrap; }
-  .cd-btn-ghost:hover { background:rgba(255,255,255,.18); border-color:rgba(255,255,255,.75); }
-  .cd-btn-solid { display:inline-flex; align-items:center; gap:6px; padding:8px 18px; border-radius:7px; border:none; background:#c9621a; color:#fff; font-size:0.81rem; font-weight:700; cursor:pointer; font-family:inherit; transition:all .17s; white-space:nowrap; }
-  .cd-btn-solid:hover { background:#a84e12; transform:translateY(-1px); }
-  .cd-btn-solid:disabled { opacity:.6; cursor:not-allowed; transform:none; }
-  .cd-btn-solid.cancel { background:#6b7280; }
-  .cd-btn-solid.cancel:hover { background:#4b5563; }
+  /* BECOME PROVIDER BUTTON */
+  .sah-become-btn{
+    display:inline-flex;align-items:center;gap:10px;padding:13px 30px;
+    background:var(--accent);color:#fff !important;border:none;
+    border-radius:var(--radius);font-weight:700;font-size:0.97rem;
+    transition:background 0.15s,transform 0.15s;cursor:pointer;
+    box-shadow:none;text-decoration:none;
+  }
+  .sah-become-btn:hover{background:var(--accent-dark);transform:translateY(-2px);}
+  .sah-become-btn.active{background:#3a3a3a;box-shadow:none;}
+  .sah-become-btn.active:hover{background:#1e1e1e;transform:none;}
+  .sah-become-btn .sah-chev{font-size:0.78rem;transition:transform 0.3s ease;}
+  .sah-become-btn.active .sah-chev{transform:rotate(180deg);}
 
-  /* TAB BAR — sits at bottom of hero */
-  .cd-tab-bar { max-width:1280px; margin:0 auto; padding:0 32px; display:flex; gap:2px; position:relative; z-index:10; }
-  .cd-tab-btn { padding:10px 18px; background:rgba(255,255,255,.1); border:none; border-bottom:none; color:rgba(255,255,255,.6); font-size:0.8rem; font-weight:600; cursor:pointer; font-family:inherit; border-radius:8px 8px 0 0; transition:all .15s; display:inline-flex; align-items:center; gap:7px; white-space:nowrap; }
-  .cd-tab-btn:hover { background:rgba(255,255,255,.2); color:#fff; }
-  .cd-tab-btn.active { background:#f4f1ec; color:#c9621a; font-weight:700; }
+  /* PLANS ACCORDION */
+  .sah-hero-plans-wrap{display:grid;grid-template-rows:0fr;transition:grid-template-rows 0.45s cubic-bezier(0.4,0,0.2,1);}
+  .sah-hero-plans-wrap.open{grid-template-rows:1fr;}
+  .sah-hero-plans-inner{overflow:hidden;}
+  .sah-hero-plans-grid-outer{padding-top:24px;padding-bottom:8px;}
+  .sah-hero-plans-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
 
-  /* MAIN */
-  .cd-main { max-width:1280px; margin:0 auto; padding:22px 32px 64px; }
+  /* PLAN CARDS */
+  .sah-plan-item{border:1px solid rgba(255,255,255,0.28);border-radius:var(--radius-lg);background:rgba(20,20,20,0.58);transition:border-color 0.2s,background 0.2s;cursor:pointer;overflow:hidden;user-select:none;backdrop-filter:blur(6px);display:flex;flex-direction:column;}
+  .sah-plan-item:hover{border-color:rgba(201,98,26,0.65);background:rgba(20,20,20,0.68);}
+  .sah-plan-item.highlight{border-color:var(--accent);background:rgba(20,20,20,0.70);box-shadow:0 0 0 1px var(--accent);}
+  .sah-plan-header{display:flex;align-items:flex-start;justify-content:space-between;padding:18px 18px 12px;}
+  .sah-plan-info{flex:1;}
+  .sah-plan-name{font-weight:700;font-size:0.95rem;color:#fff;}
+  .sah-plan-desc{font-size:0.75rem;color:rgba(255,255,255,0.6);margin-top:3px;}
+  .sah-plan-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;margin-left:10px;}
+  .sah-plan-price{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:800;color:#fff;line-height:1;}
+  .sah-plan-price small{font-size:0.66rem;color:rgba(255,255,255,0.5);font-weight:400;display:block;text-align:right;}
+  .sah-plan-chevron{color:rgba(255,255,255,0.5);font-size:0.72rem;transition:transform 0.25s ease;flex-shrink:0;margin-top:4px;}
+  .sah-plan-item.highlight .sah-plan-chevron{color:var(--accent);}
+  .sah-plan-chevron.open{transform:rotate(180deg);}
+  .sah-plan-details{display:grid;grid-template-rows:0fr;transition:grid-template-rows 0.32s ease;}
+  .sah-plan-details.open{grid-template-rows:1fr;}
+  .sah-plan-details-inner{overflow:hidden;padding:0 18px;transition:padding 0.32s ease;}
+  .sah-plan-details.open .sah-plan-details-inner{padding:0 18px 16px;}
+  .sah-plan-details-content{padding-top:12px;border-top:1px solid rgba(255,255,255,0.18);}
+  .sah-plan-features{list-style:none;display:flex;flex-direction:column;gap:6px;margin-bottom:14px;padding:0;}
+  .sah-plan-features li{display:flex;align-items:center;gap:7px;font-size:0.82rem;color:rgba(255,255,255,0.8);}
+  .sah-plan-features li.no{color:rgba(255,255,255,0.32);}
+  .sah-ico-yes{color:#4ade80;font-size:0.7rem;}
+  .sah-ico-no{color:rgba(255,255,255,0.22);font-size:0.7rem;}
+  .sah-plan-cta-link{display:inline-flex;align-items:center;gap:7px;padding:8px 18px;background:var(--accent);color:#fff !important;border:none;border-radius:var(--radius);font-size:0.82rem;font-weight:700;transition:background 0.15s;cursor:pointer;text-decoration:none;}
+  .sah-plan-cta-link:hover{background:var(--accent-dark);}
 
-  /* TWO-COLUMN LAYOUT */
-  .cd-layout { display:grid; grid-template-columns:1fr 300px; gap:18px; align-items:start; }
+  /* FEATURED BANNER */
+  .sah-featured-banner{background:linear-gradient(135deg,#fff8f2,#fff3e8);border:1px solid rgba(201,98,26,0.18);border-radius:var(--radius-lg);padding:10px 18px;margin-bottom:18px;display:flex;align-items:center;gap:10px;font-size:0.82rem;color:#c9621a;font-weight:600;}
+  .sah-featured-banner i{font-size:0.85rem;}
 
-  /* CARDS */
-  .cd-card { background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 2px 10px rgba(0,0,0,.06),0 1px 3px rgba(0,0,0,.04); margin-bottom:16px; border:1px solid rgba(0,0,0,.05); }
-  .cd-card-header { display:flex; align-items:center; gap:11px; padding:14px 20px; border-bottom:1px solid #f0ece5; background:#faf9f7; }
-  .cd-card-header-icon { width:34px; height:34px; border-radius:8px; background:linear-gradient(135deg,#c9621a,#e07a35); display:flex; align-items:center; justify-content:center; color:#fff; font-size:0.8rem; flex-shrink:0; }
-  .cd-card-title    { font-size:0.88rem; font-weight:700; color:#1a1a1a; margin:0; }
-  .cd-card-subtitle { font-size:0.71rem; color:#888; margin:1px 0 0; }
-  .cd-card-body     { padding:20px; }
-  .cd-card-body.tight { padding:14px 20px; }
+  /* FILTER BAR */
+  .sah-filter-bar{background:var(--white);border-bottom:1px solid var(--border);}
+  .sah-filter-bar-row{display:flex;align-items:center;gap:6px;padding:16px 0;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .sah-filter-bar-row::-webkit-scrollbar{display:none;}
+  .sah-filter-label{font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);white-space:nowrap;margin-right:6px;flex-shrink:0;}
+  .sah-fpill{display:inline-flex;align-items:center;gap:6px;padding:10px 22px;border-radius:6px;border:1px solid var(--border);background:var(--white);color:var(--muted);font-size:1rem;font-weight:600;transition:all 0.15s;cursor:pointer;white-space:nowrap;flex-shrink:0;line-height:1.3;}
+  .sah-fpill:hover{border-color:var(--accent);color:var(--accent);}
+  .sah-fpill.active{background:var(--grey);color:#fff;border-color:var(--grey);}
+  .sah-fpill i{font-size:0.95rem;}
 
-  /* EDIT TOGGLE — placed in card-header */
-  .cd-edit-toggle { margin-left:auto; display:inline-flex; align-items:center; gap:6px; padding:6px 13px; border-radius:6px; cursor:pointer; font-size:0.75rem; font-weight:700; border:1.5px solid; transition:all .15s; font-family:inherit; }
-  .cd-edit-toggle.inactive { border-color:#d1d5db; background:transparent; color:#6b7280; }
-  .cd-edit-toggle.inactive:hover { border-color:#c9621a; color:#c9621a; }
-  .cd-edit-toggle.active { border-color:#c9621a; background:#fef3e8; color:#c9621a; }
+  /* PROVIDERS */
+  .sah-providers-section{padding:60px 0 76px;background:var(--light-bg);}
+  .sah-sec-header{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:32px;}
+  .sah-sec-eyebrow{display:block;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:2.5px;color:var(--accent);margin-bottom:5px;}
+  .sah-sec-header h2{font-family:'Playfair Display',serif;font-size:clamp(1.5rem,3vw,2rem);font-weight:800;color:var(--dark);line-height:1.15;}
+  .sah-sec-right{font-size:0.84rem;color:var(--muted);}
+  .sah-link-btn{background:none;border:none;padding:0;color:var(--accent);font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:inherit;text-decoration:none;}
+  .sah-link-btn:hover{text-decoration:underline;}
+  .sah-provider-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;}
+  .sah-provider-card{background:var(--white);border-radius:var(--radius-lg);overflow:hidden;border:1px solid var(--border);box-shadow:var(--shadow-sm);transition:box-shadow 0.2s,transform 0.2s;display:flex;flex-direction:column;}
+  .sah-provider-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);}
+  .sah-provider-card.is-featured-slot{border-color:rgba(201,98,26,0.35);box-shadow:0 2px 12px rgba(201,98,26,0.12);}
+  .sah-card-thumb{position:relative;height:165px;overflow:hidden;background:var(--accent-light);flex-shrink:0;}
+  .sah-card-thumb img{width:100%;height:100%;object-fit:cover;transition:transform 0.35s;}
+  .sah-provider-card:hover .sah-card-thumb img{transform:scale(1.04);}
+  .sah-card-thumb-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:2.8rem;color:var(--accent);background:linear-gradient(135deg,#f0e8df,#f5e0cc);}
+  .sah-card-badges{position:absolute;top:9px;left:9px;display:flex;gap:4px;}
+  .sah-cbadge{padding:3px 9px;border-radius:3px;font-size:0.67rem;font-weight:700;text-transform:uppercase;letter-spacing:0.3px;}
+  .sah-cbadge-featured{background:var(--red);color:#fff;}
+  .sah-cbadge-new{background:#0d7d6c;color:#fff;}
+  .sah-cbadge-verified{background:#3a3a3a;color:#fff;}
+  .sah-card-save{position:absolute;top:9px;right:9px;width:28px;height:28px;border-radius:4px;background:rgba(255,255,255,0.9);border:none;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:0.8rem;transition:color 0.15s;}
+  .sah-card-save:hover{color:var(--accent);}
+  .sah-card-provider-row{display:flex;align-items:center;gap:8px;padding:11px 13px 0;}
+  .sah-pav{width:30px;height:30px;border-radius:50%;background:var(--accent-light);display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:0.8rem;flex-shrink:0;}
+  .sah-pav-name{font-weight:700;font-size:0.77rem;color:var(--dark);line-height:1.2;}
+  .sah-pav-tier{font-size:0.68rem;color:var(--muted);}
+  .sah-card-body{padding:9px 13px 14px;flex:1;display:flex;flex-direction:column;}
+  .sah-card-title{font-weight:700;font-size:0.87rem;color:var(--dark);margin-bottom:7px;line-height:1.35;}
+  .sah-card-meta{display:flex;flex-direction:column;gap:3px;font-size:0.74rem;color:var(--muted);margin-bottom:8px;}
+  .sah-card-meta span{display:flex;align-items:center;gap:4px;}
+  .sah-card-meta i{color:var(--accent);font-size:0.68rem;width:12px;}
+  .sah-card-rating{display:flex;align-items:center;gap:5px;font-size:0.76rem;margin-bottom:10px;}
+  .sah-stars{color:#c97c10;font-size:0.76rem;letter-spacing:-0.5px;}
+  .sah-rnum{font-weight:700;color:var(--dark);}
+  .sah-rcnt{color:var(--muted);}
+  .sah-card-foot{display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:10px;border-top:1px solid var(--border);}
+  .sah-from-label{font-size:0.65rem;color:var(--muted);line-height:1;}
+  .sah-card-price{font-family:'Playfair Display',serif;font-size:1.08rem;font-weight:800;color:var(--accent);}
+  .sah-card-cta{padding:6px 13px;background:var(--grey);color:#fff;border:none;border-radius:5px;font-size:0.77rem;font-weight:700;transition:background 0.15s;}
+  .sah-card-cta:hover{background:var(--accent);}
+  .sah-grid-empty{grid-column:1/-1;text-align:center;padding:70px 20px;color:var(--muted);}
+  .sah-grid-empty i{font-size:2.2rem;margin-bottom:12px;opacity:0.3;display:block;}
+  .sah-grid-empty h3{font-family:'Playfair Display',serif;font-size:1.25rem;color:var(--dark);margin-bottom:7px;}
 
-  /* FIELDS */
-  .cd-field { margin-bottom:14px; }
-  .cd-field:last-child { margin-bottom:0; }
-  .cd-label { display:block; font-size:0.67rem; font-weight:700; text-transform:uppercase; letter-spacing:.8px; color:#888; margin-bottom:5px; }
-  .cd-label .req { color:#c9621a; }
-  .cd-value { font-size:0.87rem; color:#1a1a1a; padding:7px 0; border-bottom:1px solid #f0ece5; min-height:32px; display:flex; align-items:center; }
-  .cd-value.empty { color:#bbb; font-style:italic; }
-  .cd-input { width:100%; padding:9px 12px; border:1.5px solid #e5e0d8; border-radius:7px; background:#faf9f7; font-family:inherit; font-size:0.87rem; color:#1a1a1a; outline:none; transition:border-color .15s,box-shadow .15s; -webkit-appearance:none; appearance:none; }
-  .cd-input:focus { border-color:#c9621a; box-shadow:0 0 0 3px rgba(201,98,26,.11); }
-  .cd-textarea { resize:vertical; min-height:82px; }
-  .cd-select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 11px center; padding-right:30px; cursor:pointer; }
+  /* SECTION LABEL DIVIDER */
+  .sah-section-label{display:flex;align-items:center;gap:12px;margin:0 0 16px;font-size:0.72rem;font-weight:800;text-transform:uppercase;letter-spacing:1.8px;color:var(--accent);}
+  .sah-section-label::after{content:'';flex:1;height:1px;background:rgba(201,98,26,0.2);}
 
-  /* grid helpers */
-  .cd-row   { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-  .cd-row-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; }
+  /* HOW IT WORKS */
+  .sah-how-section{padding:76px 0;background:var(--white);}
+  .sah-how-header{margin-bottom:44px;}
+  .sah-steps-grid{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;}
+  .sah-step{padding:38px 28px;border-right:1px solid var(--border);}
+  .sah-step:last-child{border-right:none;}
+  .sah-step-num{font-family:'Playfair Display',serif;font-size:3rem;font-weight:900;color:#e0e0e0;display:block;line-height:1;margin-bottom:14px;}
+  .sah-step h3{font-weight:700;font-size:0.97rem;color:var(--dark);margin-bottom:9px;}
+  .sah-step p{font-size:0.85rem;color:var(--muted);line-height:1.65;}
 
-  /* ── SERVICE CARD VIEW & EDIT — 3-col grid ── */
-  .cd-svc-card { background:#faf9f7; border:1px solid #e5e0d8; border-radius:9px; padding:14px 16px; margin-bottom:10px; }
-  .cd-svc-card.editing { border-color:#c9621a; background:#fff; }
-  .cd-svc-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; align-items:start; }
-  .cd-svc-grid .cd-field { margin-bottom:0; }
+  /* FOOTER */
+  .sah-footer{background:#0e0e0e;color:rgba(255,255,255,0.55);padding:60px 0 32px;}
+  .sah-footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:48px;margin-bottom:44px;}
+  .sah-footer-logo{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:800;color:#fff;display:block;margin-bottom:12px;}
+  .sah-footer-brand p{font-size:0.85rem;line-height:1.75;max-width:260px;color:rgba(255,255,255,0.55);}
+  .sah-footer-newsletter{margin-top:20px;max-width:280px;}
+  .sah-footer-newsletter-row{display:flex;border-radius:6px;overflow:hidden;border:1px solid rgba(255,255,255,0.1);}
+  .sah-footer-newsletter input{flex:1;padding:10px 13px;background:rgba(255,255,255,0.06);border:none;color:#fff;font-family:inherit;font-size:0.82rem;outline:none;}
+  .sah-footer-newsletter button{padding:10px 14px;background:var(--accent);color:#fff;border:none;font-weight:700;font-size:0.8rem;cursor:pointer;}
+  .sah-nl-feedback{font-size:0.74rem;margin-top:6px;}
+  .sah-nl-feedback.error{color:#f87171;}
+  .sah-nl-feedback.success{color:#4ade80;}
+  .sah-footer-col h4{font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:rgba(255,255,255,0.4);margin-bottom:14px;}
+  .sah-footer-col ul{list-style:none;display:flex;flex-direction:column;gap:9px;padding:0;margin:0;}
+  .sah-footer-col ul li a{color:rgba(255,255,255,0.55);text-decoration:none;font-size:0.875rem;transition:color 0.15s;}
+  .sah-footer-col ul li a:hover{color:#fff;}
+  .sah-footer-trust{display:flex;gap:16px;align-items:center;padding:16px 0;margin-bottom:20px;border-top:1px solid rgba(255,255,255,0.07);flex-wrap:wrap;}
+  .sah-footer-trust-item{display:flex;align-items:center;gap:7px;font-size:0.78rem;color:rgba(255,255,255,0.45);}
+  .sah-footer-trust-item i{color:var(--accent);font-size:0.82rem;}
+  .sah-footer-bottom{border-top:1px solid rgba(255,255,255,0.07);padding-top:22px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;}
+  .sah-footer-bottom p{font-size:0.8rem;color:rgba(255,255,255,0.35);}
+  .sah-footer-bottom-links{display:flex;gap:20px;font-size:0.8rem;}
+  .sah-footer-bottom-links a{color:rgba(255,255,255,0.4);text-decoration:none;transition:color 0.15s;}
+  .sah-footer-bottom-links a:hover{color:#fff;}
+  .sah-footer-socials{display:flex;gap:8px;}
+  .sah-footer-soc{width:34px;height:34px;border-radius:5px;background:rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.45);font-size:0.84rem;text-decoration:none;transition:all 0.15s;}
+  .sah-footer-soc:hover{background:var(--accent);color:#fff;}
 
-  /* section label */
-  .cd-sec-label { font-size:0.67rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#c9621a; display:flex; align-items:center; gap:7px; padding-bottom:8px; border-bottom:1px solid #f0ece5; margin:16px 0 12px; }
+  /* REGISTER MODAL */
+  .sah-modal-overlay{position:fixed;inset:0;z-index:9000;background:rgba(8,0,4,0.75);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:opacity 0.22s;}
+  .sah-modal-overlay.open{opacity:1;pointer-events:all;}
+  .sah-modal-box{background:var(--white);width:460px;max-width:93vw;border-radius:var(--radius-lg);box-shadow:0 28px 72px rgba(0,0,0,0.28);overflow:hidden;transform:translateY(14px);transition:transform 0.22s ease;}
+  .sah-modal-overlay.open .sah-modal-box{transform:translateY(0);}
+  .sah-modal-head{background:#5a5a5a;padding:26px 28px 20px;position:relative;}
+  .sah-modal-head h2{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:800;color:#fff;}
+  .sah-modal-head p{font-size:0.86rem;color:rgba(255,255,255,0.65);margin-top:3px;}
+  .sah-modal-close{position:absolute;top:14px;right:14px;width:28px;height:28px;border-radius:4px;background:rgba(255,255,255,0.12);border:none;color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.88rem;transition:background 0.15s;cursor:pointer;}
+  .sah-modal-close:hover{background:rgba(255,255,255,0.22);}
+  .sah-modal-body{padding:24px 28px 28px;}
+  .sah-reg-options{display:flex;flex-direction:column;gap:10px;margin-bottom:14px;}
+  .sah-reg-opt{display:flex;align-items:center;gap:12px;padding:13px 16px;border:1.5px solid var(--border);border-radius:var(--radius);text-decoration:none;color:var(--dark);transition:all 0.15s;background:#fafaf9;}
+  .sah-reg-opt:hover{border-color:var(--accent);background:#fff8f2;}
+  .sah-reg-opt-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:0.9rem;flex-shrink:0;}
+  .sah-reg-opt-icon.user{background:#ede9fe;color:#5b21b6;}
+  .sah-reg-opt-icon.provider{background:#fef3c7;color:#92400e;}
+  .sah-reg-opt-title{font-weight:700;font-size:0.9rem;margin-bottom:1px;}
+  .sah-reg-opt-desc{font-size:0.75rem;color:var(--muted);}
+  .sah-modal-switch{text-align:center;margin-top:12px;font-size:0.85rem;color:var(--muted);}
+  .sah-modal-switch a{color:var(--accent);font-weight:600;}
 
-  /* days chips */
-  .cd-days { display:flex; flex-wrap:wrap; gap:7px; }
-  .cd-day-chip { padding:5px 12px; border-radius:20px; font-size:0.77rem; font-weight:600; transition:all .13s; border:none; }
-  .cd-day-chip.on  { background:#c9621a; color:#fff; cursor:default; }
-  .cd-day-chip.off { background:#f0ece5; color:#bbb; border:1px solid #e5e0d8; cursor:default; }
-  .cd-day-chip.clickable.off:hover { border-color:#c9621a; color:#c9621a; cursor:pointer; }
-  .cd-day-chip.clickable { cursor:pointer; }
-
-  /* tags */
-  .cd-tags { display:flex; flex-wrap:wrap; gap:7px; }
-  .cd-tag { display:inline-flex; align-items:center; gap:4px; padding:3px 11px; border-radius:20px; background:#fef3e8; color:#c9621a; border:1px solid #f0c89a; font-size:0.75rem; font-weight:600; }
-  .cd-tag button { background:none; border:none; cursor:pointer; color:#c9621a; font-size:0.68rem; padding:0; line-height:1; }
-
-  /* plan badge */
-  .cd-plan-badge { display:inline-flex; align-items:center; gap:7px; padding:8px 15px; border-radius:9px; font-size:0.82rem; font-weight:700; border:2px solid; }
-  .cd-plan-badge.free     { background:#f9f9f9; color:#666;    border-color:#e5e5e5; }
-  .cd-plan-badge.pro      { background:#eff6ff; color:#1d4ed8; border-color:#bfdbfe; }
-  .cd-plan-badge.featured { background:#fffbeb; color:#d97706; border-color:#fde68a; }
-
-  /* PLAN CARDS GRID */
-  .cd-plan-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
-  .cd-plan-card { border:2px solid #e5e0d8; border-radius:11px; padding:17px; background:#fff; position:relative; transition:border-color .18s; }
-  .cd-plan-card.is-current { border-color:#c9621a; background:#fffaf6; }
-  .cd-plan-current-badge { position:absolute; top:-1px; right:14px; background:#c9621a; color:#fff; font-size:0.63rem; font-weight:800; letter-spacing:.8px; text-transform:uppercase; padding:3px 9px; border-radius:0 0 7px 7px; }
-  .cd-plan-card-name  { font-size:0.92rem; font-weight:800; color:#1a1a1a; margin-bottom:2px; }
-  .cd-plan-card-desc  { font-size:0.72rem; color:#888; margin-bottom:9px; }
-  .cd-plan-price      { font-family:'Playfair Display',serif; font-size:1.5rem; font-weight:900; color:#c9621a; line-height:1; margin-bottom:11px; }
-  .cd-plan-price small { font-size:0.59rem; color:#888; font-weight:400; font-family:'DM Sans',sans-serif; display:block; margin-top:2px; }
-  .cd-plan-features   { list-style:none; padding:0; margin:0 0 4px; display:flex; flex-direction:column; gap:5px; }
-  .cd-plan-features li { display:flex; align-items:center; gap:6px; font-size:0.77rem; color:#555; }
-  .cd-plan-features li i { color:#10b981; font-size:0.63rem; }
-  .cd-plan-action-btn { width:100%; margin-top:12px; padding:9px; border-radius:7px; font-size:0.8rem; font-weight:700; cursor:pointer; border:none; font-family:inherit; transition:all .15s; display:flex; align-items:center; justify-content:center; gap:6px; }
-  .cd-plan-action-btn.current   { background:#fef3e8; color:#c9621a; border:2px solid #c9621a; cursor:default; pointer-events:none; }
-  .cd-plan-action-btn.upgrade   { background:#c9621a; color:#fff; }
-  .cd-plan-action-btn.upgrade:hover   { background:#a84e12; }
-  .cd-plan-action-btn.downgrade { background:#f3f4f6; color:#6b7280; border:1.5px solid #d1d5db; }
-  .cd-plan-action-btn.downgrade:hover { background:#e5e7eb; }
-
-  /* review */
-  .cd-review { padding:12px 14px; background:#faf9f7; border-radius:9px; border-left:3px solid #c9621a; margin-bottom:9px; }
-  .cd-review-stars  { color:#f59e0b; font-size:0.82rem; margin-bottom:3px; }
-  .cd-review-text   { font-size:0.84rem; color:#555; font-style:italic; }
-  .cd-review-author { font-size:0.72rem; color:#888; margin-top:3px; font-weight:600; }
-
-  /* contact */
-  .cd-contact-item { display:flex; align-items:center; gap:11px; padding:10px 0; border-bottom:1px solid #f0ece5; }
-  .cd-contact-item:last-child { border-bottom:none; }
-  .cd-contact-icon { width:31px; height:31px; border-radius:7px; background:#fef3e8; display:flex; align-items:center; justify-content:center; color:#c9621a; font-size:0.8rem; flex-shrink:0; }
-  .cd-contact-label { font-size:0.67rem; font-weight:700; text-transform:uppercase; letter-spacing:.5px; color:#aaa; }
-  .cd-contact-val   { font-size:0.85rem; color:#1a1a1a; font-weight:500; }
-
-  /* toggle switch */
-  .cd-toggle-row { display:flex; align-items:center; justify-content:space-between; }
-  .cd-switch { position:relative; display:inline-block; width:40px; height:22px; }
-  .cd-switch input { opacity:0; width:0; height:0; }
-  .cd-slider { position:absolute; cursor:pointer; inset:0; background:#d1d5db; border-radius:22px; transition:.2s; }
-  .cd-slider::before { content:''; position:absolute; height:16px; width:16px; left:3px; bottom:3px; background:#fff; border-radius:50%; transition:.2s; box-shadow:0 1px 3px rgba(0,0,0,.18); }
-  .cd-switch input:checked + .cd-slider { background:#c9621a; }
-  .cd-switch input:checked + .cd-slider::before { transform:translateX(18px); }
-
-  /* footer save bar */
-  .cd-footer-bar { display:flex; align-items:center; justify-content:space-between; padding:12px 20px; background:#faf9f7; border-top:1px solid #f0ece5; gap:10px; flex-wrap:wrap; }
-  .cd-last-edit { font-size:0.72rem; color:#aaa; display:flex; align-items:center; gap:5px; }
-
-  /* clearance badge */
-  .cd-clearance { display:inline-flex; align-items:center; gap:6px; padding:4px 11px; border-radius:6px; background:#ecfdf5; color:#059669; border:1px solid #a7f3d0; font-size:0.75rem; font-weight:700; }
-
-  /* info note */
-  .cd-info-note { display:flex; align-items:flex-start; gap:8px; padding:10px 13px; background:#fffbeb; border-radius:7px; border:1px solid #fde68a; font-size:0.77rem; color:#92400e; margin-bottom:12px; }
-  .cd-info-note i { color:#f59e0b; margin-top:1px; flex-shrink:0; }
-  .cd-info-note.last { margin-bottom:0; }
-
-  /* qual parsed success */
-  .cd-qual-parsed { padding:9px 13px; background:#ecfdf5; border-radius:7px; border:1px solid #a7f3d0; font-size:0.77rem; color:#065f46; margin-top:8px; display:flex; align-items:center; gap:7px; }
-
-  /* PHOTO — always clickable */
-  .cd-photo-wrap { position:relative; display:inline-block; flex-shrink:0; }
-  .cd-photo-img  { width:76px; height:76px; border-radius:50%; object-fit:cover; border:3px solid #c9621a; display:block; }
-  .cd-photo-placeholder { width:76px; height:76px; border-radius:50%; background:#fef3e8; border:3px solid #c9621a; display:flex; align-items:center; justify-content:center; color:#c9621a; font-size:1.5rem; }
-  .cd-photo-btn { position:absolute; bottom:0; right:0; background:#c9621a; color:#fff; border:2px solid #fff; border-radius:50%; width:25px; height:25px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:0.67rem; transition:background .15s; }
-  .cd-photo-btn:hover { background:#a84e12; }
-  .cd-photo-input { display:none; }
-
-  /* SIDEBAR */
-  .cd-sidebar-card { background:#fff; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.06); margin-bottom:14px; border:1px solid rgba(0,0,0,.05); overflow:hidden; }
-  .cd-sidebar-header { padding:12px 16px; background:#5a5a5a; }
-  .cd-sidebar-title { font-size:0.75rem; font-weight:700; color:#fff; text-transform:uppercase; letter-spacing:.7px; }
-  .cd-sidebar-body  { padding:14px 16px; }
-
-  /* completeness item */
-  .cd-comp-item { display:flex; align-items:center; gap:8px; padding:6px 0; border-bottom:1px solid #f8f6f3; }
-  .cd-comp-item:last-of-type { border-bottom:none; }
+  /* TOAST */
+  .sah-toast{position:fixed;bottom:22px;right:22px;background:var(--grey);color:#fff;padding:11px 18px;border-radius:var(--radius);font-size:0.88rem;font-weight:600;box-shadow:var(--shadow-lg);transform:translateY(60px);opacity:0;transition:all 0.26s;z-index:9999;display:flex;align-items:center;gap:8px;pointer-events:none;}
+  .sah-toast.show{transform:translateY(0);opacity:1;}
+  .sah-toast i{color:#4ade80;}
 
   /* RESPONSIVE */
-  @media(max-width:1024px) { .cd-layout { grid-template-columns:1fr; } .cd-plan-grid { grid-template-columns:1fr; } }
-  @media(max-width:768px)  {
-    .cd-main { padding:16px 14px 48px; }
-    .cd-hero-top { padding:0 16px 24px; }
-    .cd-tab-bar { padding:0 14px; overflow-x:auto; flex-wrap:nowrap; }
-    .cd-row { grid-template-columns:1fr; }
-    .cd-svc-grid { grid-template-columns:1fr 1fr; }
+  @media(max-width:1100px){
+    .sah-provider-grid{grid-template-columns:repeat(2,1fr);}
+    .sah-steps-grid{grid-template-columns:repeat(2,1fr);}
+    .sah-step:nth-child(2){border-right:none;}
+    .sah-step:nth-child(1),.sah-step:nth-child(2){border-bottom:1px solid var(--border);}
+    .sah-hero-plans-grid{grid-template-columns:repeat(3,1fr);}
+    .sah-footer-grid{grid-template-columns:1fr 1fr;gap:32px;}
   }
-  @media(max-width:520px)  {
-    .cd-svc-grid { grid-template-columns:1fr; }
-    .cd-row-3    { grid-template-columns:1fr 1fr; }
-    .cd-plan-grid { grid-template-columns:1fr; }
+  @media(max-width:768px){
+    .sah-nav-links{display:none;}
+    .sah-provider-grid{grid-template-columns:repeat(2,1fr);}
+    .sah-steps-grid{grid-template-columns:1fr;}
+    .sah-step{border-right:none!important;border-bottom:1px solid var(--border);}
+    .sah-step:last-child{border-bottom:none;}
+    .sah-fpill{font-size:0.95rem;padding:9px 18px;}
+    .sah-hero-plans-grid{grid-template-columns:1fr;}
+  }
+  @media(max-width:480px){
+    .sah-provider-grid{grid-template-columns:1fr;}
+    .sah-container{padding:0 16px;}
+    .sah-become-btn{padding:11px 20px;font-size:0.88rem;}
+  }
+  @media(max-width:640px){
+    .sah-footer{padding:44px 0 24px;}
+    .sah-footer-grid{grid-template-columns:1fr;gap:28px;}
+    .sah-footer-bottom{flex-direction:column;align-items:flex-start;gap:12px;}
+    .sah-footer-bottom-links{flex-wrap:wrap;gap:12px;}
   }
 `;
 
-/* ═══════════════════════════════════════════════════ */
-/*   COMPONENT                                         */
-/* ═══════════════════════════════════════════════════ */
-const ClientDashboard = () => {
-  const { user, updateUserPlan } = useAuth();
-  const { showNotification }     = useNotification();
-  const navigate                 = useNavigate();
-  const photoInputRef            = useRef(null);
+/* ─── FEATURED SLOT HELPERS ─────────────────────────────────────────────── */
+function getFeaturedSlotProviderIds() {
+  try {
+    const slots = JSON.parse(localStorage.getItem("sah_featured_slots") || "[]");
+    return slots
+      .filter(s => s.provider && s.providerId)
+      .map(s => ({ id: s.providerId, name: s.provider, slotId: s.id }));
+  } catch { return []; }
+}
 
-  const [activeTab,    setActiveTab]    = useState('profile');
-  const [editing,      setEditing]      = useState(false);
-  const [snapshot,     setSnapshot]     = useState(null);   // for cancel
-  const [profileData,  setProfileData]  = useState(EMPTY_PROFILE);
-  const [photoPreview, setPhotoPreview] = useState(null);
-  const [loading,      setLoading]      = useState(false);
+function getFeaturedSlotProviderNames() {
+  try {
+    const slots = JSON.parse(localStorage.getItem("sah_featured_slots") || "[]");
+    return slots.filter(s => s.provider).map(s => s.provider);
+  } catch { return []; }
+}
 
-  /* inject CSS once */
+/* ─── DATA ──────────────────────────────────────────────────────────────── */
+const SEED = [
+  {
+    id:"s1",name:"STEM Mastery Tutors",category:"tutor",location:"Johannesburg, Gauteng",
+    delivery:"Online & In-person",
+    image:"https://images.unsplash.com/photo-1522202176988-66273c2b033f?w=600&auto=format&fit=crop&q=75",
+    priceFrom:"R280/hr",badge:"featured",rating:4.9,reviewCount:62,tier:"featured",
+    registered:"2025-01-10T08:00:00Z",status:"approved",
+    primaryCategory:"Tutor",city:"Johannesburg",province:"Gauteng",deliveryMode:"Online & In-person",
+    bio:"Specialist STEM tutors for Grades 8–12.",tags:["Mathematics","Physical Sciences","Life Sciences","Grades 8–12"],
+    ageGroups:["11–13","14–18"],startingPrice:"R280/hr",availabilityDays:["Mon","Tue","Wed","Thu","Fri"],
+    phone:"+27 11 000 1111",contactEmail:"info@stemmastery.co.za",certifications:"SACE Registered",listingPlan:"featured",
+    reviews:{average:4.9,count:62,items:[{reviewer:"Nomsa P.",rating:5,text:"My son went from 40% to 82% in Maths."}]}
+  },
+  {
+    id:"s2",name:"Creative Minds Curriculum",category:"curriculum",location:"Cape Town, Western Cape",
+    delivery:"Online",
+    image:"https://images.unsplash.com/photo-1509062522246-3755977927d7?w=600&auto=format&fit=crop&q=75",
+    priceFrom:"R4 200/term",badge:"verified",rating:5.0,reviewCount:34,tier:"pro",
+    registered:"2025-01-12T09:00:00Z",status:"approved",
+    primaryCategory:"Curriculum Provider",city:"Cape Town",province:"Western Cape",deliveryMode:"Online",
+    bio:"Award-winning home education curriculum.",tags:["CAPS Aligned","Full Curriculum","Gr R–12"],
+    ageGroups:["5–7","8–10","11–13","14–18"],startingPrice:"R4 200/term",
+    phone:"+27 21 000 2222",contactEmail:"hello@creativeminds.co.za",certifications:"Umalusi Accredited",listingPlan:"pro",
+    reviews:{average:5.0,count:34,items:[{reviewer:"Riana V.",rating:5,text:"Best investment for our homeschool journey."}]}
+  },
+  {
+    id:"s3",name:"EduTherapy SA",category:"therapist",location:"Durban, KwaZulu-Natal",
+    delivery:"Hybrid",
+    image:"https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=600&auto=format&fit=crop&q=75",
+    priceFrom:"R650/session",badge:"featured",rating:4.8,reviewCount:47,tier:"featured",
+    registered:"2025-01-14T10:00:00Z",status:"approved",
+    primaryCategory:"Therapist",city:"Durban",province:"KwaZulu-Natal",deliveryMode:"Hybrid",
+    bio:"Educational therapists specialising in learning differences.",tags:["OT","ADHD","Dyslexia","Learning Support"],
+    ageGroups:["5–7","8–10","11–13"],startingPrice:"R650/session",
+    phone:"+27 31 000 3333",contactEmail:"bookings@edutherapy.co.za",certifications:"HPCSA Registered",listingPlan:"featured",
+    reviews:{average:4.8,count:47,items:[{reviewer:"Lerato M.",rating:5,text:"Transformed our daughter's confidence."}]}
+  },
+  {
+    id:"s4",name:"Future Leaders Academy",category:"school",location:"Online — National",
+    delivery:"Online",
+    image:"https://images.unsplash.com/photo-1529390079861-591de3547d13?w=600&auto=format&fit=crop&q=75",
+    priceFrom:"Custom quote",badge:"new",rating:4.7,reviewCount:18,tier:"pro",
+    registered:"2025-01-16T11:00:00Z",status:"approved",
+    primaryCategory:"Online / Hybrid School",city:"Online",province:"Gauteng",deliveryMode:"Online",
+    bio:"A fully accredited online school.",tags:["Online School","Live Classes","National","Accredited"],
+    ageGroups:["8–10","11–13","14–18"],startingPrice:"Contact for quote",
+    phone:"+27 10 000 4444",contactEmail:"enrol@futureleaders.co.za",certifications:"Umalusi Registered",listingPlan:"pro",
+    reviews:{average:4.7,count:18,items:[{reviewer:"Sipho K.",rating:5,text:"Our kids thrive in the structure."}]}
+  },
+  {
+    id:"khan",name:"Khan Academy SA",category:"curriculum",location:"Johannesburg, Gauteng",
+    delivery:"Online",
+    image:"https://images.unsplash.com/photo-1501504905252-473c47e087f8?w=600&auto=format&fit=crop&q=75",
+    priceFrom:"Free",badge:"featured",rating:4.9,reviewCount:156,tier:"featured",
+    registered:"2025-01-01T00:00:00Z",status:"approved",
+    primaryCategory:"Curriculum Provider",city:"Johannesburg",province:"Gauteng",deliveryMode:"Online",
+    bio:"Free world-class education for anyone.",tags:["Mathematics","Science","Online Learning","Free"],
+    ageGroups:["5–7","8–10","11–13","14–18"],startingPrice:"Free",
+    phone:"+27 11 555 1234",contactEmail:"support@khanacademy.org.za",email:"contact@khanacademy.org.za",
+    certifications:"Khan Academy Certified",listingPlan:"featured",
+    reviews:{average:4.9,count:156,items:[{reviewer:"Sarah J.",rating:5,text:"Excellent resource for homeschool."}]}
+  },
+];
+
+const CAT_ICON = {
+  tutor:"fa-chalkboard-teacher", therapist:"fa-heart", curriculum:"fa-book-open",
+  school:"fa-school", consultant:"fa-user-tie", extracurricular:"fa-palette"
+};
+const TIER_LBL = { featured:"Deluxe Package", pro:"Trusted Provider", free:"Community Member" };
+
+const PLANS = [
+  {
+    id:"community", name:"Community Member", desc:"Basic profile — always free", price:"R0", highlight:false,
+    features:[
+      {text:"Public profile listing",yes:true},
+      {text:"1 service category",yes:true},
+      {text:"Basic contact form",yes:true},
+      {text:"No direct contact details",yes:false},
+      {text:"No featured placement",yes:false},
+    ],
+    cta:"Get Started Free", planParam:"Free Listing – basic profile"
+  },
+  {
+    id:"trusted", name:"Trusted Provider", desc:"Full profile + direct contact details", price:"R149", highlight:true,
+    features:[
+      {text:"Everything in Community",yes:true},
+      {text:"Direct phone & email visible",yes:true},
+      {text:"Up to 3 service categories",yes:true},
+      {text:"Verified badge on profile",yes:true},
+      {text:"Priority in search results",yes:true},
+    ],
+    cta:"Start Trusted Plan", planParam:"Professional Listing – R149/month"
+  },
+  {
+    id:"featured", name:"Deluxe Package", desc:"3-month campaign · maximum exposure", price:"R399", highlight:false,
+    features:[
+      {text:"24x Billboard banners",yes:true},
+      {text:"24x Leaderboard banners",yes:true},
+      {text:"24x Skyscrapers / side panels",yes:true},
+      {text:"1x Business listing",yes:true},
+      {text:"6x Newsletter banner ads",yes:true},
+      {text:"6x Facebook post / reel",yes:true},
+      {text:"6x Instagram posts / reels",yes:true},
+      {text:"4x Newsletter ad posting",yes:true},
+      {text:"2x Full page ad in PDF per magazine",yes:true},
+      {text:"1x Native article per month",yes:true},
+    ],
+    cta:"Get the Deluxe Package", planParam:"Deluxe Package – R399/month"
+  },
+];
+
+/* ─── GET ALL PROVIDERS ──────────────────────────────────────────────────── */
+function getAll() {
+  try {
+    const stored = JSON.parse(localStorage.getItem("sah_providers") || "[]");
+    const allRaw = [...stored, ...SEED].filter(p => (p.status || "approved") === "approved");
+    const seen = new Set();
+    const all = allRaw.filter(p => { if (seen.has(p.id)) return false; seen.add(p.id); return true; });
+
+    const slotIds   = getFeaturedSlotProviderIds();
+    const slotNames = getFeaturedSlotProviderNames();
+    const slotIdSet = new Set(slotIds.map(s => s.id));
+
+    const marked = all.map(p => {
+      const inSlotById   = slotIdSet.has(p.id);
+      const inSlotByName = slotNames.includes(p.name);
+      return { ...p, _inFeaturedSlot: inSlotById || inSlotByName };
+    });
+
+    return marked.sort((a, b) => {
+      if (a._inFeaturedSlot && !b._inFeaturedSlot) return -1;
+      if (!a._inFeaturedSlot && b._inFeaturedSlot)  return 1;
+      const tierOrder = { featured:0, pro:1, free:2 };
+      const td = (tierOrder[a.tier] ?? 2) - (tierOrder[b.tier] ?? 2);
+      if (td !== 0) return td;
+      return new Date(b.registered) - new Date(a.registered);
+    });
+  } catch { return SEED; }
+}
+
+function starsStr(r) { return "★".repeat(Math.floor(r)) + (r % 1 >= 0.5 ? "½" : ""); }
+
+/* ─── SUB-COMPONENTS ─────────────────────────────────────────────────────── */
+
+// Badge: only shows featured, verified, new — no spotlight
+function Badge({ badge }) {
+  if (!badge) return null;
+  if (badge === "featured") return <span className="sah-cbadge sah-cbadge-featured">Featured</span>;
+  if (badge === "new")      return <span className="sah-cbadge sah-cbadge-new">New</span>;
+  if (badge === "verified") return <span className="sah-cbadge sah-cbadge-verified">Verified</span>;
+  return null;
+}
+
+function ProviderCard({ p, onView }) {
+  const [imgErr, setImgErr] = useState(false);
+  const ic = CAT_ICON[p.category] || "fa-star";
+  return (
+    <article className={`sah-provider-card${p._inFeaturedSlot ? " is-featured-slot" : ""}`} data-cat={p.category}>
+      <div className="sah-card-thumb">
+        {p.image && !imgErr
+          ? <img src={p.image} alt={p.name} loading="lazy" onError={() => setImgErr(true)} />
+          : <div className="sah-card-thumb-fallback"><i className={`fas ${ic}`} /></div>
+        }
+        <div className="sah-card-badges">
+          <Badge badge={p.badge} />
+        </div>
+        <button className="sah-card-save"><i className="far fa-heart" /></button>
+      </div>
+      <div className="sah-card-provider-row">
+        <div className="sah-pav"><i className={`fas ${ic}`} /></div>
+        <div>
+          <div className="sah-pav-name">{p.name}</div>
+          <div className="sah-pav-tier">{TIER_LBL[p.tier] || "Community Member"}</div>
+        </div>
+      </div>
+      <div className="sah-card-body">
+        <div className="sah-card-title">{p.name}</div>
+        <div className="sah-card-meta">
+          <span><i className="fas fa-map-marker-alt" />{p.location}</span>
+          <span><i className="fas fa-laptop" />{p.delivery}</span>
+        </div>
+        {p.rating && (
+          <div className="sah-card-rating">
+            <span className="sah-stars">{starsStr(p.rating)}</span>
+            <span className="sah-rnum">{p.rating.toFixed(1)}</span>
+            <span className="sah-rcnt">({p.reviewCount})</span>
+          </div>
+        )}
+        <div className="sah-card-foot">
+          <div>
+            <div className="sah-from-label">Starting from</div>
+            <div className="sah-card-price">{p.priceFrom || "Contact"}</div>
+          </div>
+          <button className="sah-card-cta" onClick={() => onView(p.id)}>View Profile</button>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function PlanCard({ plan, openId, onToggle, allOpen }) {
+  const isOpen = allOpen || openId === plan.id;
+  return (
+    <div className={`sah-plan-item${plan.highlight ? " highlight" : ""}`} onClick={() => onToggle(plan.id)}>
+      <div className="sah-plan-header">
+        <div className="sah-plan-info">
+          <div className="sah-plan-name">{plan.name}</div>
+          <div className="sah-plan-desc">{plan.desc}</div>
+        </div>
+        <div className="sah-plan-right">
+          <div className="sah-plan-price">{plan.price}<small>/ month</small></div>
+          <i className={`fas fa-chevron-down sah-plan-chevron${isOpen ? " open" : ""}`} />
+        </div>
+      </div>
+      <div className={`sah-plan-details${isOpen ? " open" : ""}`}>
+        <div className="sah-plan-details-inner">
+          <div className="sah-plan-details-content">
+            <ul className="sah-plan-features">
+              {plan.features.map((f, i) => (
+                <li key={i} className={f.yes ? "" : "no"}>
+                  {f.yes
+                    ? <i className="fas fa-check sah-ico-yes" />
+                    : <i className="fas fa-times sah-ico-no" />
+                  }
+                  {f.text}
+                </li>
+              ))}
+            </ul>
+            <Link
+              to={`/register/provider?plan=${encodeURIComponent(plan.planParam)}`}
+              className="sah-plan-cta-link"
+              onClick={e => e.stopPropagation()}
+            >
+              {plan.cta}
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── MAIN COMPONENT ─────────────────────────────────────────────────────── */
+export default function HomePage() {
+  const navigate = useNavigate();
+  const [searchTerm, setSearchTerm]     = useState("");
+  const [searchCat, setSearchCat]       = useState("");
+  const [activeCat, setActiveCat]       = useState("all");
+  const [providers, setProviders]       = useState([]);
+  const [showAllProviders, setShowAllProviders] = useState(false);
+  const [openPlanId, setOpenPlanId]     = useState(null);
+  const [allPlansOpen, setAllPlansOpen] = useState(false);
+  const [plansVisible, setPlansVisible] = useState(false);
+  const [regModal, setRegModal]         = useState(false);
+  const [nlEmail, setNlEmail]           = useState("");
+  const [nlMsg, setNlMsg]               = useState({ text:"", type:"" });
+  const [toast, setToast]               = useState({ show:false, msg:"", err:false });
+  const [featuredSlotCount, setFeaturedSlotCount] = useState(0);
+
   useEffect(() => {
-    if (!document.getElementById('cd-styles')) {
-      const s = document.createElement('style');
-      s.id = 'cd-styles'; s.textContent = DASH_CSS;
+    injectHead();
+    if (!document.getElementById("sah-styles")) {
+      const s = document.createElement("style");
+      s.id = "sah-styles"; s.textContent = CSS;
       document.head.appendChild(s);
-    }
-    if (!document.getElementById('cd-fonts')) {
-      const l = document.createElement('link');
-      l.id = 'cd-fonts'; l.rel = 'stylesheet';
-      l.href = 'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700&family=DM+Sans:wght@400;500;600;700&display=swap';
-      document.head.appendChild(l);
     }
   }, []);
 
-  /* load data */
   useEffect(() => {
-    const cu = getCurrentUser();
-    if (!cu) { navigate('/login'); return; }
-    const stored = cu.id ? getProviderById(cu.id) : null;
-    if (stored) {
-      setProfileData({ ...EMPTY_PROFILE, ...stored });
-      const photo = stored.profilePhoto || stored.photo || stored.image || null;
-      setPhotoPreview(photo);
-    } else {
-      setProfileData(prev => ({
-        ...prev,
-        id: cu.id || prev.id,
-        name: cu.name || prev.name,
-        email: cu.email || prev.email,
-        plan: cu.plan || prev.plan,
-        contactEmail: cu.email || prev.contactEmail,
-      }));
-    }
-  }, [navigate]);
+    const h = (e) => { if (e.key === "Escape") setRegModal(false); };
+    window.addEventListener("keydown", h);
+    return () => window.removeEventListener("keydown", h);
+  }, []);
 
-  /* computed */
-  const maxServices  = (getPlanLimits && getPlanLimits(profileData.plan)?.maxServices) || (profileData.plan === 'featured' ? 10 : profileData.plan === 'pro' ? 5 : 1);
-  const svcCount     = profileData.services?.length || 1;
-  const isPaidPlan   = profileData.plan === 'pro' || profileData.plan === 'featured';
-  const planOrder    = { free: 0, pro: 1, featured: 2 };
+  useEffect(() => {
+    const all = getAll();
+    setProviders(all);
+    setFeaturedSlotCount(all.filter(p => p._inFeaturedSlot).length);
+  }, []);
 
-  /* ─── edit helpers ─── */
-  const startEdit   = () => { setSnapshot({ ...profileData }); setEditing(true); };
-  const cancelEdit  = () => { if (snapshot) setProfileData(snapshot); setEditing(false); showNotification('Changes discarded', 'info'); };
-  const toggleEdit  = () => editing ? cancelEdit() : startEdit();
+  const showToast = useCallback((msg, err = false) => {
+    setToast({ show:true, msg, err });
+    setTimeout(() => setToast(t => ({ ...t, show:false })), 3500);
+  }, []);
 
-  const upd = (patch) => setProfileData(prev => ({ ...prev, ...patch }));
-
-  const saveChanges = () => {
-    setLoading(true);
-    try {
-      const toSave = { ...profileData, social: profileData.website || profileData.social || '' };
-      saveProviderById(toSave);
-      const cu = getCurrentUser();
-      if (cu) localStorage.setItem('sah_current_user', JSON.stringify({ ...cu, name: profileData.name, plan: profileData.plan }));
-      setSnapshot({ ...profileData });
-      setEditing(false);
-      showNotification('Changes saved!', 'success');
-    } catch { showNotification('Error saving changes', 'error'); }
-    finally { setLoading(false); }
+  const handleSearch = () => {
+    const term = searchTerm.trim().toLowerCase();
+    let list = getAll();
+    if (searchCat) list = list.filter(p => p.category === searchCat);
+    if (term) list = list.filter(p =>
+      p.name.toLowerCase().includes(term) ||
+      (p.location || "").toLowerCase().includes(term) ||
+      (p.tags || []).some(t => t.toLowerCase().includes(term))
+    );
+    setProviders(list);
+    setShowAllProviders(false);
+    document.getElementById("sah-providers")?.scrollIntoView({ behavior:"smooth" });
   };
 
-  /* ─── photo (always active, no edit mode required) ─── */
-  const handlePhotoChange = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const b64 = ev.target.result;
-      setPhotoPreview(b64);
-      upd({ photo: b64, image: b64, profilePhoto: b64 });
-      // auto-save photo immediately
-      const toSave = { ...profileData, photo: b64, image: b64, profilePhoto: b64, social: profileData.website || profileData.social || '' };
-      saveProviderById(toSave);
-      showNotification('Photo updated!', 'success');
-    };
-    reader.readAsDataURL(file);
+  const filterCat = (cat) => {
+    setActiveCat(cat);
+    setShowAllProviders(false);
+    let list = getAll();
+    if (cat !== "all") list = list.filter(p => p.category === cat);
+    setProviders(list);
   };
 
-  /* ─── service helpers ─── */
-  const addService    = () => { if (svcCount < maxServices) upd({ services: [...profileData.services, { title: '', ageGroups: [], deliveryMode: 'Online', description: '', subjects: '' }] }); };
-  const updService    = (i, s) => { const a = [...profileData.services]; a[i] = s; upd({ services: a }); };
-  const removeService = (i)    => { if (profileData.services.length > 1) upd({ services: profileData.services.filter((_, idx) => idx !== i) }); };
+  const togglePlan = (id) => {
+    setAllPlansOpen(false);
+    setOpenPlanId(prev => prev === id ? null : id);
+  };
 
-  /* ─── day toggle ─── */
-  const toggleDay = (d) => upd({ availabilityDays: profileData.availabilityDays.includes(d) ? profileData.availabilityDays.filter(x => x !== d) : [...profileData.availabilityDays, d] });
-
-  /* ─── qualification file ─── */
-  const handleQualFile = (e) => {
-    const file = e.target.files?.[0]; if (!file) return;
-    const base  = file.name.replace(/\.[^.]+$/, '').replace(/[_\-.]/g, ' ').replace(/\s+/g, ' ').trim();
-    const lc    = base.toLowerCase();
-    const degKw = ['bed','bsc','ba ','honours','diploma','degree','masters','phd','med ','pgce'];
-    const cerKw = ['sace','umalusi','cert','accredited','registered','clearance'];
-    const hasDeg = degKw.some(k => lc.includes(k)), hasCer = cerKw.some(k => lc.includes(k));
-    if (file.name.toLowerCase().endsWith('.txt')) {
-      const r = new FileReader();
-      r.onload = (ev) => {
-        const lines = ev.target.result.split('\n').map(l => l.trim()).filter(Boolean);
-        const dL = lines.find(l => degKw.some(k => l.toLowerCase().includes(k)));
-        const cL = lines.find(l => cerKw.some(k => l.toLowerCase().includes(k)));
-        const mL = lines.find(l => l.toLowerCase().includes('member'));
-        upd({ degrees: dL || profileData.degrees || base, certifications: cL || profileData.certifications || '', memberships: mL || profileData.memberships, _qualFileName: file.name });
-        showNotification('File parsed — review the pre-filled fields.', 'success');
-      };
-      r.readAsText(file);
-    } else {
-      upd({ degrees: hasDeg ? base : profileData.degrees, certifications: hasCer ? base : profileData.certifications, _qualFileName: file.name });
-      showNotification('File attached — please review pre-filled fields.', 'info');
+  const handleBecomeProvider = (e) => {
+    if (e) e.preventDefault();
+    const next = !plansVisible;
+    setPlansVisible(next);
+    if (next) {
+      setAllPlansOpen(true);
+      setTimeout(() => {
+        document.getElementById("sah-plans-anchor")?.scrollIntoView({ behavior:"smooth", block:"center" });
+      }, 80);
     }
   };
 
-  /* ─── plan change ─── */
-  const handlePlanChange = (p) => {
-    upd({ plan: p });
-    if (updateUserPlan) updateUserPlan(p);
-    const names = { free: 'Community Member', pro: 'Trusted Provider', featured: 'Featured Partner' };
-    showNotification(`Plan changed to ${names[p] || p}`, 'success');
+  const viewProfile = (id) => { navigate("/profile?id=" + id); };
+
+  const handleNewsletter = () => {
+    const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(nlEmail.trim());
+    if (!nlEmail.trim() || !valid) {
+      setNlMsg({ text:"Please enter a valid email address.", type:"error" });
+      return;
+    }
+    setNlMsg({ text:"You're subscribed — thank you!", type:"success" });
+    setNlEmail("");
   };
 
-  /* ─── misc ─── */
-  const getPlanName = () => ({ free: 'Community Member (Free)', pro: 'Trusted Provider (R149/mo)', featured: 'Featured Partner (R399/mo)' }[profileData.plan] || 'Community Member');
-  const statusInfo  = { approved: { cls: 'approved', icon: 'fa-check-circle', label: 'Approved — Live' }, rejected: { cls: 'rejected', icon: 'fa-times-circle', label: 'Rejected' }, pending: { cls: 'pending', icon: 'fa-clock', label: 'Pending Approval' } }[profileData.status] || { cls: 'pending', icon: 'fa-clock', label: 'Pending Approval' };
-  const days        = DAYS_OF_WEEK || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-
-  /* completeness */
-  const compItems = [
-    { label: 'Name & Bio',      done: !!(profileData.name && profileData.bio) },
-    { label: 'Photo',           done: !!(profileData.image || profileData.photo || profileData.profilePhoto) },
-    { label: 'Services',        done: (profileData.services || []).some(s => s.title) },
-    { label: 'Location',        done: !!(profileData.city && profileData.province) },
-    { label: 'Contact Details', done: !!(profileData.phone && profileData.contactEmail) },
-    { label: 'Qualifications',  done: !!(profileData.degrees || profileData.certifications) },
-    { label: 'Availability',    done: (profileData.availabilityDays || []).length > 0 },
+  const FILTER_PILLS = [
+    { cat:"all",            label:"All Services" },
+    { cat:"tutor",          label:"Tutors",         icon:"fa-chalkboard-teacher" },
+    { cat:"therapist",      label:"Therapists",     icon:"fa-heart" },
+    { cat:"curriculum",     label:"Curriculum",     icon:"fa-book-open" },
+    { cat:"school",         label:"Online Schools", icon:"fa-school" },
+    { cat:"consultant",     label:"Consultants",    icon:"fa-user-tie" },
+    { cat:"extracurricular",label:"Enrichment",     icon:"fa-palette" },
   ];
-  const compPct = Math.round(compItems.filter(x => x.done).length / compItems.length * 100);
 
-  /* ─────────────────────────────────────────── */
-  /* SAVE BAR (reused in each tab footer)         */
-  /* ─────────────────────────────────────────── */
-  const SaveBar = () => editing ? (
-    <div className="cd-footer-bar">
-      <span className="cd-last-edit"><i className="far fa-clock"></i> unsaved changes</span>
-      <div style={{ display: 'flex', gap: 8 }}>
-        <button className="cd-btn-solid" onClick={saveChanges} disabled={loading}><i className="fas fa-floppy-disk"></i> {loading ? 'Saving…' : 'Save Changes'}</button>
-        <button className="cd-btn-solid cancel" onClick={cancelEdit} disabled={loading}>Cancel</button>
-      </div>
-    </div>
-  ) : null;
+  const displayedProviders = showAllProviders ? providers : providers.slice(0, 4);
 
-  /* ─────────────────────────────────────────── */
-  /* SIDEBAR                                      */
-  /* ─────────────────────────────────────────── */
-  const Sidebar = () => (
-    <div>
-      {/* Completeness */}
-      <div className="cd-sidebar-card">
-        <div className="cd-sidebar-header"><div className="cd-sidebar-title"><i className="fas fa-tasks" style={{ marginRight: 6 }}></i>Profile Completeness</div></div>
-        <div className="cd-sidebar-body">
-          {compItems.map(({ label, done }) => (
-            <div key={label} className="cd-comp-item">
-              <i className={`fas ${done ? 'fa-check-circle' : 'fa-circle'}`} style={{ color: done ? '#10b981' : '#d1d5db', fontSize: '0.82rem', width: 14 }}></i>
-              <span style={{ fontSize: '0.8rem', color: done ? '#1a1a1a' : '#999', fontWeight: done ? 600 : 400 }}>{label}</span>
+  return (
+    <div className="sah-wrap">
+
+      {/* HEADER */}
+      <header className="sah-header">
+        <div className="sah-container sah-nav-inner">
+          <Link to="/" className="sah-brand">
+            <div className="sah-brand-divider" />
+            <div className="sah-brand-text">
+              <span className="sah-brand-name">SA Homeschooling</span>
+              <span className="sah-brand-tag">Education Services</span>
             </div>
-          ))}
-          <div style={{ marginTop: 10 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
-              <span style={{ fontSize: '0.69rem', color: '#888', fontWeight: 700 }}>COMPLETE</span>
-              <span style={{ fontSize: '0.69rem', color: '#c9621a', fontWeight: 800 }}>{compPct}%</span>
-            </div>
-            <div style={{ height: 5, background: '#f0ece5', borderRadius: 3, overflow: 'hidden' }}>
-              <div style={{ height: '100%', width: `${compPct}%`, background: 'linear-gradient(90deg,#c9621a,#e07a35)', borderRadius: 3, transition: 'width .5s' }} />
-            </div>
+          </Link>
+          <nav className="sah-nav-links">
+            <a href="#sah-providers">Find Services</a>
+            <a href="#sah-how">How It Works</a>
+            <a href="#sah-plans-anchor" onClick={handleBecomeProvider}>Become a Provider</a>
+            <a href="https://sahomeschooling.com" target="_blank" rel="noreferrer">
+              Magazine <i className="fas fa-arrow-up-right-from-square" style={{ fontSize:"0.65rem" }} />
+            </a>
+          </nav>
+          <div className="sah-nav-ctas">
+            <button className="sah-btn-ghost-nav" onClick={() => navigate('/login')}>Log In</button>
+            <button className="sah-btn-solid-nav" onClick={() => setRegModal(true)}>Register</button>
           </div>
         </div>
-      </div>
+      </header>
 
-      {/* Quick nav */}
-      <div className="cd-sidebar-card">
-        <div className="cd-sidebar-header"><div className="cd-sidebar-title"><i className="fas fa-bolt" style={{ marginRight: 6 }}></i>Quick Navigation</div></div>
-        <div className="cd-sidebar-body" style={{ padding: '8px 0' }}>
-          {TABS.map(t => (
-            <button key={t.id} onClick={() => setActiveTab(t.id)} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '9px 16px', width: '100%', background: activeTab === t.id ? '#fef3e8' : 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.81rem', fontWeight: activeTab === t.id ? 700 : 500, color: activeTab === t.id ? '#c9621a' : '#555', transition: 'all .13s' }}>
-              <i className={`fas ${t.icon}`} style={{ width: 13, color: activeTab === t.id ? '#c9621a' : '#aaa' }}></i>
-              {t.label}
-            </button>
-          ))}
-        </div>
-      </div>
+      {/* HERO */}
+      <section className="sah-hero">
+        <div className="sah-hero-bg" />
+        <div className="sah-container">
+          <div className="sah-hero-inner">
+            <div className="sah-hero-top">
+              <h1 className="sah-hero-h1">
+                Find the Right <em>Support</em><br />for Your Child's Education
+              </h1>
 
-      {/* Pending notice */}
-      {profileData.status === 'pending' && (
-        <div className="cd-sidebar-card">
-          <div className="cd-sidebar-header" style={{ background: '#92400e' }}><div className="cd-sidebar-title"><i className="fas fa-clock" style={{ marginRight: 6 }}></i>Pending Review</div></div>
-          <div className="cd-sidebar-body"><p style={{ fontSize: '0.8rem', color: '#555', lineHeight: 1.65 }}>Your profile is awaiting admin verification. Once approved it will appear live in the directory — typically 1–2 business days.</p></div>
-        </div>
-      )}
-    </div>
-  );
-
-  /* ═══════════════════════════════════════════════════ */
-  /* TAB: PROFILE                                         */
-  /* ═══════════════════════════════════════════════════ */
-  const TabProfile = () => (
-    <div className="cd-layout">
-      <div>
-        {/* Account Information — edit toggle lives HERE */}
-        <div className="cd-card">
-          <div className="cd-card-header">
-            <div className="cd-card-header-icon"><i className="fas fa-id-card"></i></div>
-            <div><div className="cd-card-title">Account Information</div><div className="cd-card-subtitle">Your public-facing identity</div></div>
-            {/* ── Edit button moved from Profile card to Account Information ── */}
-            <button className={`cd-edit-toggle ${editing ? 'active' : 'inactive'}`} onClick={toggleEdit}>
-              <i className={`fas ${editing ? 'fa-pencil-alt' : 'fa-edit'}`}></i>
-              {editing ? 'Editing…' : 'Edit Profile'}
-            </button>
-          </div>
-          <div className="cd-card-body">
-            {/* Photo row — ALWAYS clickable, no edit mode needed */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 18, paddingBottom: 16, borderBottom: '1px solid #f0ece5' }}>
-              <div className="cd-photo-wrap">
-                {photoPreview
-                  ? <img src={photoPreview} alt="Profile" className="cd-photo-img" />
-                  : <div className="cd-photo-placeholder"><i className="fas fa-user"></i></div>}
-                <div className="cd-photo-btn" onClick={() => photoInputRef.current?.click()} title="Change photo">
-                  <i className="fas fa-camera"></i>
-                </div>
-                <input ref={photoInputRef} type="file" accept="image/*" className="cd-photo-input" onChange={handlePhotoChange} />
-              </div>
-              <div>
-                <div style={{ fontWeight: 700, fontSize: '0.88rem', color: '#1a1a1a' }}>{profileData.name || 'Your Name'}</div>
-                <div style={{ fontSize: '0.76rem', color: '#888', margin: '2px 0 6px' }}>{profileData.email}</div>
-                <button onClick={() => photoInputRef.current?.click()} style={{ background: 'none', border: 'none', color: '#c9621a', fontSize: '0.73rem', fontWeight: 600, cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: 4, fontFamily: 'inherit' }}>
-                  <i className="fas fa-camera"></i> Change photo / logo
-                </button>
-              </div>
-            </div>
-
-            <div className="cd-row">
-              <div className="cd-field">
-                <label className="cd-label">Full Name / Business <span className="req">*</span></label>
-                {editing ? <input className="cd-input" type="text" value={profileData.name} onChange={e => upd({ name: e.target.value })} placeholder="Name or business name" />
-                  : <div className={`cd-value ${!profileData.name ? 'empty' : ''}`}>{profileData.name || '—'}</div>}
-              </div>
-              <div className="cd-field">
-                <label className="cd-label">Email Address <span className="req">*</span></label>
-                {editing ? <input className="cd-input" type="email" value={profileData.email} onChange={e => upd({ email: e.target.value })} />
-                  : <div className={`cd-value ${!profileData.email ? 'empty' : ''}`}>{profileData.email || '—'}</div>}
-              </div>
-              <div className="cd-field">
-                <label className="cd-label">Account Type</label>
-                {editing ? (
-                  <select className="cd-input cd-select" value={profileData.accountType} onChange={e => upd({ accountType: e.target.value })}>
-                    <option>Individual Provider</option>
-                    <option>Organisation / Company</option>
-                  </select>
-                ) : <div className={`cd-value ${!profileData.accountType ? 'empty' : ''}`}>{profileData.accountType || '—'}</div>}
-              </div>
-              <div className="cd-field">
-                <label className="cd-label">Years of Experience</label>
-                {editing ? <input className="cd-input" type="number" value={profileData.yearsExperience} min={0} max={60} onChange={e => upd({ yearsExperience: e.target.value })} />
-                  : <div className={`cd-value ${!profileData.yearsExperience ? 'empty' : ''}`}>{profileData.yearsExperience || '—'}</div>}
-              </div>
-            </div>
-
-            <div className="cd-field" style={{ marginTop: 4 }}>
-              <label className="cd-label">Short Bio <span className="req">*</span></label>
-              {editing
-                ? <textarea className="cd-input cd-textarea" value={profileData.bio} onChange={e => upd({ bio: e.target.value })} placeholder="Tell families about your experience and approach…" />
-                : <div className={`cd-value ${!profileData.bio ? 'empty' : ''}`} style={{ display: 'block', lineHeight: 1.6, padding: '7px 0' }}>{profileData.bio || 'No bio added yet.'}</div>}
-            </div>
-
-            <div className="cd-field">
-              <label className="cd-label">Primary Category</label>
-              {editing ? (
-                <select className="cd-input cd-select" value={profileData.primaryCategory} onChange={e => upd({ primaryCategory: e.target.value })}>
-                  <option value="">-- Select --</option>
-                  {['Tutor', 'Therapist', 'Curriculum Provider', 'Online / Hybrid School', 'Educational Consultant', 'Extracurricular / Enrichment'].map(o => <option key={o}>{o}</option>)}
+              {/* SEARCH BAR */}
+              <div className="sah-hero-search">
+                <div className="sah-hs-icon"><i className="fas fa-search" /></div>
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)}
+                  onKeyDown={e => e.key === "Enter" && handleSearch()}
+                  placeholder="Search subjects, services or provider names..."
+                />
+                <div className="sah-hs-sep" />
+                <select value={searchCat} onChange={e => setSearchCat(e.target.value)}>
+                  <option value="">All Categories</option>
+                  <option value="tutor">Tutors</option>
+                  <option value="therapist">Therapists</option>
+                  <option value="curriculum">Curriculum</option>
+                  <option value="school">Online Schools</option>
+                  <option value="consultant">Consultants</option>
+                  <option value="extracurricular">Enrichment</option>
                 </select>
-              ) : <div className={`cd-value ${!profileData.primaryCategory ? 'empty' : ''}`}>{profileData.primaryCategory || '—'}</div>}
-            </div>
+                <button className="sah-hs-btn" onClick={handleSearch}>Search</button>
+              </div>
 
-            <div className="cd-field">
-              <label className="cd-label">Tags / Subjects</label>
-              {editing
-                ? <TagsInput tags={profileData.tags} isEditing onAddTag={t => !profileData.tags.includes(t) && upd({ tags: [...profileData.tags, t] })} onRemoveTag={i => upd({ tags: profileData.tags.filter((_, idx) => idx !== i) })} />
-                : <div className="cd-tags">{profileData.tags?.length > 0 ? profileData.tags.map((t, i) => <span key={i} className="cd-tag">{t}</span>) : <span className="cd-value empty" style={{ padding: 0 }}>No tags yet</span>}</div>}
-            </div>
-          </div>
-          <SaveBar />
-        </div>
-
-        {/* Qualifications */}
-        <div className="cd-card">
-          <div className="cd-card-header">
-            <div className="cd-card-header-icon"><i className="fas fa-graduation-cap"></i></div>
-            <div><div className="cd-card-title">Qualifications & Experience</div><div className="cd-card-subtitle">Credentials that build trust</div></div>
-          </div>
-          <div className="cd-card-body">
-            {editing && (
-              <div className="cd-field">
-                <label className="cd-label"><i className="fas fa-upload" style={{ marginRight: 5 }}></i>Upload Qualification File (auto-fill)</label>
-                <input type="file" accept=".pdf,.doc,.docx,.txt,.jpg,.png" className="cd-input" style={{ padding: '7px 10px', fontSize: '0.8rem', cursor: 'pointer' }} onChange={handleQualFile} />
-                {profileData._qualFileName && <div className="cd-qual-parsed"><i className="fas fa-check-circle"></i> <strong>{profileData._qualFileName}</strong> — review fields below.</div>}
-              </div>
-            )}
-            <div className="cd-row">
-              <div className="cd-field">
-                <label className="cd-label">Degrees / Diplomas</label>
-                {editing ? <input className="cd-input" type="text" value={profileData.degrees} onChange={e => upd({ degrees: e.target.value })} placeholder="e.g. BEd Honours, Mathematics" />
-                  : <div className={`cd-value ${!profileData.degrees ? 'empty' : ''}`}>{profileData.degrees || '—'}</div>}
-              </div>
-              <div className="cd-field">
-                <label className="cd-label">Certifications</label>
-                {editing ? <input className="cd-input" type="text" value={profileData.certifications} onChange={e => upd({ certifications: e.target.value })} placeholder="e.g. SACE Registered" />
-                  : <div className={`cd-value ${!profileData.certifications ? 'empty' : ''}`}>{profileData.certifications || '—'}</div>}
-              </div>
-              <div className="cd-field">
-                <label className="cd-label">Professional Memberships</label>
-                {editing ? <input className="cd-input" type="text" value={profileData.memberships} onChange={e => upd({ memberships: e.target.value })} placeholder="e.g. SA Curriculum Association" />
-                  : <div className={`cd-value ${!profileData.memberships ? 'empty' : ''}`}>{profileData.memberships || '—'}</div>}
-              </div>
-              <div className="cd-field">
-                <label className="cd-label">Background Clearance</label>
-                {editing ? <input className="cd-input" type="text" value={profileData.clearance} onChange={e => upd({ clearance: e.target.value })} placeholder="e.g. Verified 2024 — Cert No. 12345" />
-                  : profileData.clearance ? <span className="cd-clearance"><i className="fas fa-shield-alt"></i>{profileData.clearance}</span>
-                  : <div className="cd-value empty">Not provided</div>}
-              </div>
-            </div>
-          </div>
-          <SaveBar />
-        </div>
-      </div>
-      <Sidebar />
-    </div>
-  );
-
-  /* ═══════════════════════════════════════════════════ */
-  /* TAB: SERVICES                                        */
-  /* ═══════════════════════════════════════════════════ */
-  const TabServices = () => (
-    <div className="cd-layout">
-      <div>
-        <div className="cd-card">
-          <div className="cd-card-header">
-            <div className="cd-card-header-icon"><i className="fas fa-briefcase"></i></div>
-            <div><div className="cd-card-title">Service Details</div><div className="cd-card-subtitle">What you offer to homeschooling families</div></div>
-            <button className={`cd-edit-toggle ${editing ? 'active' : 'inactive'}`} onClick={toggleEdit}>
-              <i className={`fas ${editing ? 'fa-pencil-alt' : 'fa-edit'}`}></i> {editing ? 'Editing…' : 'Edit'}
-            </button>
-          </div>
-          <div className="cd-card-body">
-            <div className="cd-info-note">
-              <i className="fas fa-info-circle"></i>
-              {profileData.plan === 'featured' ? 'Featured Partner: You can add up to 10 services.'
-                : profileData.plan === 'pro' ? 'Trusted Provider: You can add up to 5 services.'
-                : 'Free plan: 1 service. Upgrade to add more.'}
-            </div>
-
-            {(profileData.services || []).map((svc, idx) => (
-              <div key={idx} className={`cd-svc-card ${editing ? 'editing' : ''}`}>
-                {/* ── SERVICE CARD: 3-column grid, properly aligned ── */}
-                {editing ? (
-                  <div>
-                    <div className="cd-svc-grid">
-                      {/* col 1: title */}
-                      <div className="cd-field">
-                        <label className="cd-label">Service Title <span className="req">*</span></label>
-                        <input className="cd-input" type="text" value={svc.title || ''} placeholder="e.g. Maths Tutor Gr 10–12" onChange={e => updService(idx, { ...svc, title: e.target.value })} />
-                      </div>
-                      {/* col 2: age groups */}
-                      <div className="cd-field">
-                        <label className="cd-label">Age Group Served</label>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
-                          {['5–7', '8–10', '11–13', '14–18'].map(ag => (
-                            <label key={ag} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: '0.79rem', cursor: 'pointer', userSelect: 'none' }}>
-                              <input type="checkbox" style={{ accentColor: '#c9621a' }}
-                                checked={(svc.ageGroups || []).includes(ag)}
-                                onChange={e => updService(idx, { ...svc, ageGroups: e.target.checked ? [...(svc.ageGroups || []), ag] : (svc.ageGroups || []).filter(a => a !== ag) })} />
-                              {ag}
-                            </label>
-                          ))}
-                        </div>
-                      </div>
-                      {/* col 3: delivery */}
-                      <div className="cd-field">
-                        <label className="cd-label">Mode of Delivery</label>
-                        <select className="cd-input cd-select" value={svc.deliveryMode || 'Online'} onChange={e => updService(idx, { ...svc, deliveryMode: e.target.value })}>
-                          <option>Online</option>
-                          <option>In-person</option>
-                          <option>Hybrid (Online &amp; In-person)</option>
-                        </select>
-                      </div>
-                    </div>
-                    {/* row 2 */}
-                    <div className="cd-row" style={{ marginTop: 10 }}>
-                      <div className="cd-field" style={{ marginBottom: 0 }}>
-                        <label className="cd-label">Subjects / Specialisations</label>
-                        <input className="cd-input" type="text" value={svc.subjects || ''} placeholder="e.g. Mathematics, Dance" onChange={e => updService(idx, { ...svc, subjects: e.target.value })} />
-                      </div>
-                      <div className="cd-field" style={{ marginBottom: 0 }}>
-                        <label className="cd-label">Service Description</label>
-                        <textarea className="cd-input cd-textarea" style={{ minHeight: 55 }} value={svc.description || ''} placeholder="Brief description…" onChange={e => updService(idx, { ...svc, description: e.target.value })} />
-                      </div>
-                    </div>
-                    {isPaidPlan && (profileData.services || []).length > 1 && (
-                      <button onClick={() => removeService(idx)} style={{ marginTop: 10, background: 'none', border: '1px solid #fca5a5', color: '#dc2626', borderRadius: 6, padding: '5px 12px', fontSize: '0.73rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
-                        <i className="fas fa-times" style={{ marginRight: 4 }}></i>Remove
-                      </button>
-                    )}
-                  </div>
-                ) : (
-                  /* VIEW mode — clean 3-column grid */
-                  <div className="cd-svc-grid">
-                    <div className="cd-field">
-                      <label className="cd-label">Service Title</label>
-                      <div className="cd-value" style={{ fontWeight: 600, display: 'block', padding: '5px 0' }}>
-                        {svc.title || <span style={{ color: '#bbb', fontStyle: 'italic' }}>Untitled</span>}
-                        {svc.description && <div style={{ fontSize: '0.76rem', color: '#666', marginTop: 3, fontWeight: 400, lineHeight: 1.5 }}>{svc.description}</div>}
-                      </div>
-                    </div>
-                    <div className="cd-field">
-                      <label className="cd-label">Age Group Served</label>
-                      <div className="cd-value" style={{ flexWrap: 'wrap', gap: 5, padding: '5px 0' }}>
-                        {(svc.ageGroups || []).length > 0
-                          ? (svc.ageGroups).map(a => <span key={a} className="cd-tag" style={{ fontSize: '0.72rem', padding: '2px 9px' }}>{a}</span>)
-                          : <span style={{ color: '#bbb', fontStyle: 'italic' }}>—</span>}
-                      </div>
-                    </div>
-                    <div className="cd-field">
-                      <label className="cd-label">Mode of Delivery</label>
-                      <div className={`cd-value ${!svc.deliveryMode ? 'empty' : ''}`} style={{ padding: '5px 0' }}>{svc.deliveryMode || '—'}</div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-
-            {editing && isPaidPlan && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 4 }}>
-                <button onClick={addService} disabled={svcCount >= maxServices}
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 15px', borderRadius: 7, border: '1.5px dashed #c9621a', background: '#fef3e8', color: '#c9621a', fontWeight: 700, fontSize: '0.8rem', fontFamily: 'inherit', cursor: svcCount >= maxServices ? 'not-allowed' : 'pointer', opacity: svcCount >= maxServices ? 0.5 : 1 }}>
-                  <i className="fas fa-plus-circle"></i> Add Service
+              {/* HERO TAGLINE */}
+              <div className="sah-hero-tagline">
+                <h2>Are You a Homeschooling Service Provider?</h2>
+                <p>
+                  Reach thousands of South African homeschooling families. List your services
+                  on our dedicated directory — free to start.
+                </p>
+                <button
+                  className={`sah-become-btn${plansVisible ? " active" : ""}`}
+                  onClick={handleBecomeProvider}
+                >
+                  <i className="fas fa-store" />
+                  Become a Service Provider
+                  <i className={`fas fa-chevron-down sah-chev`} />
                 </button>
-                <span style={{ fontSize: '0.74rem', color: '#888' }}>{svcCount}/{maxServices} used</span>
-              </div>
-            )}
-            {editing && !isPaidPlan && (
-              <div className="cd-info-note last" style={{ marginTop: 8 }}>
-                <i className="fas fa-lock"></i>
-                <span>Want more services? <span style={{ fontWeight: 700, color: '#c9621a', cursor: 'pointer', textDecoration: 'underline' }} onClick={() => setActiveTab('plan')}>Upgrade your plan →</span></span>
-              </div>
-            )}
-          </div>
-          <SaveBar />
-        </div>
-      </div>
-      <Sidebar />
-    </div>
-  );
-
-  /* ═══════════════════════════════════════════════════ */
-  /* TAB: LOCATION & PRICING                              */
-  /* ═══════════════════════════════════════════════════ */
-  const TabLocation = () => (
-    <div className="cd-layout">
-      <div>
-        <div className="cd-card">
-          <div className="cd-card-header">
-            <div className="cd-card-header-icon"><i className="fas fa-map-marker-alt"></i></div>
-            <div><div className="cd-card-title">Location & Reach</div><div className="cd-card-subtitle">Where you serve families</div></div>
-            <button className={`cd-edit-toggle ${editing ? 'active' : 'inactive'}`} onClick={toggleEdit}>
-              <i className={`fas ${editing ? 'fa-pencil-alt' : 'fa-edit'}`}></i> {editing ? 'Editing…' : 'Edit'}
-            </button>
-          </div>
-          <div className="cd-card-body">
-            <div className="cd-row">
-              <div className="cd-field">
-                <label className="cd-label">Province <span className="req">*</span></label>
-                {editing ? (
-                  <select className="cd-input cd-select" value={profileData.province} onChange={e => upd({ province: e.target.value })}>
-                    <option value="">-- Select --</option>
-                    {(PROVINCES || ['Eastern Cape', 'Free State', 'Gauteng', 'KwaZulu-Natal', 'Limpopo', 'Mpumalanga', 'Northern Cape', 'North West', 'Western Cape']).map(p => <option key={p}>{p}</option>)}
-                  </select>
-                ) : <div className={`cd-value ${!profileData.province ? 'empty' : ''}`}>{profileData.province || '—'}</div>}
-              </div>
-              <div className="cd-field">
-                <label className="cd-label">City / Town</label>
-                {editing ? <input className="cd-input" type="text" value={profileData.city} onChange={e => upd({ city: e.target.value })} />
-                  : <div className={`cd-value ${!profileData.city ? 'empty' : ''}`}>{profileData.city || '—'}</div>}
               </div>
             </div>
-            <div className="cd-field">
-              <label className="cd-label">Service Area <span className="req">*</span></label>
-              {editing ? (
-                <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-                  <select className="cd-input cd-select" value={profileData.serviceAreaType} style={{ width: 'auto' }} onChange={e => upd({ serviceAreaType: e.target.value })}>
-                    <option value="local">Local (radius)</option>
-                    <option value="national">National</option>
-                    <option value="online">Online only</option>
-                  </select>
-                  {profileData.serviceAreaType === 'local' && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <input className="cd-input" type="number" value={profileData.radius} style={{ width: 80 }} min="1" max="200" onChange={e => upd({ radius: e.target.value })} />
-                      <span style={{ fontSize: '0.82rem', color: '#888' }}>km</span>
+
+            {/* PLANS ACCORDION */}
+            <div id="sah-plans-anchor" />
+            <div className={`sah-hero-plans-wrap${plansVisible ? " open" : ""}`}>
+              <div className="sah-hero-plans-inner">
+                <div className="sah-hero-plans-grid-outer">
+                  {featuredSlotCount > 0 && (
+                    <div className="sah-featured-banner">
+                      <i className="fas fa-star" />
+                      {featuredSlotCount} provider{featuredSlotCount > 1 ? "s" : ""} currently in a Featured Spotlight slot
                     </div>
                   )}
+                  <div className="sah-hero-plans-grid">
+                    {PLANS.map(plan => (
+                      <PlanCard
+                        key={plan.id}
+                        plan={plan}
+                        openId={openPlanId}
+                        onToggle={togglePlan}
+                        allOpen={allPlansOpen}
+                      />
+                    ))}
+                  </div>
                 </div>
-              ) : (
-                <div className="cd-value">
-                  {profileData.serviceAreaType === 'local' ? `Local — ${profileData.radius || '?'} km radius`
-                    : profileData.serviceAreaType === 'online' ? 'Online only' : 'National'}
-                </div>
-              )}
-            </div>
-          </div>
-          <SaveBar />
-        </div>
-
-        <div className="cd-card">
-          <div className="cd-card-header">
-            <div className="cd-card-header-icon"><i className="fas fa-tag"></i></div>
-            <div><div className="cd-card-title">Pricing & Availability</div><div className="cd-card-subtitle">Your rates and schedule</div></div>
-          </div>
-          <div className="cd-card-body">
-            <div className="cd-row">
-              <div className="cd-field">
-                <label className="cd-label">Pricing Model <span className="req">*</span></label>
-                {editing ? (
-                  <select className="cd-input cd-select" value={profileData.pricingModel} onChange={e => upd({ pricingModel: e.target.value })}>
-                    <option value="">-- Select --</option>
-                    {(PRICING_MODELS || ['Hourly', 'Per package', 'Per term', 'Custom quote']).map(m => <option key={m}>{m}</option>)}
-                  </select>
-                ) : <div className={`cd-value ${!profileData.pricingModel ? 'empty' : ''}`}>{profileData.pricingModel || '—'}</div>}
-              </div>
-              <div className="cd-field">
-                <label className="cd-label">Starting Price</label>
-                {editing ? <input className="cd-input" type="text" value={profileData.startingPrice} onChange={e => upd({ startingPrice: e.target.value })} placeholder="e.g. R150/hr" />
-                  : <div className={`cd-value ${!profileData.startingPrice ? 'empty' : ''}`}>{profileData.startingPrice || '—'}</div>}
               </div>
             </div>
-            <div className="cd-field">
-              <label className="cd-label">Days Available</label>
-              <div className="cd-days" style={{ marginTop: 5 }}>
-                {days.map(d => {
-                  const active = (profileData.availabilityDays || []).includes(d);
-                  return (
-                    <button key={d} className={`cd-day-chip ${active ? 'on' : 'off'} ${editing ? 'clickable' : ''}`}
-                      onClick={() => editing && toggleDay(d)} style={{ border: active ? 'none' : '1px solid #e5e0d8' }}>
-                      {d}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-            <div className="cd-field">
-              <label className="cd-label">Availability Notes</label>
-              {editing ? <input className="cd-input" type="text" value={profileData.availabilityNotes} onChange={e => upd({ availabilityNotes: e.target.value })} placeholder="e.g. Weekday afternoons & Saturdays" />
-                : <div className={`cd-value ${!profileData.availabilityNotes ? 'empty' : ''}`} style={{ fontSize: '0.84rem' }}>{profileData.availabilityNotes || '—'}</div>}
-            </div>
-          </div>
-          <SaveBar />
-        </div>
-      </div>
-      <Sidebar />
-    </div>
-  );
 
-  /* ═══════════════════════════════════════════════════ */
-  /* TAB: CONTACT & SOCIAL                                */
-  /* ═══════════════════════════════════════════════════ */
-  const TabContact = () => (
-    <div className="cd-layout">
-      <div>
-        <div className="cd-card">
-          <div className="cd-card-header">
-            <div className="cd-card-header-icon"><i className="fas fa-address-card"></i></div>
-            <div><div className="cd-card-title">Contact & Online Presence</div><div className="cd-card-subtitle">How families reach you</div></div>
-            <button className={`cd-edit-toggle ${editing ? 'active' : 'inactive'}`} onClick={toggleEdit}>
-              <i className={`fas ${editing ? 'fa-pencil-alt' : 'fa-edit'}`}></i> {editing ? 'Editing…' : 'Edit'}
-            </button>
           </div>
-          <div className="cd-card-body">
-            {editing ? (
-              <div className="cd-row">
-                {[
-                  { label: 'Contact Name',  key: 'contactName',  type: 'text',  placeholder: 'Full name' },
-                  { label: 'Phone',         key: 'phone',        type: 'text',  placeholder: '+27 82 000 0000' },
-                  { label: 'WhatsApp',      key: 'whatsapp',     type: 'text',  placeholder: '+27 82 000 0000' },
-                  { label: 'Enquiry Email', key: 'contactEmail', type: 'email', placeholder: 'contact@example.com' },
-                  { label: 'Website',       key: 'website',      type: 'url',   placeholder: 'https://yoursite.co.za' },
-                  { label: 'Facebook Page', key: 'facebook',     type: 'url',   placeholder: 'https://facebook.com/yourpage' },
-                ].map(({ label, key, type, placeholder }) => (
-                  <div key={key} className="cd-field">
-                    <label className="cd-label">{label}</label>
-                    <input className="cd-input" type={type} value={profileData[key] || ''} placeholder={placeholder} onChange={e => upd({ [key]: e.target.value })} />
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div>
-                {[
-                  { icon: 'fa-user',     label: 'Contact Name', val: profileData.contactName },
-                  { icon: 'fa-phone',    label: 'Phone',        val: profileData.phone },
-                  { icon: 'fa-whatsapp', label: 'WhatsApp',     val: profileData.whatsapp || profileData.phone },
-                  { icon: 'fa-envelope', label: 'Email',        val: profileData.contactEmail },
-                  { icon: 'fa-globe',    label: 'Website',      val: profileData.website || profileData.social },
-                  { icon: 'fa-facebook', label: 'Facebook',     val: profileData.facebook },
-                ].filter(x => x.val).map(({ icon, label, val }) => (
-                  <div key={label} className="cd-contact-item">
-                    <div className="cd-contact-icon"><i className={`fas ${icon}`}></i></div>
-                    <div><div className="cd-contact-label">{label}</div><div className="cd-contact-val">{val}</div></div>
-                  </div>
-                ))}
-                {!profileData.contactName && !profileData.phone && !profileData.contactEmail && (
-                  <div className="cd-value empty">No contact details yet — click Edit to add.</div>
-                )}
-              </div>
-            )}
-            <div className="cd-toggle-row" style={{ marginTop: 16, paddingTop: 12, borderTop: '1px solid #f0ece5' }}>
-              <div>
-                <div style={{ fontSize: '0.84rem', fontWeight: 700, color: '#1a1a1a' }}>Display contact publicly</div>
-                <div style={{ fontSize: '0.72rem', color: '#888' }}>Visible to families on your profile page</div>
-              </div>
-              <label className="cd-switch">
-                <input type="checkbox" checked={!!profileData.publicToggle} onChange={e => upd({ publicToggle: e.target.checked })} disabled={!editing} />
-                <span className="cd-slider"></span>
-              </label>
-            </div>
-          </div>
-          <SaveBar />
-        </div>
-      </div>
-      <Sidebar />
-    </div>
-  );
-
-  /* ═══════════════════════════════════════════════════ */
-  /* TAB: PLAN & REVIEWS                                  */
-  /* ═══════════════════════════════════════════════════ */
-  const TabPlan = () => (
-    <div className="cd-layout">
-      <div>
-        {/* Current plan strip */}
-        <div className="cd-card">
-          <div className="cd-card-header">
-            <div className="cd-card-header-icon"><i className="fas fa-crown"></i></div>
-            <div><div className="cd-card-title">Your Current Plan</div><div className="cd-card-subtitle">Active listing tier</div></div>
-          </div>
-          <div className="cd-card-body tight">
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
-              <span className={`cd-plan-badge ${profileData.plan}`}>
-                <i className="fas fa-crown" style={{ color: '#f59e0b' }}></i>
-                {getPlanName()}
-              </span>
-              <span style={{ fontSize: '0.76rem', color: '#888', display: 'flex', alignItems: 'center', gap: 6 }}>
-                <i className="fas fa-circle" style={{ color: profileData.status === 'approved' ? '#10b981' : '#f59e0b', fontSize: '0.5rem' }}></i>
-                Listing is {profileData.status}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Plan grid — current/upgrade/downgrade buttons */}
-        <div className="cd-card">
-          <div className="cd-card-header">
-            <div className="cd-card-header-icon"><i className="fas fa-arrow-up"></i></div>
-            <div><div className="cd-card-title">Change Plan</div><div className="cd-card-subtitle">Select an upgrade or adjust your tier</div></div>
-          </div>
-          <div className="cd-card-body">
-            <div className="cd-plan-grid">
-              {PLAN_CARDS.map(plan => {
-                const isCurrent = profileData.plan === plan.id;
-                const isHigher  = planOrder[plan.id] > planOrder[profileData.plan];
-                // isLower = not current and not higher
-                return (
-                  <div key={plan.id} className={`cd-plan-card ${isCurrent ? 'is-current' : ''}`}>
-                    {isCurrent && <div className="cd-plan-current-badge">Current</div>}
-                    <div className="cd-plan-card-name">{plan.name}</div>
-                    <div className="cd-plan-card-desc">{plan.desc}</div>
-                    <div className="cd-plan-price">{plan.price}<small>/month</small></div>
-                    <ul className="cd-plan-features">
-                      {plan.features.map((f, i) => <li key={i}><i className="fas fa-check-circle"></i>{f}</li>)}
-                    </ul>
-                    <button
-                      className={`cd-plan-action-btn ${isCurrent ? 'current' : isHigher ? 'upgrade' : 'downgrade'}`}
-                      disabled={isCurrent}
-                      onClick={() => !isCurrent && handlePlanChange(plan.id)}
-                    >
-                      {isCurrent
-                        ? <><i className="fas fa-check"></i> Current Plan</>
-                        : isHigher
-                          ? <><i className="fas fa-arrow-up"></i> Upgrade</>
-                          : <><i className="fas fa-arrow-down"></i> Downgrade</>
-                      }
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-
-        {/* Reviews */}
-        <div className="cd-card">
-          <div className="cd-card-header">
-            <div className="cd-card-header-icon"><i className="fas fa-star"></i></div>
-            <div><div className="cd-card-title">Reviews & Testimonials</div><div className="cd-card-subtitle">Family feedback on your listing</div></div>
-          </div>
-          <div className="cd-card-body">
-            {profileData.reviews?.items?.length > 0 ? (
-              <>
-                {profileData.reviews.count > 0 && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 12, padding: '9px 13px', background: '#faf9f7', borderRadius: 9 }}>
-                    <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#c9621a', lineHeight: 1 }}>{profileData.reviews.average}</div>
-                    <div>
-                      <div style={{ color: '#f59e0b' }}>{'★'.repeat(Math.round(profileData.reviews.average))}{'☆'.repeat(5 - Math.round(profileData.reviews.average))}</div>
-                      <div style={{ fontSize: '0.72rem', color: '#888' }}>Based on {profileData.reviews.count} reviews</div>
-                    </div>
-                  </div>
-                )}
-                {profileData.reviews.items.map((r, i) => (
-                  <div key={i} className="cd-review">
-                    <div className="cd-review-stars">{'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}</div>
-                    <div className="cd-review-text">"{r.text}"</div>
-                    <div className="cd-review-author">— {r.reviewer}</div>
-                  </div>
-                ))}
-              </>
-            ) : (
-              <div className="cd-value empty">No reviews yet. Reviews appear once families leave feedback on your public profile.</div>
-            )}
-          </div>
-        </div>
-      </div>
-      <Sidebar />
-    </div>
-  );
-
-  /* ─── tab → renderer ─── */
-  const TAB_MAP = { profile: TabProfile, services: TabServices, location: TabLocation, contact: TabContact, plan: TabPlan };
-  const ActiveTab = TAB_MAP[activeTab] || TabProfile;
-
-  /* ═══════════════════════════════════════════════════ */
-  /* RENDER                                               */
-  /* ═══════════════════════════════════════════════════ */
-  return (
-    <div className="cd-wrap">
-      <Header userType="client" />
-
-      {/* ── HERO ── */}
-      <section className="cd-hero">
-        <div className="cd-hero-top">
-          <div className="cd-hero-left">
-            <div className="cd-hero-eyebrow"><span></span>Provider Dashboard</div>
-            <h1 className="cd-hero-title">Welcome back, <em>{profileData.name || 'Provider'}</em></h1>
-            <div className="cd-hero-meta">
-              <div className={`cd-status-pill ${statusInfo.cls}`}>
-                <i className={`fas ${statusInfo.icon}`}></i> {statusInfo.label}
-              </div>
-              <div style={{ color: 'rgba(255,255,255,.6)', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: 6 }}>
-                <i className="fas fa-crown" style={{ color: '#f59e0b' }}></i> {getPlanName()}
-              </div>
-            </div>
-          </div>
-          <div className="cd-hero-right">
-            {/* ── Back to Directory → navigates to / (home) ── */}
-            <button className="cd-btn-ghost" onClick={() => navigate('/')}>
-              <i className="fas fa-arrow-left"></i> Back to Directory
-            </button>
-            <button className="cd-btn-ghost" onClick={() => navigate(profileData.id ? `/profile?id=${profileData.id}&from=dashboard` : '/profile?from=dashboard')}>
-              <i className="fas fa-eye"></i> Public View
-            </button>
-            {editing ? (
-              <>
-                <button className="cd-btn-solid" onClick={saveChanges} disabled={loading}>
-                  <i className="fas fa-floppy-disk"></i> {loading ? 'Saving…' : 'Save'}
-                </button>
-                <button className="cd-btn-solid cancel" onClick={cancelEdit} disabled={loading}>Cancel</button>
-              </>
-            ) : (
-              <button className="cd-btn-solid" onClick={startEdit}>
-                <i className="fas fa-pen"></i> Edit Profile
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* TAB BAR at bottom of hero */}
-        <div className="cd-tab-bar">
-          {TABS.map(t => (
-            <button key={t.id} className={`cd-tab-btn ${activeTab === t.id ? 'active' : ''}`} onClick={() => setActiveTab(t.id)}>
-              <i className={`fas ${t.icon}`}></i> {t.label}
-            </button>
-          ))}
         </div>
       </section>
 
-      <main className="cd-main">
-        <ActiveTab />
-      </main>
-      <Footer />
+      {/* FILTER BAR */}
+      <div className="sah-filter-bar">
+        <div className="sah-container">
+          <div className="sah-filter-bar-row">
+            <span className="sah-filter-label">Browse:</span>
+            {FILTER_PILLS.map(pill => (
+              <button
+                key={pill.cat}
+                className={`sah-fpill${activeCat === pill.cat ? " active" : ""}`}
+                onClick={() => filterCat(pill.cat)}
+              >
+                {pill.icon && <i className={`fas ${pill.icon}`} />} {pill.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* PROVIDERS */}
+      <section className="sah-providers-section" id="sah-providers">
+        <div className="sah-container">
+          <div className="sah-sec-header">
+            <div>
+              <span className="sah-sec-eyebrow">Service Providers</span>
+              <h2>Recently Added Providers</h2>
+            </div>
+            <div className="sah-sec-right">
+              {providers.length > 4 && !showAllProviders && (
+                <button className="sah-link-btn" onClick={() => setShowAllProviders(true)}>
+                  Show all {providers.length} providers →
+                </button>
+              )}
+              {showAllProviders && providers.length > 4 && (
+                <button className="sah-link-btn" onClick={() => setShowAllProviders(false)}>
+                  ← Show fewer
+                </button>
+              )}
+            </div>
+          </div>
+          <div className="sah-provider-grid">
+            {providers.length === 0 ? (
+              <div className="sah-grid-empty">
+                <i className="fas fa-search" />
+                <h3>No providers found</h3>
+                <p>Be the first to list — it's free.</p>
+                <Link
+                  to="/register/provider"
+                  className="sah-become-btn"
+                  style={{ fontSize:"0.88rem", marginTop:"12px", textDecoration:"none" }}
+                >
+                  <i className="fas fa-plus" /> Add Your Listing
+                </Link>
+              </div>
+            ) : (
+              displayedProviders.map(p => <ProviderCard key={p.id} p={p} onView={viewProfile} />)
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* HOW IT WORKS */}
+      <section className="sah-how-section" id="sah-how">
+        <div className="sah-container">
+          <div className="sah-how-header">
+            <span className="sah-sec-eyebrow">How It Works</span>
+            <h2 style={{ fontFamily:"'Playfair Display',serif", fontSize:"clamp(1.5rem,3vw,2rem)", fontWeight:800, color:"var(--dark)" }}>
+              Get Listed in Four Simple Steps
+            </h2>
+          </div>
+          <div className="sah-steps-grid">
+            {[
+              { n:"01", t:"Create Your Profile",  d:"Complete our registration: your details, services, location, qualifications, pricing and availability." },
+              { n:"02", t:"Get Verified",          d:"Our team reviews your credentials to ensure quality and trust for all homeschooling families on the platform." },
+              { n:"03", t:"Appear in Search",      d:"Your listing goes live. Families searching your area and subject will find and contact you directly." },
+              { n:"04", t:"Grow Your Reach",       d:"Upgrade to the Deluxe Package for homepage placement, a 3-month campaign, analytics dashboard and newsletter exposure." },
+            ].map(s => (
+              <div key={s.n} className="sah-step">
+                <span className="sah-step-num">{s.n}</span>
+                <h3>{s.t}</h3>
+                <p>{s.d}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FOOTER */}
+      <footer className="sah-footer">
+        <div className="sah-container">
+          <div className="sah-footer-grid">
+            <div className="sah-footer-brand">
+              <span className="sah-footer-logo">SA Homeschooling Directory</span>
+              <p>South Africa's dedicated directory connecting homeschooling families with trusted tutors, therapists, curriculum providers and education specialists.</p>
+              <div className="sah-footer-newsletter">
+                <div className="sah-footer-newsletter-row">
+                  <input
+                    type="email"
+                    value={nlEmail}
+                    onChange={e => setNlEmail(e.target.value)}
+                    placeholder="Your email address…"
+                  />
+                  <button type="button" onClick={handleNewsletter}>Subscribe</button>
+                </div>
+                {nlMsg.text && <div className={`sah-nl-feedback ${nlMsg.type}`}>{nlMsg.text}</div>}
+              </div>
+            </div>
+            <div className="sah-footer-col"><h4>For Families</h4><ul>
+              <li><a href="#sah-providers">Find a Tutor</a></li>
+              <li><a href="#sah-providers">Browse Curriculum</a></li>
+              <li><a href="#sah-providers">Therapists</a></li>
+              <li><a href="#sah-providers">Online Schools</a></li>
+            </ul></div>
+            <div className="sah-footer-col"><h4>For Providers</h4><ul>
+              <li><a href="#sah-plans-anchor" onClick={handleBecomeProvider}>List a Service</a></li>
+              <li><a href="#sah-plans-anchor" onClick={handleBecomeProvider}>Pricing Plans</a></li>
+              <li><Link to="/login">Provider Login</Link></li>
+              <li><a href="#sah-how">Verification Process</a></li>
+            </ul></div>
+            <div className="sah-footer-col"><h4>SA Homeschooling</h4><ul>
+              <li><a href="https://sahomeschooling.com" target="_blank" rel="noreferrer">Magazine</a></li>
+              <li><Link to="/about">About the Directory</Link></li>
+              <li><Link to="/contact">Contact Us</Link></li>
+              <li><a href="https://sahomeschooling.com/privacy-policy-for-sa-homeschooling-beyond/" target="_blank" rel="noreferrer">Privacy Policy</a></li>
+            </ul></div>
+          </div>
+          <div className="sah-footer-trust">
+            {[
+              ["fa-shield-alt","All providers manually verified"],
+              ["fa-lock","Secure & private enquiries"],
+              ["fa-star","4.9 average provider rating"],
+            ].map(([ic, txt]) => (
+              <div key={txt} className="sah-footer-trust-item">
+                <i className={`fas ${ic}`} /> {txt}
+              </div>
+            ))}
+            <div className="sah-footer-trust-item" style={{ marginLeft:"auto" }}>
+              <i className="fas fa-map-marker-alt" />
+              <span>
+                <strong style={{ color:"rgba(255,255,255,0.65)" }}>OUR OFFICE:</strong>{" "}
+                Tshimologong Digital Precinct, 41 Juta Street, Braamfontein, Johannesburg, South Africa
+              </span>
+            </div>
+          </div>
+          <div className="sah-footer-bottom">
+            <p>&copy; 2025 SA Homeschooling Directory. All rights reserved.</p>
+            <div className="sah-footer-bottom-links">
+              <a href="https://sahomeschooling.com/privacy-policy-for-sa-homeschooling-beyond/" target="_blank" rel="noreferrer">Privacy</a>
+              {["Terms","Cookies","Sitemap"].map(l => <Link key={l} to={`/${l.toLowerCase()}`}>{l}</Link>)}
+            </div>
+            <div className="sah-footer-socials">
+              {[
+                ["fab fa-facebook-f",  "https://www.facebook.com/SAHomeschoolingMagazine"],
+                ["fab fa-instagram",   "https://www.instagram.com/sahomeschoolingmag"],
+                ["fab fa-linkedin-in", "https://www.linkedin.com"],
+                ["fab fa-x-twitter",  "https://x.com/SAH_andBeyond"],
+              ].map(([ic, href]) => (
+                <a key={ic} href={href} className="sah-footer-soc" target="_blank" rel="noreferrer">
+                  <i className={ic} />
+                </a>
+              ))}
+            </div>
+          </div>
+        </div>
+      </footer>
+
+      {/* REGISTER CHOOSER MODAL */}
+      <div
+        className={`sah-modal-overlay${regModal ? " open" : ""}`}
+        onClick={e => { if (e.target === e.currentTarget) setRegModal(false); }}
+      >
+        <div className="sah-modal-box">
+          <div className="sah-modal-head">
+            <h2>Create an Account</h2>
+            <p>Choose how you'd like to join</p>
+            <button className="sah-modal-close" onClick={() => setRegModal(false)}>
+              <i className="fas fa-times" />
+            </button>
+          </div>
+          <div className="sah-modal-body">
+            <div className="sah-reg-options">
+              <Link to="/register/user" className="sah-reg-opt" onClick={() => setRegModal(false)}>
+                <div className="sah-reg-opt-icon user"><i className="fas fa-user" /></div>
+                <div>
+                  <div className="sah-reg-opt-title">I'm a User / Customer</div>
+                  <div className="sah-reg-opt-desc">Browse, search and save provider profiles</div>
+                </div>
+                <i className="fas fa-chevron-right" style={{ marginLeft:"auto", color:"#ccc", fontSize:"0.8rem" }} />
+              </Link>
+              <Link to="/register/provider" className="sah-reg-opt" onClick={() => setRegModal(false)}>
+                <div className="sah-reg-opt-icon provider"><i className="fas fa-store" /></div>
+                <div>
+                  <div className="sah-reg-opt-title">I'm a Service Provider</div>
+                  <div className="sah-reg-opt-desc">Create a full listing — tutor, therapist, school etc.</div>
+                </div>
+                <i className="fas fa-chevron-right" style={{ marginLeft:"auto", color:"#ccc", fontSize:"0.8rem" }} />
+              </Link>
+            </div>
+            <div className="sah-modal-switch">
+              Already have an account?{" "}
+              <a href="#login" onClick={e => { e.preventDefault(); setRegModal(false); navigate('/login'); }}>
+                Log in
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* TOAST */}
+      <div
+        className={`sah-toast${toast.show ? " show" : ""}`}
+        style={{ background: toast.err ? "#b91c1c" : "var(--grey)" }}
+      >
+        <i className="fas fa-check-circle" />
+        <span>{toast.msg}</span>
+      </div>
+
     </div>
   );
-};
-
-export default ClientDashboard;
+}
