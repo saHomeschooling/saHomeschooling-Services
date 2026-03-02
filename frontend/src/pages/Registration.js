@@ -1,6 +1,6 @@
+// frontend/src/pages/Registration.js
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
 import { useNotification } from '../contexts/NotificationContext';
 
 const injectHead = () => {
@@ -33,6 +33,7 @@ const CSS = `
     min-height: 100vh; -webkit-font-smoothing: antialiased; color: var(--dark);
   }
 
+  /* ── Header ── */
   .sah-rhdr {
     position: sticky; top: 0; z-index: 200;
     height: var(--header-h); background: #5a5a5a;
@@ -64,6 +65,7 @@ const CSS = `
   }
   .sah-rhdr-ghost:hover { border-color: #fff; background: rgba(255,255,255,0.10); }
 
+  /* ── Hero ── */
   .sah-reg-hero {
     position: relative; overflow: hidden;
     min-height: 220px; display: flex; align-items: center;
@@ -87,6 +89,7 @@ const CSS = `
   }
   .sah-reg-hero-title em { font-style: italic; color: var(--accent-light); }
 
+  /* ── Step trail ── */
   .sah-step-trail {
     display: flex; align-items: center; gap: 0; flex-wrap: nowrap; overflow-x: auto;
     -webkit-overflow-scrolling: touch; padding-bottom: 4px;
@@ -106,6 +109,7 @@ const CSS = `
   .sah-trail-dot .sah-tn { font-size: 0.68rem; opacity: 0.75; margin-right: 2px; }
   .sah-trail-arrow { color: rgba(255,255,255,0.25); font-size: 0.62rem; margin: 0 6px; flex-shrink: 0; }
 
+  /* ── Panel ── */
   .sah-reg-panel { max-width: 1100px; margin: 0 auto; padding: 0 24px 80px; }
 
   .sah-step-card {
@@ -117,6 +121,7 @@ const CSS = `
   .sah-step-card-head p { font-size: 0.85rem; color: rgba(255,255,255,0.65); margin-top: 3px; }
   .sah-step-card-body { padding: 32px 36px 28px; overflow: visible; border-radius: 0 0 var(--radius-lg) var(--radius-lg); }
 
+  /* ── Plan cards ── */
   .sah-plan-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 28px; }
   .sah-plan-card {
     border: 2px solid rgba(0,0,0,0.10); border-radius: var(--radius-lg);
@@ -125,22 +130,18 @@ const CSS = `
   }
   .sah-plan-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: var(--shadow-md); }
   .sah-plan-card.selected { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(201,98,26,0.18), var(--shadow-md); }
-  .sah-plan-card-head { padding: 18px 20px 14px; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
-  .sah-plan-card-head.selected-bg { background: #5a5a5a; }
-  .sah-plan-card-name { font-weight: 800; font-size: 1rem; color: var(--dark); }
-  .sah-plan-card-name.wt { color: #fff; }
-  .sah-plan-card-desc { font-size: 0.74rem; color: var(--muted); margin-top: 2px; }
-  .sah-plan-card-desc.wt { color: rgba(255,255,255,0.65); }
+  .sah-plan-card-head { padding: 18px 20px 14px; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; background: var(--card-white); }
+  .sah-plan-card.selected .sah-plan-card-head { background: #f5f0ea; border-bottom: 2px solid var(--accent); }
+  .sah-plan-card-name { font-weight: 800; font-size: 1rem; color: #1a1a1a; }
+  .sah-plan-card-desc { font-size: 0.74rem; color: #555; margin-top: 2px; }
   .sah-plan-price-block { text-align: right; flex-shrink: 0; }
   .sah-plan-price { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 900; color: var(--accent); line-height: 1; }
-  .sah-plan-price.wt { color: var(--accent-light); }
-  .sah-plan-price small { font-size: 0.65rem; color: var(--muted); font-weight: 400; display: block; text-align: right; font-family: 'DM Sans', sans-serif; }
-  .sah-plan-price small.wt { color: rgba(255,255,255,0.5); }
+  .sah-plan-price small { font-size: 0.65rem; color: #666; font-weight: 400; display: block; text-align: right; font-family: 'DM Sans', sans-serif; }
   .sah-plan-radio { width: 20px; height: 20px; accent-color: var(--accent); flex-shrink: 0; margin-top: 2px; cursor: pointer; }
   .sah-plan-body { padding: 0 20px 18px; border-top: 1px solid var(--border); }
   .sah-plan-features { list-style: none; padding: 0; margin: 14px 0; display: flex; flex-direction: column; gap: 7px; }
-  .sah-plan-features li { display: flex; align-items: center; gap: 8px; font-size: 0.83rem; color: var(--mid); }
-  .sah-plan-features li.no { color: var(--muted); }
+  .sah-plan-features li { display: flex; align-items: center; gap: 8px; font-size: 0.83rem; color: #3a3a3a; font-weight: 500; }
+  .sah-plan-features li.no { color: #888; }
   .sah-ico-yes { color: #16a34a; font-size: 0.7rem; }
   .sah-ico-no { color: #ccc; font-size: 0.7rem; }
   .sah-plan-select-btn {
@@ -152,6 +153,42 @@ const CSS = `
   .sah-plan-select-btn:hover { background: var(--accent-dark); }
   .sah-plan-select-btn.selected { background: #3a3a3a; }
 
+  /* ── Collapsible Terms box ── */
+  .sah-terms-box {
+    background: var(--card-white); border: 1.5px solid var(--border);
+    border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 20px;
+  }
+  .sah-terms-box-head {
+    background: #5a5a5a; padding: 14px 20px;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    cursor: pointer; user-select: none;
+  }
+  .sah-terms-box-head-title {
+    display: flex; align-items: center; gap: 10px;
+    font-family: 'Playfair Display', serif; font-size: 0.98rem; font-weight: 800; color: #fff;
+  }
+  .sah-terms-view-btn {
+    flex-shrink: 0;
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 16px; border-radius: 50px;
+    border: 1.5px solid rgba(255,255,255,0.55); background: rgba(255,255,255,0.10);
+    color: #fff; font-family: 'DM Sans', sans-serif; font-size: 0.80rem; font-weight: 700;
+    cursor: pointer; transition: all 0.15s; white-space: nowrap;
+  }
+  .sah-terms-view-btn:hover { background: rgba(255,255,255,0.22); border-color: #fff; }
+  .sah-terms-body {
+    overflow: hidden;
+    transition: max-height 0.38s ease, padding 0.25s ease;
+  }
+  .sah-terms-body.open  { max-height: 420px; overflow-y: auto; padding: 20px 22px; }
+  .sah-terms-body.closed { max-height: 0; padding: 0 22px; }
+  .sah-terms-body h4 { font-size: 0.85rem; font-weight: 800; color: var(--dark); margin: 14px 0 5px; text-transform: uppercase; letter-spacing: 0.4px; }
+  .sah-terms-body h4:first-child { margin-top: 0; }
+  .sah-terms-body p { font-size: 0.85rem; color: var(--mid); line-height: 1.7; margin-bottom: 10px; }
+  .sah-terms-body ul { padding-left: 18px; margin-bottom: 10px; }
+  .sah-terms-body ul li { font-size: 0.85rem; color: var(--mid); line-height: 1.7; margin-bottom: 4px; }
+
+  /* ── Terms checkbox row ── */
   .sah-terms-row {
     background: var(--card-white); border: 1.5px solid var(--border);
     border-radius: var(--radius); padding: 16px 20px;
@@ -164,6 +201,7 @@ const CSS = `
   .sah-terms-row a { color: var(--accent); font-weight: 700; text-decoration: none; }
   .sah-terms-row a:hover { text-decoration: underline; }
 
+  /* ── Forms ── */
   .sah-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
   .sah-field { display: flex; flex-direction: column; gap: 5px; }
   .sah-full { grid-column: 1 / -1; }
@@ -187,7 +225,13 @@ const CSS = `
     border-color: var(--accent); box-shadow: 0 0 0 3px rgba(201,98,26,0.14);
   }
   .sah-field input.err, .sah-field select.err, .sah-field textarea.err { border-color: #dc2626; background: #fff8f8; }
+  .sah-field input[type="file"] { padding: 8px 12px; font-size: 0.83rem; cursor: pointer; background: var(--card-white); }
+  .sah-field select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; cursor: pointer;
+  }
 
+  /* ── Errors ── */
   .sah-field-err {
     color: #dc2626; font-size: 0.76rem; font-weight: 600;
     display: flex; align-items: center; gap: 5px;
@@ -196,27 +240,23 @@ const CSS = `
     border-left: 3px solid #dc2626;
     animation: sah-err-in 0.18s ease;
   }
-  @keyframes sah-err-in {
-    from { opacity: 0; transform: translateY(-4px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
+  @keyframes sah-err-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
   .sah-field-err i { font-size: 0.7rem; flex-shrink: 0; }
   .sah-terms-err {
     color: #dc2626; font-size: 0.76rem; font-weight: 600;
     display: flex; align-items: center; gap: 5px;
     margin-top: 8px; padding: 6px 10px;
-    background: #fff0f0; border-radius: 5px;
-    border-left: 3px solid #dc2626;
+    background: #fff0f0; border-radius: 5px; border-left: 3px solid #dc2626;
   }
   .sah-group-err {
     color: #dc2626; font-size: 0.76rem; font-weight: 600;
     display: flex; align-items: center; gap: 5px;
     margin-top: 6px; padding: 5px 10px;
-    background: #fff0f0; border-radius: 5px;
-    border-left: 3px solid #dc2626;
+    background: #fff0f0; border-radius: 5px; border-left: 3px solid #dc2626;
     animation: sah-err-in 0.18s ease;
   }
 
+  /* ── Prefix / suffix inputs ── */
   .sah-prefix-wrap { display: flex; align-items: stretch; border: 1.5px solid rgba(0,0,0,0.11); border-radius: var(--radius); overflow: hidden; background: var(--card-white); transition: border-color 0.15s, box-shadow 0.15s; }
   .sah-prefix-wrap:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(201,98,26,0.14); }
   .sah-prefix-wrap.err { border-color: #dc2626; background: #fff8f8; }
@@ -225,14 +265,13 @@ const CSS = `
   .sah-prefix-wrap input:focus { border: none; box-shadow: none; outline: none; }
   .sah-suffix { background: rgba(0,0,0,0.04); border-left: 1.5px solid rgba(0,0,0,0.10); padding: 11px 14px; font-size: 0.85rem; font-weight: 600; color: var(--muted); white-space: nowrap; display: flex; align-items: center; min-width: 90px; }
 
+  /* ── Password ── */
   .sah-pw-wrap { position: relative; }
   .sah-pw-wrap input { padding-right: 44px; }
-  .sah-pw-eye {
-    position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
-    background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.9rem; padding: 4px;
-  }
+  .sah-pw-eye { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.9rem; padding: 4px; }
   .sah-pw-eye:hover { color: var(--accent); }
 
+  /* ── Check groups ── */
   .sah-check-group { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 2px; }
   .sah-check-group label {
     display: inline-flex; align-items: center; gap: 7px;
@@ -242,22 +281,15 @@ const CSS = `
     cursor: pointer; transition: all 0.14s;
     text-transform: none; letter-spacing: 0;
   }
-  .sah-check-group label:hover { border-color: var(--accent); color: var(--accent); }
-  .sah-check-group input[type="checkbox"],
-  .sah-check-group input[type="radio"] {
+  .sah-check-group label:hover:not(.disabled-opt) { border-color: var(--accent); color: var(--accent); }
+  .sah-check-group label.disabled-opt { opacity: 0.4; cursor: not-allowed; }
+  .sah-check-group input[type="checkbox"], .sah-check-group input[type="radio"] {
     width: auto; padding: 0; border: none; background: none;
     box-shadow: none; accent-color: var(--accent); transform: scale(1.1);
   }
   .sah-check-group label:has(input:checked) { border-color: var(--accent); background: rgba(201,98,26,0.08); color: var(--accent); }
 
-  .sah-field input[type="file"] { padding: 8px 12px; font-size: 0.83rem; cursor: pointer; background: var(--card-white); }
-  .sah-field select {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-    background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; cursor: pointer;
-  }
-
-  .sah-sec-divider { height: 1px; background: rgba(0,0,0,0.08); margin: 24px 0; }
-
+  /* ── Secondary toggle ── */
   .sah-secondary-toggle {
     display: inline-flex; align-items: center; gap: 8px;
     padding: 9px 16px; border-radius: 6px;
@@ -269,27 +301,36 @@ const CSS = `
   .sah-secondary-toggle.active { border-color: var(--accent); background: rgba(201,98,26,0.08); color: var(--accent); }
   .sah-secondary-toggle input[type="checkbox"] { width: auto; padding: 0; border: none; background: none; box-shadow: none; accent-color: var(--accent); transform: scale(1.1); }
   .sah-secondary-cats-box { margin-top: 10px; padding: 14px 16px; background: var(--card-white); border: 1.5px solid var(--accent); border-radius: var(--radius); }
-  .sah-secondary-cats-box .sah-check-group { gap: 8px; }
 
-  .sah-qual-tabs { display: flex; gap: 0; border: 1.5px solid rgba(0,0,0,0.11); border-radius: var(--radius); overflow: hidden; margin-bottom: 12px; }
-  .sah-qual-tab {
-    flex: 1; padding: 9px 14px; background: var(--card-white); border: none;
-    font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 700;
-    color: var(--muted); cursor: pointer; transition: all 0.15s;
-    display: flex; align-items: center; justify-content: center; gap: 6px;
+  /* ── File upload area ── */
+  .sah-file-upload-zone {
+    border: 2px dashed rgba(0,0,0,0.15); border-radius: var(--radius);
+    padding: 16px; background: rgba(255,255,255,0.6); cursor: pointer;
+    transition: border-color 0.15s;
   }
-  .sah-qual-tab + .sah-qual-tab { border-left: 1.5px solid rgba(0,0,0,0.11); }
-  .sah-qual-tab.active { background: var(--accent); color: #fff; }
-  .sah-qual-tab:hover:not(.active) { background: rgba(201,98,26,0.07); color: var(--accent); }
+  .sah-file-upload-zone:hover { border-color: var(--accent); }
+  .sah-file-list { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+  .sah-file-item {
+    display: flex; align-items: center; gap: 10px; padding: 9px 12px;
+    background: var(--card-white); border: 1px solid var(--border); border-radius: 6px;
+    font-size: 0.82rem;
+  }
+  .sah-file-item-name { flex: 1; font-weight: 600; color: var(--dark); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .sah-file-item-size { color: var(--muted); font-size: 0.76rem; flex-shrink: 0; }
+  .sah-file-item-remove { background: none; border: none; cursor: pointer; color: var(--muted); padding: 2px 6px; border-radius: 4px; font-size: 0.78rem; flex-shrink: 0; }
+  .sah-file-item-remove:hover { color: #dc2626; background: #fff0f0; }
+  .sah-file-total { font-size: 0.76rem; color: var(--muted); margin-top: 6px; display: flex; align-items: center; gap: 5px; }
+  .sah-file-total.warn { color: #dc2626; }
 
+  /* ── Misc ── */
   .sah-qual-text-grid { display: flex; flex-direction: column; gap: 10px; }
   .sah-local-radius-row { display: flex; gap: 10px; align-items: stretch; }
   .sah-local-radius-row input { flex: 1; }
   .sah-local-radius-row select { width: 100px; flex-shrink: 0; }
-
   .sah-field-hint { font-size: 0.74rem; color: var(--muted); margin-top: 3px; display: flex; align-items: center; gap: 4px; }
   .sah-field-hint i { color: var(--accent); font-size: 0.68rem; }
 
+  /* ── Social dropdown ── */
   .sah-add-others-wrap { position: relative; display: inline-block; }
   .sah-add-others-btn {
     display: inline-flex; align-items: center; gap: 7px;
@@ -315,18 +356,7 @@ const CSS = `
   .sah-add-others-option i { color: var(--accent); width: 16px; text-align: center; }
   .sah-added-socials { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
 
-  /* Day quick-select buttons */
-  .sah-day-quick-btns { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
-  .sah-day-quick-btn {
-    padding: 6px 14px; border-radius: 6px; font-family: 'DM Sans', sans-serif;
-    font-size: 0.78rem; font-weight: 700; cursor: pointer; transition: all 0.14s;
-    display: inline-flex; align-items: center; gap: 5px;
-  }
-  .sah-day-quick-btn.primary { border: 1.5px solid var(--accent); background: rgba(201,98,26,0.08); color: var(--accent); }
-  .sah-day-quick-btn.primary:hover { background: var(--accent); color: #fff; }
-  .sah-day-quick-btn.secondary { border: 1.5px solid rgba(0,0,0,0.15); background: transparent; color: var(--muted); }
-  .sah-day-quick-btn.secondary:hover { border-color: var(--accent); color: var(--accent); }
-
+  /* ── Nav ── */
   .sah-form-nav-wrap {
     background: var(--card-gray); border-radius: var(--radius-lg);
     box-shadow: var(--shadow-md); margin-top: 20px;
@@ -353,20 +383,15 @@ const CSS = `
     cursor: pointer; transition: background 0.15s, transform 0.15s;
     box-shadow: 0 6px 20px -4px rgba(201,98,26,0.45);
   }
-  .sah-nav-next:hover { background: var(--accent-dark); transform: translateY(-1px); }
+  .sah-nav-next:hover:not(:disabled) { background: var(--accent-dark); transform: translateY(-1px); }
+  .sah-nav-next:disabled { opacity: 0.65; cursor: not-allowed; transform: none; }
   .sah-nav-submit { background: #3a3a3a; box-shadow: 0 6px 20px -4px rgba(0,0,0,0.3); }
-  .sah-nav-submit:hover { background: #1e1e1e; }
+  .sah-nav-submit:hover:not(:disabled) { background: #1e1e1e; }
 
   .sah-spinner { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: sah-spin 0.7s linear infinite; }
   @keyframes sah-spin { to { transform: rotate(360deg); } }
 
-  .sah-qual-parsed {
-    padding: 10px 14px; background: #ecfdf5; border-radius: 8px;
-    border: 1px solid #a7f3d0; font-size: 0.8rem; color: #065f46;
-    margin-top: 10px; display: flex; align-items: center; gap: 8px;
-    font-weight: 600;
-  }
-
+  /* ── Responsive ── */
   @media (max-width: 900px) {
     .sah-reg-panel { max-width: 100%; padding: 0 16px 80px; }
     .sah-step-card-body { padding: 24px 20px; }
@@ -380,17 +405,24 @@ const CSS = `
     .sah-reg-hero-inner { padding: 36px 16px; }
     .sah-rhdr-inner { padding: 0 16px; }
     .sah-form-nav-wrap { flex-wrap: wrap; }
+    .sah-terms-box-head { flex-wrap: wrap; gap: 8px; }
   }
 `;
 
+// ── Config ────────────────────────────────────────────────────────────────────
+const API_URL = 'http://localhost:5000/api';
+const MAX_TOTAL_UPLOAD_MB = 100;
+const MAX_TOTAL_UPLOAD_BYTES = MAX_TOTAL_UPLOAD_MB * 1024 * 1024;
+
 const STEPS = [
-  { title: 'Select Plan',            label: 'Select Plan',      desc: 'Choose the listing plan that suits your business',      icon: 'fa-layer-group' },
-  { title: 'Account Setup',          label: 'Account Setup',    desc: 'Create your provider account credentials',              icon: 'fa-user-circle' },
-  { title: 'Identity & Trust',       label: 'Identity & Trust', desc: 'Build trust with your qualifications and bio',          icon: 'fa-id-card' },
-  { title: 'Services Offered',       label: 'Services Offered', desc: 'Tell families what you offer',                          icon: 'fa-briefcase' },
-  { title: 'Location & Reach',       label: 'Location & Reach', desc: 'Where can you serve families?',                        icon: 'fa-map-marker-alt' },
-  { title: 'Pricing & Availability', label: 'Pricing',          desc: 'Set your rates and schedule',                          icon: 'fa-calendar-alt' },
-  { title: 'Contact Details',        label: 'Contact Details',  desc: 'How families can reach you — agree to terms & submit', icon: 'fa-phone' },
+  { title: 'Select Plan',            label: 'Select Plan', desc: 'Choose a listing plan for your profile',                    icon: 'fa-layer-group'    },
+  { title: 'Account Setup',          label: 'Account',     desc: 'Create your provider account credentials',                  icon: 'fa-user-circle'    },
+  { title: 'Identity & Trust',       label: 'Identity',    desc: 'Build trust with your qualifications and bio',              icon: 'fa-id-card'        },
+  { title: 'Services Offered',       label: 'Services',    desc: 'Tell families what you offer',                              icon: 'fa-briefcase'      },
+  { title: 'Location & Reach',       label: 'Location',    desc: 'Where can you serve families?',                            icon: 'fa-map-marker-alt' },
+  { title: 'Pricing & Availability', label: 'Pricing',     desc: 'Set your rates and schedule',                              icon: 'fa-calendar-alt'   },
+  { title: 'Contact Details',        label: 'Contact',     desc: 'How families can reach you',                               icon: 'fa-phone'          },
+  { title: 'Terms & Conditions',     label: 'Terms',       desc: 'Review and agree to our terms before creating your profile', icon: 'fa-file-contract' },
 ];
 const TOTAL = STEPS.length;
 
@@ -439,50 +471,116 @@ const PLANS = [
   },
 ];
 
-const PRICING_UNIT_MAP = {
-  'Hourly': '/hr',
-  'Per package': '/package',
-  'Per term': '/term',
-  'Custom quote': '',
-};
-
+const PRICING_UNIT_MAP = { 'Hourly': '/hr', 'Per package': '/package', 'Per term': '/term', 'Custom quote': '' };
 const TIME_SLOT_REGEX = /^(\d{1,2}:\d{2}\s*[-–]\s*\d{1,2}:\d{2})(\s*,\s*\d{1,2}:\d{2}\s*[-–]\s*\d{1,2}:\d{2})*$/;
-
-const ALL_DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 
 const EXTRA_SOCIALS = [
   { key: 'instagram', label: 'Instagram',   icon: 'fab fa-instagram',   placeholder: 'https://instagram.com/yourprofile' },
-  { key: 'linkedin',  label: 'LinkedIn',    icon: 'fab fa-linkedin-in', placeholder: 'https://linkedin.com/in/yourname' },
-  { key: 'tiktok',    label: 'TikTok',      icon: 'fab fa-tiktok',      placeholder: 'https://tiktok.com/@yourhandle' },
+  { key: 'linkedin',  label: 'LinkedIn',    icon: 'fab fa-linkedin-in', placeholder: 'https://linkedin.com/in/yourname'  },
+  { key: 'tiktok',    label: 'TikTok',      icon: 'fab fa-tiktok',      placeholder: 'https://tiktok.com/@yourhandle'    },
   { key: 'youtube',   label: 'YouTube',     icon: 'fab fa-youtube',     placeholder: 'https://youtube.com/@yourchannel' },
-  { key: 'twitter',   label: 'X / Twitter', icon: 'fab fa-x-twitter',   placeholder: 'https://x.com/yourhandle' },
+  { key: 'twitter',   label: 'X / Twitter', icon: 'fab fa-x-twitter',   placeholder: 'https://x.com/yourhandle'         },
 ];
+
+const ALL_CATEGORIES = [
+  'Tutor', 'Therapist', 'Curriculum Provider',
+  'Online / Hybrid School', 'Educational Consultant', 'Extracurricular / Enrichment',
+];
+
+const SECONDARY_CAT_MAP = {
+  'Tutor':       'Tutor',
+  'Therapist':   'Therapist',
+  'Curriculum':  'Curriculum Provider',
+  'School':      'Online / Hybrid School',
+  'Consultant':  'Educational Consultant',
+  'Enrichment':  'Extracurricular / Enrichment',
+};
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+const planToTier = (param) => {
+  if (param?.includes('R399') || param?.includes('Deluxe'))       return 'featured';
+  if (param?.includes('R149') || param?.includes('Professional')) return 'pro';
+  return 'free';
+};
+
+const catToSlug = (cat) => {
+  const m = {
+    'Tutor': 'tutor', 'Therapist': 'therapist', 'Curriculum Provider': 'curriculum',
+    'Online / Hybrid School': 'school', 'Educational Consultant': 'consultant',
+    'Extracurricular / Enrichment': 'extracurricular',
+  };
+  return m[cat] || 'tutor';
+};
+
+const formatBytes = (bytes) => {
+  if (bytes < 1024)          return bytes + ' B';
+  if (bytes < 1024 * 1024)   return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+};
+
+function saveToLocalStorage({ userId, email, fullName, tier, newProvider }) {
+  try {
+    const users = JSON.parse(localStorage.getItem('sah_users') || '[]');
+    if (!users.find(u => u.email?.toLowerCase() === email.toLowerCase())) {
+      users.push({
+        id: userId, email: email.toLowerCase(), role: 'PROVIDER',
+        accountType: 'provider', name: fullName,
+        registered: new Date().toISOString(), lastLogin: new Date().toISOString(),
+      });
+      localStorage.setItem('sah_users', JSON.stringify(users));
+    }
+    const providers = JSON.parse(localStorage.getItem('sah_providers') || '[]');
+    providers.push(newProvider);
+    localStorage.setItem('sah_providers', JSON.stringify(providers));
+
+    const authLogs = JSON.parse(localStorage.getItem('sah_auth_logs') || '[]');
+    authLogs.unshift({ userId, email: email.toLowerCase(), role: 'PROVIDER', event: 'REGISTER', timestamp: new Date().toISOString() });
+    localStorage.setItem('sah_auth_logs', JSON.stringify(authLogs.slice(0, 500)));
+
+    localStorage.setItem('sah_current_user', JSON.stringify({ role: 'client', email, id: userId, name: fullName, plan: tier }));
+    localStorage.setItem('sah_token', 'local_' + userId);
+  } catch (e) {
+    console.warn('localStorage save error:', e);
+  }
+}
 
 const FieldErr = ({ msg }) => msg
   ? <div className="sah-field-err"><i className="fas fa-exclamation-circle" /> {msg}</div>
   : null;
 
+// ══════════════════════════════════════════════════════════════════════════════
+//  COMPONENT
+// ══════════════════════════════════════════════════════════════════════════════
 const Registration = () => {
   const navigate  = useNavigate();
   const location  = useLocation();
-  const { register } = useAuth();
   const { showNotification } = useNotification();
 
-  const [step, setStep]               = useState(1);
-  const [data, setData]               = useState({ listingPlan: 'Free Listing – basic profile' });
-  const [fieldErrors, setFieldErrors] = useState({});
-  const [showPw, setShowPw]           = useState(false);
-  const [submitting, setSubmitting]   = useState(false);
+  const [step, setStep]                   = useState(1);
+  const [data, setData]                   = useState({ listingPlan: 'Free Listing – basic profile', terms: false });
+  const [fieldErrors, setFieldErrors]     = useState({});
+  const [showPw, setShowPw]               = useState(false);
+  const [submitting, setSubmitting]       = useState(false);
   const [showSecondary, setShowSecondary] = useState(false);
-  const [qualMode, setQualMode]       = useState('text');
-  const [clearanceMode, setClearanceMode] = useState('text');
-  const [timeSlotErr, setTimeSlotErr] = useState('');
+  const [timeSlotErr, setTimeSlotErr]     = useState('');
   const [showSocialDropdown, setShowSocialDropdown] = useState(false);
-  const [addedSocials, setAddedSocials] = useState([]);
-  const [parsedQualFileName, setParsedQualFileName] = useState('');
-  const topRef        = useRef(null);
-  const socialDropRef = useRef(null);
+  const [addedSocials, setAddedSocials]   = useState([]);
+  const [termsOpen, setTermsOpen]         = useState(false);
 
+  // ── REMOVED: apiOnline state and health-check useEffect ──
+  // The banner text "Connected to database..." has been removed.
+  // Submit now tries the API directly with try/catch instead of
+  // relying on a pre-checked apiOnline flag.
+
+  const [certFiles, setCertFiles]             = useState([]);
+  const [clearanceFiles, setClearanceFiles]   = useState([]);
+
+  const topRef            = useRef(null);
+  const socialDropRef     = useRef(null);
+  const certInputRef      = useRef(null);
+  const clearanceInputRef = useRef(null);
+
+  // ── Inject CSS + fonts ──
   useEffect(() => {
     injectHead();
     if (!document.getElementById('sah-reg-css')) {
@@ -492,28 +590,31 @@ const Registration = () => {
     }
   }, []);
 
+  // ── Pre-fill plan from URL ──
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const plan = params.get('plan');
     if (plan) setData(p => ({ ...p, listingPlan: decodeURIComponent(plan) }));
   }, [location.search]);
 
+  // ── Scroll + clear errors on step change ──
   useEffect(() => {
     if (topRef.current) topRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
     setFieldErrors({});
     setTimeSlotErr('');
   }, [step]);
 
+  // ── Close social dropdown on outside click ──
   useEffect(() => {
     const handler = (e) => {
-      if (socialDropRef.current && !socialDropRef.current.contains(e.target)) {
+      if (socialDropRef.current && !socialDropRef.current.contains(e.target))
         setShowSocialDropdown(false);
-      }
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
+  // ── Field helpers ──
   const set = (name, value) => {
     setData(p => ({ ...p, [name]: value }));
     setFieldErrors(prev => ({ ...prev, [name]: '' }));
@@ -539,45 +640,44 @@ const Registration = () => {
   const addSocial    = (key) => { if (!addedSocials.includes(key)) setAddedSocials(prev => [...prev, key]); setShowSocialDropdown(false); };
   const removeSocial = (key) => { setAddedSocials(prev => prev.filter(k => k !== key)); set(key, ''); };
 
-  const handleQualFileUpload = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const nameWithoutExt = file.name.replace(/\.[^.]+$/, '');
-    const segments = nameWithoutExt.replace(/[_\-\.]/g, ' ').replace(/\s+/g, ' ').trim();
-    const lc = segments.toLowerCase();
-    setParsedQualFileName(file.name);
-    const degreeKeywords = ['bed','bsc','ba ','honours','diploma','degree','masters','phd','med ','pgce','bachelor'];
-    const certKeywords   = ['sace','umalusi','cert','accredited','registered'];
-    const memberKeywords = ['member','association','society','institute'];
-    const hasDegree = degreeKeywords.some(k => lc.includes(k));
-    const hasCert   = certKeywords.some(k => lc.includes(k));
-    const hasMember = memberKeywords.some(k => lc.includes(k));
-    if (file.name.toLowerCase().endsWith('.txt')) {
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        const text = ev.target.result;
-        const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
-        const degLine    = lines.find(l => degreeKeywords.some(k => l.toLowerCase().includes(k)));
-        const certLine   = lines.find(l => certKeywords.some(k => l.toLowerCase().includes(k)));
-        const memberLine = lines.find(l => memberKeywords.some(k => l.toLowerCase().includes(k)));
-        setData(prev => ({
-          ...prev,
-          qualDegree:      degLine    || prev.qualDegree    || segments,
-          qualCerts:       certLine   || prev.qualCerts     || '',
-          qualMemberships: memberLine || prev.qualMemberships || '',
-        }));
-      };
-      reader.readAsText(file);
-    } else {
-      setData(prev => ({
-        ...prev,
-        qualDegree:      hasDegree ? segments : (prev.qualDegree || segments),
-        qualCerts:       hasCert   ? segments : (prev.qualCerts  || ''),
-        qualMemberships: hasMember ? segments : prev.qualMemberships,
-      }));
+  // ── File helpers (PDF only) ──
+  const totalFileBytes = (files) => files.reduce((acc, f) => acc + f.size, 0);
+
+  const handleCertFilesAdd = (e) => {
+    const incoming = Array.from(e.target.files || []);
+    const pdfOnly  = incoming.filter(f => f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf'));
+    if (pdfOnly.length < incoming.length)
+      setFieldErrors(prev => ({ ...prev, certFiles: 'Only PDF files are allowed for certificates.' }));
+    const combined = [...certFiles, ...pdfOnly];
+    if (totalFileBytes(combined) > MAX_TOTAL_UPLOAD_BYTES) {
+      setFieldErrors(prev => ({ ...prev, certFiles: `Total file size cannot exceed ${MAX_TOTAL_UPLOAD_MB}MB.` }));
+      return;
     }
+    setCertFiles(combined);
+    setFieldErrors(prev => ({ ...prev, certFiles: '' }));
+    if (certInputRef.current) certInputRef.current.value = '';
   };
 
+  const removeCertFile = (idx) => setCertFiles(prev => prev.filter((_, i) => i !== idx));
+
+  const handleClearanceFilesAdd = (e) => {
+    const incoming = Array.from(e.target.files || []);
+    const pdfOnly  = incoming.filter(f => f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf'));
+    if (pdfOnly.length < incoming.length)
+      setFieldErrors(prev => ({ ...prev, clearanceFiles: 'Only PDF files are allowed for police clearance.' }));
+    const combined = [...clearanceFiles, ...pdfOnly];
+    if (totalFileBytes([...certFiles, ...combined]) > MAX_TOTAL_UPLOAD_BYTES) {
+      setFieldErrors(prev => ({ ...prev, clearanceFiles: `Total combined file size cannot exceed ${MAX_TOTAL_UPLOAD_MB}MB.` }));
+      return;
+    }
+    setClearanceFiles(combined);
+    setFieldErrors(prev => ({ ...prev, clearanceFiles: '' }));
+    if (clearanceInputRef.current) clearanceInputRef.current.value = '';
+  };
+
+  const removeClearanceFile = (idx) => setClearanceFiles(prev => prev.filter((_, i) => i !== idx));
+
+  // ── Validation ──
   const validateStep = () => {
     const errs = {};
     if (step === 2) {
@@ -587,15 +687,15 @@ const Registration = () => {
       if (!data.accountType) errs.accountType = 'Please select whether you are an individual or organisation.';
     }
     if (step === 3) {
-      if (!data.bio?.trim()) errs.bio = 'Please write a short bio telling families about your experience and approach.';
-      if (!data.experience && data.experience !== 0) errs.experience = 'Please enter your years of experience (enter 0 if you are just starting out).';
+      if (!data.bio?.trim()) errs.bio = 'Please write a short bio.';
+      if (!data.experience && data.experience !== 0) errs.experience = 'Please enter your years of experience.';
     }
     if (step === 4) {
       if (!data.primaryCat) errs.primaryCat = 'Please select your primary service category.';
       if (!data.serviceTitle?.trim()) errs.serviceTitle = 'Please enter a title for your service.';
       if (!data.serviceDesc?.trim()) errs.serviceDesc = 'Please describe the services you offer.';
       if (!data.subjects?.trim()) errs.subjects = 'Please list the subjects or specialisations you offer.';
-      if (!data.ageGroups?.length) errs.ageGroups = 'Please select at least one age group you work with.';
+      if (!data.ageGroups?.length) errs.ageGroups = 'Please select at least one age group.';
       if (!data.deliveryMode) errs.deliveryMode = 'Please select how you deliver your services.';
     }
     if (step === 5) {
@@ -605,18 +705,17 @@ const Registration = () => {
     }
     if (step === 6) {
       if (!data.pricingModel) errs.pricingModel = 'Please select how you charge for your services.';
-      if (!data.daysAvailable?.length) errs.daysAvailable = 'Please select at least one day you are available.';
-      if (!data.timeSlots?.trim()) {
-        errs.timeSlots = 'Please enter your available time slots (e.g. 9:00 - 17:00).';
-      } else if (!TIME_SLOT_REGEX.test(data.timeSlots.trim())) {
-        errs.timeSlots = 'Use the format HH:MM - HH:MM (e.g. 9:00 - 17:00).';
-      }
+      if (!data.daysAvailable?.length) errs.daysAvailable = 'Please select at least one day.';
+      if (!data.timeSlots?.trim()) errs.timeSlots = 'Please enter your available time slots.';
+      else if (!TIME_SLOT_REGEX.test(data.timeSlots.trim())) errs.timeSlots = 'Use the format HH:MM - HH:MM.';
     }
     if (step === 7) {
       if (!data.phoneLocal?.trim()) errs.phoneLocal = 'Please enter your phone number.';
       else if (data.phoneLocal.replace(/\D/g, '').length !== 9) errs.phoneLocal = 'Enter exactly 9 digits after +27.';
-      if (!data.inquiryEmail?.trim() || !/^\S+@\S+\.\S+$/.test(data.inquiryEmail)) errs.inquiryEmail = 'Please enter a valid email address for enquiries.';
-      if (!data.terms) errs.terms = 'Please agree to the Terms and Community Guidelines before submitting.';
+      if (!data.inquiryEmail?.trim() || !/^\S+@\S+\.\S+$/.test(data.inquiryEmail)) errs.inquiryEmail = 'Please enter a valid email for enquiries.';
+    }
+    if (step === 8) {
+      if (!data.terms) errs.terms = 'Please tick the box to agree to the Terms and Community Guidelines before creating your profile.';
     }
     return errs;
   };
@@ -638,106 +737,231 @@ const Registration = () => {
 
   const prev = () => { setFieldErrors({}); setStep(s => s - 1); };
 
+  // ── Submit ────────────────────────────────────────────────────────────────
+  // NOTE: apiOnline state removed. We now probe the API directly inside submit()
+  // using try/catch. If the API is reachable we use it; otherwise we fall through
+  // to the localStorage fallback. Both paths call navigate('/client-dashboard').
   const submit = async () => {
     setSubmitting(true);
-    const planMap = {
-      'Free Listing – basic profile': 'free',
-      'Professional Listing – R149/month (full contact, direct enquiries)': 'pro',
-      'Deluxe Package – R399/month (3-month campaign, max exposure)': 'featured',
-    };
-    const catMap = {
-      'Tutor': 'tutor', 'Therapist': 'therapist', 'Curriculum Provider': 'curriculum',
-      'Online / Hybrid School': 'school', 'Educational Consultant': 'consultant',
-      'Extracurricular / Enrichment': 'extracurricular',
-    };
-    const tier          = planMap[data.listingPlan] || 'free';
-    const fullPhone     = data.phoneLocal    ? '+27' + data.phoneLocal.replace(/\D/g, '')    : '';
-    const fullWhatsapp  = data.whatsappLocal ? '+27' + data.whatsappLocal.replace(/\D/g, '') : fullPhone;
-    const priceUnit     = PRICING_UNIT_MAP[data.pricingModel] || '';
-    const priceDisplay  = data.startingPrice ? `R${data.startingPrice}${priceUnit}` : 'Contact';
-    const qualDegree    = data.qualDegree    || '';
-    const qualCerts     = data.qualCerts     || '';
+    setFieldErrors({});
+
+    const tier            = planToTier(data.listingPlan);
+    const fullPhone       = data.phoneLocal    ? '+27' + data.phoneLocal.replace(/\D/g, '')    : '';
+    const fullWhatsapp    = data.whatsappLocal ? '+27' + data.whatsappLocal.replace(/\D/g, '') : fullPhone;
+    const priceUnit       = PRICING_UNIT_MAP[data.pricingModel] || '';
+    const priceDisplay    = data.startingPrice ? `R${data.startingPrice}${priceUnit}` : 'Contact';
+    const qualDegree      = data.qualDegree || '';
+    const qualCerts       = data.qualCerts  || '';
     const qualMemberships = data.qualMemberships || '';
-    const certificationsCombined = [qualDegree, qualCerts].filter(Boolean).join(' | ');
-    let serviceAreaType = 'national';
-    const svcAreas = data.serviceAreas || [];
-    if (svcAreas.includes('Local') && svcAreas.length === 1) serviceAreaType = 'local';
+    const certsCombined   = [qualDegree, qualCerts].filter(Boolean).join(' | ');
+    const svcAreas        = data.serviceAreas || [];
+    let serviceAreaType   = 'national';
+    if (svcAreas.includes('Local') && svcAreas.length === 1)            serviceAreaType = 'local';
     else if (svcAreas.includes('Online only') && svcAreas.length === 1) serviceAreaType = 'online';
-    else if (svcAreas.includes('Local')) serviceAreaType = 'local';
-    const services = [{
-      title: data.serviceTitle || '', description: data.serviceDesc || '',
-      ageGroups: data.ageGroups || [], deliveryMode: data.deliveryMode || 'Online', subjects: data.subjects || '',
-    }];
+    else if (svcAreas.includes('Local'))                                serviceAreaType = 'local';
+
+    const certFileNames      = certFiles.map(f => f.name);
+    const clearanceFileNames = clearanceFiles.map(f => f.name);
+
+    const providerId  = 'prov_' + Date.now();
     const newProvider = {
-      id: 'prov_' + Date.now(),
+      id: providerId,
       name: data.fullName || '',
-      email: (data.email || '').toLowerCase().trim(),
-      password: data.password || '', // ← saved for login verification
+      email: (data.email || '').toLowerCase(),
       accountType: data.accountType || 'Individual Provider',
       plan: tier, listingPlan: tier, tier,
       badge: tier === 'featured' ? 'featured' : tier === 'pro' ? 'verified' : null,
-      status: 'pending', registered: new Date().toISOString(),
-      listingPublic: true, publicToggle: true,
-      image: data.profilePhoto || null, photo: data.profilePhoto || null,
-      category: catMap[data.primaryCat] || 'tutor', primaryCategory: data.primaryCat || '',
+      status: 'pending',
+      registered: new Date().toISOString(),
+      lastLogin: new Date().toISOString(),
+      category: catToSlug(data.primaryCat),
+      primaryCategory: data.primaryCat || '',
       secondaryCategories: data.secondaryCats || [],
-      bio: data.bio || '', yearsExperience: data.experience || '',
-      degrees: qualDegree, certifications: certificationsCombined, qualCerts, memberships: qualMemberships,
-      clearance: data.clearanceText || '',
+      bio: data.bio || '',
+      experience: data.experience || '',
+      degrees: qualDegree,
+      certifications: certsCombined,
+      qualCerts,
+      certTextEntry: data.qualCerts || '',
+      certDocuments: certFileNames,
+      memberships: qualMemberships,
+      clearanceText: data.clearanceText || '',
+      clearanceDocuments: clearanceFileNames,
       tags: data.subjects ? data.subjects.split(',').map(s => s.trim()).filter(Boolean) : [],
-      languages: data.languages || [], services,
-      serviceTitle: data.serviceTitle || '', serviceDesc: data.serviceDesc || '',
-      subjects: data.subjects || '', ageGroups: data.ageGroups || [],
+      languages: data.languages || [],
+      serviceTitle: data.serviceTitle || '',
+      serviceDesc: data.serviceDesc || '',
+      subjects: data.subjects || '',
+      ageGroups: data.ageGroups || [],
+      deliveryMode: data.deliveryMode || '',
+      delivery: data.deliveryMode || '',
       location: data.city ? `${data.city}, ${data.province}` : '',
-      city: data.city || '', province: data.province || '',
-      delivery: data.deliveryMode || '', deliveryMode: data.deliveryMode || '',
-      serviceAreas: svcAreas, serviceAreaType,
+      city: data.city || '',
+      province: data.province || '',
+      serviceAreas: svcAreas,
+      serviceAreaType,
       radius: data.localRadiusNum ? `${data.localRadiusNum} ${data.localRadiusUnit || 'km'}` : '',
-      pricingModel: data.pricingModel || '', startingPrice: priceDisplay, priceFrom: priceDisplay,
+      pricingModel: data.pricingModel || '',
+      startingPrice: priceDisplay, priceFrom: priceDisplay,
       availabilityDays: (data.daysAvailable || []).map(d => d.slice(0, 3)),
       availabilityNotes: data.timeSlots || '',
-      contactName: data.fullName || '', phone: fullPhone, whatsapp: fullWhatsapp,
+      phone: fullPhone, whatsapp: fullWhatsapp,
       contactEmail: data.inquiryEmail || data.email || '',
-      social: data.website || '', website: data.website || '', facebook: data.facebook || '',
-      rating: null, reviewCount: 0, reviews: { average: 0, count: 0, items: [] },
+      inquiryEmail: data.inquiryEmail || '',
+      website: data.website || '',
+      facebook: data.facebook || '', instagram: data.instagram || '',
+      linkedin: data.linkedin || '', tiktok: data.tiktok || '',
+      twitter: data.twitter || '', youtube: data.youtube || '',
+      image: data.profilePhoto || null, photo: data.profilePhoto || null,
+      rating: null, reviewCount: 0,
+      reviews: { average: 0, count: 0, items: [] },
+      listingPublic: true, publicToggle: true,
     };
+
+    // ── Try real API (probe + register in one try/catch) ──────────────────
     try {
-      const existing = JSON.parse(localStorage.getItem('sah_providers') || '[]');
-      existing.push(newProvider);
-      localStorage.setItem('sah_providers', JSON.stringify(existing));
-      localStorage.setItem('sah_current_user', JSON.stringify({
-        role: 'client', email: newProvider.email, id: newProvider.id, name: newProvider.name, plan: tier,
-      }));
-      showNotification?.('✅ Registration successful! Your profile is pending approval.', 'success');
-      setTimeout(() => navigate('/client-dashboard'), 1800);
-    } catch {
-      setFieldErrors({ _submit: 'Registration failed. Please try again.' });
-      setSubmitting(false);
+      const healthRes = await fetch(`${API_URL}/health`, { signal: AbortSignal.timeout(3000) });
+
+      if (healthRes.ok) {
+        const userRes = await fetch(`${API_URL}/auth/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email:       data.email.trim().toLowerCase(),
+            password:    data.password,
+            role:        'PROVIDER',
+            name:        data.fullName,
+            accountType: data.accountType || 'Individual Provider',
+          }),
+        });
+        const userData = await userRes.json();
+        if (!userRes.ok) {
+          setFieldErrors({ _submit: userData.message || 'Failed to create account.' });
+          setSubmitting(false);
+          return;
+        }
+        const dbUserId = userData.user.id;
+
+        const formData = new FormData();
+        formData.append('providerData', JSON.stringify({
+          userId: dbUserId,
+          fullName: data.fullName,
+          accountType: data.accountType || 'Individual Provider',
+          bio: data.bio,
+          experience: parseInt(data.experience) || 0,
+          primaryCategory: data.primaryCat,
+          secondaryCategories: data.secondaryCats || [],
+          serviceTitle: data.serviceTitle,
+          serviceDesc: data.serviceDesc,
+          subjects: data.subjects,
+          ageGroups: data.ageGroups || [],
+          deliveryMode: data.deliveryMode,
+          city: data.city,
+          province: data.province,
+          serviceAreaType,
+          radius: data.localRadiusNum ? parseInt(data.localRadiusNum) : null,
+          pricingModel: data.pricingModel,
+          startingPrice: priceDisplay,
+          availabilityDays: (data.daysAvailable || []).map(d => d.slice(0, 3)),
+          availabilityNotes: data.timeSlots,
+          phone: fullPhone,
+          whatsapp: fullWhatsapp,
+          inquiryEmail: data.inquiryEmail,
+          website: data.website || null,
+          facebook: data.facebook || null,
+          instagram: data.instagram || null,
+          linkedin: data.linkedin || null,
+          tiktok: data.tiktok || null,
+          twitter: data.twitter || null,
+          degrees: qualDegree,
+          certifications: certsCombined,
+          certTextEntry: data.qualCerts || '',
+          memberships: qualMemberships,
+          clearanceText: data.clearanceText || null,
+          listingPlan: tier,
+          languages: data.languages || [],
+        }));
+        certFiles.forEach((file, i)      => formData.append(`certFile_${i}`, file, file.name));
+        clearanceFiles.forEach((file, i) => formData.append(`clearanceFile_${i}`, file, file.name));
+
+        const providerRes  = await fetch(`${API_URL}/providers`, { method: 'POST', body: formData });
+        const providerData = await providerRes.json();
+        if (!providerRes.ok) {
+          setFieldErrors({ _submit: providerData.message || 'Failed to create provider profile.' });
+          setSubmitting(false);
+          return;
+        }
+
+        saveToLocalStorage({
+          userId: dbUserId, email: data.email, fullName: data.fullName, tier,
+          newProvider: { ...newProvider, id: providerData.provider?.id || providerId, dbId: providerData.provider?.id },
+        });
+        localStorage.setItem('sah_current_user', JSON.stringify({
+          role: 'client', email: data.email, id: dbUserId, name: data.fullName, plan: tier,
+        }));
+
+        showNotification?.('✅ Registration successful! Your profile is pending admin approval.', 'success');
+        navigate('/client-dashboard');
+        return;
+      }
+    } catch (apiErr) {
+      // API unreachable — fall through to localStorage fallback below
     }
+
+    // ── localStorage fallback ─────────────────────────────────────────────
+    const existingUsers     = JSON.parse(localStorage.getItem('sah_users') || '[]');
+    const existingProviders = JSON.parse(localStorage.getItem('sah_providers') || '[]');
+    const emailLower        = data.email.trim().toLowerCase();
+
+    if (
+      existingUsers.find(u => u.email?.toLowerCase() === emailLower) ||
+      existingProviders.find(p => p.email?.toLowerCase() === emailLower)
+    ) {
+      setFieldErrors({ _submit: 'An account with this email already exists.' });
+      setSubmitting(false);
+      return;
+    }
+
+    const localUserId = 'prov_' + Date.now();
+    saveToLocalStorage({
+      userId: localUserId, email: data.email, fullName: data.fullName, tier,
+      newProvider: { ...newProvider, id: localUserId },
+    });
+
+    showNotification?.('✅ Registration successful! Your profile is pending admin approval.', 'success');
+    navigate('/client-dashboard');
   };
 
   const fe = fieldErrors;
 
-  // ── STEP 1 ──
-  const renderPlanStep = () => (
-    <div className="sah-plan-grid">
+  // ── Derived ───────────────────────────────────────────────────────────────
+  const allCertBytes = totalFileBytes([...certFiles, ...clearanceFiles]);
+  const overLimit    = allCertBytes > MAX_TOTAL_UPLOAD_BYTES;
+  const primaryFull  = data.primaryCat || '';
+
+  // ─────────────────────────────────────────────────────────────────────────
+  //  STEP RENDERERS
+  // ─────────────────────────────────────────────────────────────────────────
+
+  // Step 1 — Select Plan (banner removed entirely)
+  const renderStep1 = () => (
+    <div className="sah-plan-grid" style={{ marginTop: 8 }}>
       {PLANS.map(plan => {
         const selected = data.listingPlan === plan.param;
         return (
           <div key={plan.id} className={`sah-plan-card${selected ? ' selected' : ''}`} onClick={() => set('listingPlan', plan.param)}>
-            <div className={`sah-plan-card-head${selected ? ' selected-bg' : ''}`}>
+            <div className="sah-plan-card-head">
               <div>
-                <div className={`sah-plan-card-name${selected ? ' wt' : ''}`}>{plan.name}</div>
-                <div className={`sah-plan-card-desc${selected ? ' wt' : ''}`}>{plan.desc}</div>
+                <div className="sah-plan-card-name">{plan.name}</div>
+                <div className="sah-plan-card-desc">{plan.desc}</div>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
                 <div className="sah-plan-price-block">
-                  <div className={`sah-plan-price${selected ? ' wt' : ''}`}>
-                    {plan.price} <small className={selected ? 'wt' : ''}>/month</small>
-                  </div>
+                  <div className="sah-plan-price">{plan.price} <small>/month</small></div>
                 </div>
                 <input type="radio" className="sah-plan-radio" name="listingPlan" value={plan.param}
-                  checked={selected} onChange={() => set('listingPlan', plan.param)} onClick={e => e.stopPropagation()} />
+                  checked={selected} onChange={() => set('listingPlan', plan.param)}
+                  onClick={e => e.stopPropagation()} />
               </div>
             </div>
             <div className="sah-plan-body">
@@ -760,7 +984,7 @@ const Registration = () => {
     </div>
   );
 
-  // ── STEP 2 ──
+  // Step 2 — Account Setup
   const renderStep2 = () => (
     <div className="sah-form-grid">
       <div className="sah-field sah-full">
@@ -798,103 +1022,129 @@ const Registration = () => {
     </div>
   );
 
-  // ── STEP 3 ──
+  // Step 3 — Identity & Trust
   const renderStep3 = () => (
     <div className="sah-form-grid">
       <div className="sah-field">
         <label><i className="fas fa-upload" /> Profile Photo / Logo</label>
-        <input type="file" accept="image/*"
-          onChange={e => {
-            const file = e.target.files[0]; if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (ev) => { set('profilePhoto', ev.target.result); };
-            reader.readAsDataURL(file);
-          }} />
+        <input type="file" accept="image/*" onChange={e => {
+          const file = e.target.files[0]; if (!file) return;
+          const reader = new FileReader();
+          reader.onload = (ev) => set('profilePhoto', ev.target.result);
+          reader.readAsDataURL(file);
+        }} />
         {data.profilePhoto && (
           <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 12 }}>
-            <img src={data.profilePhoto} alt="Profile preview"
-              style={{ width: 64, height: 64, borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--accent)' }} />
+            <img src={data.profilePhoto} alt="Preview" style={{ width: 64, height: 64, borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--accent)' }} />
             <div>
-              <div style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--accent)' }}>
-                <i className="fas fa-check-circle" /> Photo selected
-              </div>
-              <button type="button" onClick={() => set('profilePhoto', null)}
-                style={{ fontSize: '0.72rem', color: 'var(--muted)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginTop: 2 }}>
-                Remove
-              </button>
+              <div style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--accent)' }}><i className="fas fa-check-circle" /> Photo selected</div>
+              <button type="button" onClick={() => set('profilePhoto', null)} style={{ fontSize: '0.72rem', color: 'var(--muted)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginTop: 2 }}>Remove</button>
             </div>
           </div>
         )}
       </div>
+
       <div className="sah-field">
         <label><i className="fas fa-hashtag" /> Years of Experience <em className="sah-req">*</em></label>
         <input type="number" value={data.experience ?? ''} placeholder="e.g. 8" min={0} max={60}
           className={fe.experience ? 'err' : ''} onChange={e => set('experience', e.target.value)} />
         <FieldErr msg={fe.experience} />
       </div>
+
       <div className="sah-field sah-full">
         <label><i className="fas fa-align-left" /> Short Bio (150–250 words) <em className="sah-req">*</em></label>
         <textarea value={data.bio || ''} placeholder="Tell families about your teaching philosophy, experience, and approach..."
           className={fe.bio ? 'err' : ''} onChange={e => set('bio', e.target.value)} />
         <FieldErr msg={fe.bio} />
       </div>
+
       <div className="sah-field sah-full">
         <label><i className="fas fa-certificate" /> Qualifications / Certifications</label>
-        <div className="sah-qual-tabs">
-          <button type="button" className={`sah-qual-tab${qualMode === 'text' ? ' active' : ''}`} onClick={() => setQualMode('text')}>
-            <i className="fas fa-edit" /> Enter Text
-          </button>
-          <button type="button" className={`sah-qual-tab${qualMode === 'file' ? ' active' : ''}`} onClick={() => setQualMode('file')}>
-            <i className="fas fa-upload" /> Upload File (auto-fill)
-          </button>
-        </div>
-        {qualMode === 'text' ? (
+        <div style={{ marginBottom: 14 }}>
+          <div style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--muted)', marginBottom: 8 }}>
+            <i className="fas fa-edit" style={{ color: 'var(--accent)', marginRight: 4 }} /> Text Entry (optional)
+          </div>
           <div className="sah-qual-text-grid">
-            <input type="text" value={data.qualDegree || ''} placeholder="Degree / Diploma (e.g. BEd Honours, Mathematics Education)" onChange={e => set('qualDegree', e.target.value)} />
-            <input type="text" value={data.qualCerts  || ''} placeholder="Certifications (e.g. SACE Registered, Umalusi Accredited)"   onChange={e => set('qualCerts',  e.target.value)} />
-            <input type="text" value={data.qualMemberships || ''} placeholder="Memberships (e.g. SA Curriculum Association)"            onChange={e => set('qualMemberships', e.target.value)} />
+            <input type="text" value={data.qualDegree || ''} placeholder="Degree / Diploma (e.g. BEd Honours)" onChange={e => set('qualDegree', e.target.value)} />
+            <input type="text" value={data.qualCerts  || ''} placeholder="Certifications (e.g. SACE Registered)" onChange={e => set('qualCerts',  e.target.value)} />
+            <input type="text" value={data.qualMemberships || ''} placeholder="Memberships (e.g. SA Curriculum Association)" onChange={e => set('qualMemberships', e.target.value)} />
           </div>
-        ) : (
-          <div>
-            <input type="file" accept=".pdf,.doc,.docx,.txt,.jpg,.png" onChange={handleQualFileUpload} />
-            <div className="sah-field-hint" style={{ marginTop: 6 }}>
-              <i className="fas fa-info-circle" /> Upload a .txt file for best auto-fill results. PDF/DOC filenames are used to pre-fill fields.
-            </div>
-            {parsedQualFileName && (
-              <div className="sah-qual-parsed">
-                <i className="fas fa-check-circle" />
-                File parsed: <strong>{parsedQualFileName}</strong> — review the auto-filled fields below and edit as needed.
-              </div>
-            )}
-            <div style={{ marginTop: 14 }}>
-              <p style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--accent)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                {parsedQualFileName ? 'Review & Edit Auto-filled Fields:' : 'Or enter manually:'}
-              </p>
-              <div className="sah-qual-text-grid">
-                <input type="text" value={data.qualDegree || ''} placeholder="Degree / Diploma" onChange={e => set('qualDegree', e.target.value)} />
-                <input type="text" value={data.qualCerts  || ''} placeholder="Certifications"   onChange={e => set('qualCerts',  e.target.value)} />
-                <input type="text" value={data.qualMemberships || ''} placeholder="Memberships" onChange={e => set('qualMemberships', e.target.value)} />
+        </div>
+        <div>
+          <div style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--muted)', marginBottom: 8 }}>
+            <i className="fas fa-file-pdf" style={{ color: 'var(--accent)', marginRight: 4 }} /> PDF Documents (optional)
+          </div>
+          <div className="sah-file-upload-zone" onClick={() => certInputRef.current?.click()}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <i className="fas fa-cloud-upload-alt" style={{ fontSize: '1.4rem', color: 'var(--accent)' }} />
+              <div>
+                <div style={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--dark)' }}>Click to upload certificate PDFs</div>
+                <div style={{ fontSize: '0.76rem', marginTop: 2, color: 'var(--muted)' }}>PDF files only · Multiple files allowed · Combined limit {MAX_TOTAL_UPLOAD_MB}MB</div>
               </div>
             </div>
+            <input ref={certInputRef} type="file" accept="application/pdf,.pdf" multiple style={{ display: 'none' }} onChange={handleCertFilesAdd} />
           </div>
-        )}
+          {fe.certFiles && <div className="sah-field-err" style={{ marginTop: 8 }}><i className="fas fa-exclamation-circle" /> {fe.certFiles}</div>}
+          {certFiles.length > 0 && (
+            <div className="sah-file-list">
+              {certFiles.map((f, i) => (
+                <div key={i} className="sah-file-item">
+                  <i className="fas fa-file-pdf" style={{ color: '#dc2626', fontSize: '1rem', flexShrink: 0 }} />
+                  <span className="sah-file-item-name">{f.name}</span>
+                  <span className="sah-file-item-size">{formatBytes(f.size)}</span>
+                  <button type="button" className="sah-file-item-remove" onClick={() => removeCertFile(i)}><i className="fas fa-times" /></button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
+
       <div className="sah-field sah-full">
         <label><i className="fas fa-shield-alt" /> Police Clearance (optional)</label>
-        <div className="sah-qual-tabs">
-          <button type="button" className={`sah-qual-tab${clearanceMode === 'text' ? ' active' : ''}`} onClick={() => setClearanceMode('text')}>
-            <i className="fas fa-edit" /> Enter Details
-          </button>
-          <button type="button" className={`sah-qual-tab${clearanceMode === 'file' ? ' active' : ''}`} onClick={() => setClearanceMode('file')}>
-            <i className="fas fa-upload" /> Upload File
-          </button>
-        </div>
-        {clearanceMode === 'text' ? (
+        <div style={{ marginBottom: 14 }}>
+          <div style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--muted)', marginBottom: 8 }}>
+            <i className="fas fa-edit" style={{ color: 'var(--accent)', marginRight: 4 }} /> Text Entry (optional)
+          </div>
           <input type="text" value={data.clearanceText || ''} placeholder="e.g. Verified 2024 — Certificate No. 12345678" onChange={e => set('clearanceText', e.target.value)} />
-        ) : (
-          <input type="file" accept=".pdf,.jpg,.png" />
+        </div>
+        <div>
+          <div style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--muted)', marginBottom: 8 }}>
+            <i className="fas fa-file-pdf" style={{ color: 'var(--accent)', marginRight: 4 }} /> PDF Documents (optional)
+          </div>
+          <div className="sah-file-upload-zone" onClick={() => clearanceInputRef.current?.click()}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <i className="fas fa-cloud-upload-alt" style={{ fontSize: '1.4rem', color: 'var(--accent)' }} />
+              <div>
+                <div style={{ fontWeight: 700, fontSize: '0.88rem', color: 'var(--dark)' }}>Click to upload police clearance PDFs</div>
+                <div style={{ fontSize: '0.76rem', marginTop: 2, color: 'var(--muted)' }}>PDF files only · Multiple files allowed</div>
+              </div>
+            </div>
+            <input ref={clearanceInputRef} type="file" accept="application/pdf,.pdf" multiple style={{ display: 'none' }} onChange={handleClearanceFilesAdd} />
+          </div>
+          {fe.clearanceFiles && <div className="sah-field-err" style={{ marginTop: 8 }}><i className="fas fa-exclamation-circle" /> {fe.clearanceFiles}</div>}
+          {clearanceFiles.length > 0 && (
+            <div className="sah-file-list">
+              {clearanceFiles.map((f, i) => (
+                <div key={i} className="sah-file-item">
+                  <i className="fas fa-file-pdf" style={{ color: '#dc2626', fontSize: '1rem', flexShrink: 0 }} />
+                  <span className="sah-file-item-name">{f.name}</span>
+                  <span className="sah-file-item-size">{formatBytes(f.size)}</span>
+                  <button type="button" className="sah-file-item-remove" onClick={() => removeClearanceFile(i)}><i className="fas fa-times" /></button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        {(certFiles.length > 0 || clearanceFiles.length > 0) && (
+          <div className={`sah-file-total${overLimit ? ' warn' : ''}`}>
+            <i className={`fas ${overLimit ? 'fa-exclamation-triangle' : 'fa-hdd'}`} />
+            Total uploaded: <strong>{formatBytes(allCertBytes)}</strong> / {MAX_TOTAL_UPLOAD_MB}MB limit
+            {overLimit && ' — Please remove some files.'}
+          </div>
         )}
       </div>
+
       <div className="sah-field sah-full">
         <label><i className="fas fa-check-square" /> Languages Spoken</label>
         <div className="sah-check-group">
@@ -909,37 +1159,56 @@ const Registration = () => {
     </div>
   );
 
-  // ── STEP 4 ──
+  // Step 4 — Services
   const renderStep4 = () => (
     <div className="sah-form-grid">
       <div className="sah-field">
         <label><i className="fas fa-chevron-down" /> Primary Category <em className="sah-req">*</em></label>
-        <select value={data.primaryCat || ''} className={fe.primaryCat ? 'err' : ''} onChange={e => set('primaryCat', e.target.value)}>
+        <select value={data.primaryCat || ''} className={fe.primaryCat ? 'err' : ''}
+          onChange={e => {
+            const newPrimary = e.target.value;
+            const filteredSecondary = (data.secondaryCats || []).filter(sc => (SECONDARY_CAT_MAP[sc] || sc) !== newPrimary);
+            setData(p => ({ ...p, primaryCat: newPrimary, secondaryCats: filteredSecondary }));
+            setFieldErrors(prev => ({ ...prev, primaryCat: '' }));
+          }}>
           <option value="">-- Select --</option>
-          {['Tutor','Therapist','Curriculum Provider','Online / Hybrid School','Educational Consultant','Extracurricular / Enrichment'].map(o => <option key={o}>{o}</option>)}
+          {ALL_CATEGORIES.map(o => <option key={o}>{o}</option>)}
         </select>
         <FieldErr msg={fe.primaryCat} />
       </div>
+
       <div className="sah-field">
         <label><i className="fas fa-layer-group" /> Secondary Categories</label>
         <label className={`sah-secondary-toggle${showSecondary ? ' active' : ''}`}>
-          <input type="checkbox" checked={showSecondary}
-            onChange={e => { setShowSecondary(e.target.checked); if (!e.target.checked) set('secondaryCats', []); }} />
+          <input type="checkbox" checked={showSecondary} onChange={e => { setShowSecondary(e.target.checked); if (!e.target.checked) set('secondaryCats', []); }} />
           {showSecondary ? 'I offer other services (click to collapse)' : 'I also offer other services'}
         </label>
         {showSecondary && (
           <div className="sah-secondary-cats-box">
+            {data.primaryCat && (
+              <div style={{ fontSize: '0.76rem', color: 'var(--muted)', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 5 }}>
+                <i className="fas fa-info-circle" style={{ color: 'var(--accent)' }} />
+                <em>"{data.primaryCat}"</em> is your primary and cannot be re-selected.
+              </div>
+            )}
             <div className="sah-check-group">
-              {['Tutor','Therapist','Curriculum','School','Consultant','Enrichment'].map(c => (
-                <label key={c}>
-                  <input type="checkbox" value={c} checked={(data.secondaryCats || []).includes(c)} onChange={e => toggleMulti('secondaryCats', c, e.target.checked)} />
-                  {c}
-                </label>
-              ))}
+              {Object.entries(SECONDARY_CAT_MAP).map(([shortLabel, fullLabel]) => {
+                const isDisabled = fullLabel === primaryFull;
+                const isChecked  = (data.secondaryCats || []).includes(shortLabel);
+                return (
+                  <label key={shortLabel} className={isDisabled ? 'disabled-opt' : ''}>
+                    <input type="checkbox" value={shortLabel} disabled={isDisabled}
+                      checked={isChecked && !isDisabled}
+                      onChange={e => !isDisabled && toggleMulti('secondaryCats', shortLabel, e.target.checked)} />
+                    {shortLabel}
+                  </label>
+                );
+              })}
             </div>
           </div>
         )}
       </div>
+
       <div className="sah-field sah-full">
         <label><i className="fas fa-edit" /> Service Title <em className="sah-req">*</em></label>
         <input type="text" value={data.serviceTitle || ''} placeholder="e.g. Mathematics Tutor for Grades 10–12"
@@ -962,10 +1231,7 @@ const Registration = () => {
         <label><i className="fas fa-check-square" /> Age Groups <em className="sah-req">*</em></label>
         <div className="sah-check-group">
           {['5–7','8–10','11–13','14–18'].map(ag => (
-            <label key={ag}>
-              <input type="checkbox" value={ag} checked={(data.ageGroups || []).includes(ag)} onChange={e => toggleMulti('ageGroups', ag, e.target.checked)} />
-              {ag}
-            </label>
+            <label key={ag}><input type="checkbox" value={ag} checked={(data.ageGroups || []).includes(ag)} onChange={e => toggleMulti('ageGroups', ag, e.target.checked)} />{ag}</label>
           ))}
         </div>
         {fe.ageGroups && <div className="sah-group-err"><i className="fas fa-exclamation-circle" /> {fe.ageGroups}</div>}
@@ -974,10 +1240,7 @@ const Registration = () => {
         <label><i className="fas fa-dot-circle" /> Delivery Mode <em className="sah-req">*</em></label>
         <div className="sah-check-group">
           {['Online','In-person','Hybrid (Online & In-person)'].map(m => (
-            <label key={m}>
-              <input type="radio" name="deliveryMode" value={m} checked={data.deliveryMode === m} onChange={() => set('deliveryMode', m)} />
-              {m}
-            </label>
+            <label key={m}><input type="radio" name="deliveryMode" value={m} checked={data.deliveryMode === m} onChange={() => set('deliveryMode', m)} />{m}</label>
           ))}
         </div>
         {fe.deliveryMode && <div className="sah-group-err"><i className="fas fa-exclamation-circle" /> {fe.deliveryMode}</div>}
@@ -985,7 +1248,7 @@ const Registration = () => {
     </div>
   );
 
-  // ── STEP 5 ──
+  // Step 5 — Location
   const renderStep5 = () => (
     <div className="sah-form-grid">
       <div className="sah-field">
@@ -1006,10 +1269,7 @@ const Registration = () => {
         <label><i className="fas fa-dot-circle" /> Service Area <em className="sah-req">*</em></label>
         <div className="sah-check-group">
           {['Local','National','Online only'].map(m => (
-            <label key={m}>
-              <input type="checkbox" value={m} checked={(data.serviceAreas || []).includes(m)} onChange={() => toggleServiceArea(m)} />
-              {m}
-            </label>
+            <label key={m}><input type="checkbox" value={m} checked={(data.serviceAreas || []).includes(m)} onChange={() => toggleServiceArea(m)} />{m}</label>
           ))}
         </div>
         <div className="sah-field-hint"><i className="fas fa-info-circle" /> You may select more than one option.</div>
@@ -1031,11 +1291,9 @@ const Registration = () => {
     </div>
   );
 
-  // ── STEP 6 — with Select All / Weekdays / Weekends / Clear ──
+  // Step 6 — Pricing & Availability
   const renderStep6 = () => {
     const priceUnit = PRICING_UNIT_MAP[data.pricingModel] || '';
-    const selectedDays = data.daysAvailable || [];
-    const allSelected = ALL_DAYS.every(d => selectedDays.includes(d));
     return (
       <div className="sah-form-grid">
         <div className="sah-field">
@@ -1061,35 +1319,9 @@ const Registration = () => {
         </div>
         <div className="sah-field sah-full">
           <label><i className="fas fa-check-square" /> Days Available <em className="sah-req">*</em></label>
-          {/* Quick-select buttons */}
-          <div className="sah-day-quick-btns">
-            <button type="button" className="sah-day-quick-btn primary"
-              onClick={() => setData(p => ({ ...p, daysAvailable: allSelected ? [] : [...ALL_DAYS] }))}>
-              <i className={`fas ${allSelected ? 'fa-times' : 'fa-check-double'}`} />
-              {allSelected ? 'Clear All' : 'Select All'}
-            </button>
-            <button type="button" className="sah-day-quick-btn secondary"
-              onClick={() => setData(p => ({ ...p, daysAvailable: ['Monday','Tuesday','Wednesday','Thursday','Friday'] }))}>
-              <i className="fas fa-briefcase" /> Weekdays
-            </button>
-            <button type="button" className="sah-day-quick-btn secondary"
-              onClick={() => setData(p => ({ ...p, daysAvailable: ['Saturday','Sunday'] }))}>
-              <i className="fas fa-umbrella-beach" /> Weekends
-            </button>
-            {selectedDays.length > 0 && !allSelected && (
-              <button type="button" className="sah-day-quick-btn secondary"
-                onClick={() => setData(p => ({ ...p, daysAvailable: [] }))}>
-                <i className="fas fa-times" /> Clear
-              </button>
-            )}
-          </div>
           <div className="sah-check-group">
-            {ALL_DAYS.map(d => (
-              <label key={d}>
-                <input type="checkbox" value={d} checked={selectedDays.includes(d)}
-                  onChange={e => toggleMulti('daysAvailable', d, e.target.checked)} />
-                {d}
-              </label>
+            {['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'].map(d => (
+              <label key={d}><input type="checkbox" value={d} checked={(data.daysAvailable || []).includes(d)} onChange={e => toggleMulti('daysAvailable', d, e.target.checked)} />{d}</label>
             ))}
           </div>
           {fe.daysAvailable && <div className="sah-group-err"><i className="fas fa-exclamation-circle" /> {fe.daysAvailable}</div>}
@@ -1101,9 +1333,8 @@ const Registration = () => {
             onChange={e => {
               const val = e.target.value;
               set('timeSlots', val);
-              if (val.trim() && !TIME_SLOT_REGEX.test(val.trim())) {
-                setTimeSlotErr('Use the format HH:MM - HH:MM (e.g. 9:00 - 17:00).');
-              } else { setTimeSlotErr(''); }
+              if (val.trim() && !TIME_SLOT_REGEX.test(val.trim())) setTimeSlotErr('Use the format HH:MM - HH:MM (e.g. 9:00 - 17:00).');
+              else setTimeSlotErr('');
             }} />
           {(fe.timeSlots || timeSlotErr)
             ? <div className="sah-field-err"><i className="fas fa-exclamation-circle" /> {fe.timeSlots || timeSlotErr}</div>
@@ -1113,12 +1344,11 @@ const Registration = () => {
     );
   };
 
-  // ── STEP 7 — Contact + Terms, phone/WhatsApp properly aligned ──
+  // Step 7 — Contact Details
   const renderStep7 = () => {
     const availableToAdd = EXTRA_SOCIALS.filter(s => !addedSocials.includes(s.key));
     return (
       <div className="sah-form-grid">
-        {/* Phone and WhatsApp side-by-side, same row, same height */}
         <div className="sah-field">
           <label><i className="fas fa-phone" /> Phone Number <em className="sah-req">*</em></label>
           <div className={`sah-prefix-wrap${fe.phoneLocal ? ' err' : ''}`}>
@@ -1132,10 +1362,10 @@ const Registration = () => {
               }} />
           </div>
           <FieldErr msg={fe.phoneLocal} />
-          {!fe.phoneLocal && <div className="sah-field-hint"><i className="fas fa-info-circle" /> 9 digits after +27 (e.g. 71 234 5678)</div>}
+          {!fe.phoneLocal && <div className="sah-field-hint"><i className="fas fa-info-circle" /> Enter 9 digits after +27</div>}
         </div>
         <div className="sah-field">
-          <label><i className="fab fa-whatsapp" style={{ color: '#25d366' }} /> WhatsApp Number</label>
+          <label><i className="fab fa-whatsapp" /> WhatsApp Number</label>
           <div className="sah-prefix-wrap">
             <span className="sah-prefix">+27</span>
             <input type="tel" value={data.whatsappLocal || ''} placeholder="71 234 5678" maxLength={12}
@@ -1146,7 +1376,6 @@ const Registration = () => {
                 set('whatsappLocal', val);
               }} />
           </div>
-          <div className="sah-field-hint"><i className="fas fa-info-circle" /> Leave blank to use phone number above</div>
         </div>
         <div className="sah-field sah-full">
           <label><i className="fas fa-envelope" /> Email for Enquiries <em className="sah-req">*</em></label>
@@ -1168,7 +1397,7 @@ const Registration = () => {
               const s = EXTRA_SOCIALS.find(x => x.key === key);
               if (!s) return null;
               return (
-                <div key={key} className="sah-field" style={{ position: 'relative' }}>
+                <div key={key} className="sah-field">
                   <label><i className={s.icon} /> {s.label}</label>
                   <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                     <input type="url" value={data[key] || ''} placeholder={s.placeholder} onChange={e => set(key, e.target.value)} style={{ flex: 1 }} />
@@ -1201,24 +1430,86 @@ const Registration = () => {
             </div>
           </div>
         )}
-        {/* Terms and Conditions */}
-        <div className="sah-full" style={{ marginTop: 8 }}>
-          <div style={{ height: 1, background: 'rgba(0,0,0,0.08)', marginBottom: 20 }} />
-          <label className={`sah-terms-row${data.terms ? ' checked' : ''}${fe.terms ? ' err-border' : ''}`}>
-            <input type="checkbox" checked={!!data.terms} onChange={e => set('terms', e.target.checked)} />
-            <span>
-              I agree to the{' '}
-              <a href="/terms" target="_blank" rel="noreferrer">Terms and Community Guidelines</a>
-              {' '}— by registering you confirm your details are accurate.
-            </span>
-          </label>
-          {fe.terms && <div className="sah-terms-err"><i className="fas fa-exclamation-circle" /> {fe.terms}</div>}
-        </div>
       </div>
     );
   };
 
-  const RENDERERS = [renderPlanStep, renderStep2, renderStep3, renderStep4, renderStep5, renderStep6, renderStep7];
+  // Step 8 — Terms & Conditions
+  const renderStep8 = () => (
+    <>
+      <div className="sah-terms-box">
+        <div className="sah-terms-box-head" onClick={() => setTermsOpen(o => !o)}>
+          <div className="sah-terms-box-head-title">
+            <i className="fas fa-file-contract" />
+            SA Homeschooling Services Directory — Terms &amp; Community Guidelines
+          </div>
+          <button type="button" className="sah-terms-view-btn"
+            onClick={e => { e.stopPropagation(); setTermsOpen(o => !o); }}>
+            {termsOpen
+              ? <><i className="fas fa-chevron-up" style={{ fontSize: '0.72rem' }} /> Hide</>
+              : <><i className="fas fa-eye" /> View Terms</>}
+          </button>
+        </div>
+        <div className={`sah-terms-body ${termsOpen ? 'open' : 'closed'}`}>
+          <h4>1. Eligibility &amp; Accuracy</h4>
+          <p>By registering as a service provider, you confirm that all information provided is accurate, current, and complete. You must be at least 18 years of age or represent a legally registered organisation.</p>
+          <h4>2. Listing Standards</h4>
+          <p>Your listing must represent genuine educational or support services relevant to the homeschooling community. Listings that are misleading, fraudulent, or offensive will be removed without notice.</p>
+          <h4>3. Qualifications &amp; Credentials</h4>
+          <p>Any qualifications, certifications, police clearances, or memberships listed must be legitimate and verifiable upon request. SA Homeschooling reserves the right to request proof of credentials at any time.</p>
+          <h4>4. Conduct &amp; Community Standards</h4>
+          <ul>
+            <li>Treat all families and platform users with respect.</li>
+            <li>Do not engage in spam, unsolicited advertising, or misleading promotions.</li>
+            <li>Do not impersonate other individuals, organisations, or credentials.</li>
+          </ul>
+          <h4>5. Privacy &amp; Data Use</h4>
+          <p>Information you provide will be stored and used to create and display your public provider profile. Contact information will be shared with families according to your selected plan. We do not sell personal data to third parties.</p>
+          <h4>6. Profile Approval</h4>
+          <p>All new profiles are subject to admin review before going live. SA Homeschooling reserves the right to reject or remove any listing that does not meet our community standards.</p>
+          <h4>7. Paid Plans &amp; Billing</h4>
+          <p>Paid listing plans are billed monthly. Cancellation can be requested at any time with effect from the next billing cycle. Refunds are not provided for partial months.</p>
+          <h4>8. Liability</h4>
+          <p>SA Homeschooling acts as a directory platform and is not responsible for the quality, safety, or outcome of services provided by listed providers. Families are encouraged to conduct their own due diligence.</p>
+          <h4>9. Amendments</h4>
+          <p>These terms may be updated periodically. Continued use of the platform constitutes acceptance of the updated terms.</p>
+          <p style={{ marginTop: 16, fontStyle: 'italic', color: 'var(--muted)' }}>Last updated: January 2025</p>
+        </div>
+      </div>
+
+      <label className={`sah-terms-row${data.terms ? ' checked' : ''}${fe.terms ? ' err-border' : ''}`}>
+        <input type="checkbox" checked={!!data.terms} onChange={e => set('terms', e.target.checked)} />
+        <span>
+          I have read and agree to the <a href="/terms" target="_blank" rel="noreferrer">Terms and Community Guidelines</a>.
+          By proceeding, I confirm all my details are accurate and I am authorised to create this listing.
+        </span>
+      </label>
+      {fe.terms && <div className="sah-terms-err"><i className="fas fa-exclamation-circle" /> {fe.terms}</div>}
+
+      <div style={{ marginTop: 20, padding: '16px 20px', background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 8 }}>
+        <div style={{ fontWeight: 800, fontSize: '0.88rem', color: '#0369a1', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 7 }}>
+          <i className="fas fa-clipboard-check" /> Registration Summary
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 20px', fontSize: '0.82rem', color: '#334155' }}>
+          {[
+            ['Name',     data.fullName || '—'],
+            ['Email',    data.email || '—'],
+            ['Plan',     PLANS.find(p => p.param === data.listingPlan)?.name || '—'],
+            ['Category', data.primaryCat || '—'],
+            ['Location', data.city && data.province ? `${data.city}, ${data.province}` : '—'],
+            ['Pricing',  data.pricingModel || '—'],
+          ].map(([k, v]) => (
+            <div key={k} style={{ display: 'flex', gap: 6 }}>
+              <span style={{ fontWeight: 700, color: '#64748b', minWidth: 70 }}>{k}:</span>
+              <span style={{ fontWeight: 500 }}>{v}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </>
+  );
+
+  const RENDERERS = [renderStep1, renderStep2, renderStep3, renderStep4, renderStep5, renderStep6, renderStep7, renderStep8];
   const pct = Math.round((step / TOTAL) * 100);
 
   return (
@@ -1244,9 +1535,7 @@ const Registration = () => {
       <section className="sah-reg-hero">
         <div className="sah-reg-hero-bg" />
         <div className="sah-reg-hero-inner">
-          <h1 className="sah-reg-hero-title">
-            Become a <em>Service Provider</em>
-          </h1>
+          <h1 className="sah-reg-hero-title">Become a <em>Trusted Provider</em></h1>
           <div className="sah-step-trail">
             {STEPS.map((s, i) => {
               const n = i + 1;
@@ -1255,9 +1544,7 @@ const Registration = () => {
               return (
                 <div key={n} className="sah-trail-item">
                   <div className={`sah-trail-dot${isActive ? ' active' : isDone ? ' done' : ''}`}>
-                    {isDone
-                      ? <i className="fas fa-check" style={{ fontSize: '0.65rem' }} />
-                      : <span className="sah-tn">{n}</span>}
+                    {isDone ? <i className="fas fa-check" style={{ fontSize: '0.65rem' }} /> : <span className="sah-tn">{n}</span>}
                     {s.label}
                   </div>
                   {i < STEPS.length - 1 && <i className="fas fa-chevron-right sah-trail-arrow" />}
@@ -1279,7 +1566,7 @@ const Registration = () => {
           <div className="sah-step-card-head">
             <h2>
               <i className={`fas ${STEPS[step - 1].icon}`} style={{ marginRight: 10, color: 'var(--accent-light)', fontSize: '1.1rem' }} />
-              Step {step}: {STEPS[step - 1].title}
+              Step {step} of {TOTAL}: {STEPS[step - 1].title}
             </h2>
             <p>{STEPS[step - 1].desc}</p>
           </div>
@@ -1289,22 +1576,24 @@ const Registration = () => {
         </div>
 
         <div className="sah-form-nav-wrap">
-          {step > 1 ? (
-            <button className="sah-nav-prev" onClick={prev}>
-              <i className="fas fa-arrow-left" /> Previous
-            </button>
-          ) : <div />}
+          {step > 1
+            ? <button className="sah-nav-prev" onClick={prev}><i className="fas fa-arrow-left" /> Previous</button>
+            : <div />}
           <div className="sah-nav-counter">
             <strong>{step}</strong> of {TOTAL} steps
             <div className="sah-nav-progress">
               <div className="sah-nav-progress-fill" style={{ width: `${pct}%` }} />
             </div>
           </div>
-          <button className={`sah-nav-next${step === TOTAL ? ' sah-nav-submit' : ''}`} onClick={next} disabled={submitting}>
+          <button
+            className={`sah-nav-next${step === TOTAL ? ' sah-nav-submit' : ''}`}
+            onClick={next}
+            disabled={submitting || (step === 3 && overLimit)}
+          >
             {submitting ? <span className="sah-spinner" /> : null}
             {step < TOTAL
               ? <><span>Next</span> <i className="fas fa-arrow-right" /></>
-              : <><i className="fas fa-check-circle" /> <span>Create My Profile</span></>}
+              : <><i className="fas fa-check-circle" /> <span>{submitting ? 'Creating Profile…' : 'Create My Profile'}</span></>}
           </button>
         </div>
       </div>
