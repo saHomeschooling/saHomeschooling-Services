@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useNotification } from '../contexts/NotificationContext';
+import { useAuth } from '../contexts/AuthContext';
 
 const injectHead = () => {
   if (document.getElementById('sah-reg-fonts')) return;
@@ -518,35 +519,56 @@ const formatBytes = (bytes) => {
   return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
 };
 
-function saveToLocalStorage({ userId, email, fullName, tier, newProvider }) {
-  try {
-    const users = JSON.parse(localStorage.getItem('sah_users') || '[]');
-    if (!users.find(u => u.email?.toLowerCase() === email.toLowerCase())) {
-      users.push({
-        id: userId, email: email.toLowerCase(), role: 'PROVIDER',
-        accountType: 'provider', name: fullName,
-        registered: new Date().toISOString(), lastLogin: new Date().toISOString(),
-      });
-      localStorage.setItem('sah_users', JSON.stringify(users));
-    }
-    const providers = JSON.parse(localStorage.getItem('sah_providers') || '[]');
-    providers.push(newProvider);
-    localStorage.setItem('sah_providers', JSON.stringify(providers));
-
-    const authLogs = JSON.parse(localStorage.getItem('sah_auth_logs') || '[]');
-    authLogs.unshift({ userId, email: email.toLowerCase(), role: 'PROVIDER', event: 'REGISTER', timestamp: new Date().toISOString() });
-    localStorage.setItem('sah_auth_logs', JSON.stringify(authLogs.slice(0, 500)));
-
-    localStorage.setItem('sah_current_user', JSON.stringify({ role: 'client', email, id: userId, name: fullName, plan: tier }));
-    localStorage.setItem('sah_token', 'local_' + userId);
-  } catch (e) {
-    console.warn('localStorage save error:', e);
-  }
-}
-
 const FieldErr = ({ msg }) => msg
   ? <div className="sah-field-err"><i className="fas fa-exclamation-circle" /> {msg}</div>
   : null;
+
+// ── saveToLocalStorage — all values passed explicitly, no closure bugs ────────
+function saveToLocalStorage({ userId, email, fullName, tier, password, newProvider }) {
+  try {
+    // sah_users
+    const users = JSON.parse(localStorage.getItem('sah_users') || '[]');
+    if (!users.find(u => (u.email || '').toLowerCase() === email.toLowerCase())) {
+      users.push({
+        id: userId,
+        email: email.toLowerCase(),
+        role: 'PROVIDER',
+        accountType: 'provider',
+        name: fullName,
+        password: password || '',
+        registered: new Date().toISOString(),
+        lastLogin: new Date().toISOString(),
+      });
+      localStorage.setItem('sah_users', JSON.stringify(users));
+    }
+
+    // sah_providers
+    const providers = JSON.parse(localStorage.getItem('sah_providers') || '[]');
+    if (!providers.find(p => (p.email || '').toLowerCase() === email.toLowerCase())) {
+      providers.push(newProvider);
+      localStorage.setItem('sah_providers', JSON.stringify(providers));
+    }
+
+    // sah_auth_logs
+    const authLogs = JSON.parse(localStorage.getItem('sah_auth_logs') || '[]');
+    authLogs.unshift({
+      userId, email: email.toLowerCase(), role: 'PROVIDER',
+      event: 'REGISTER', timestamp: new Date().toISOString(),
+    });
+    localStorage.setItem('sah_auth_logs', JSON.stringify(authLogs.slice(0, 500)));
+
+    // session
+    const sessionUser = { role: 'client', email: email.toLowerCase(), id: userId, name: fullName, plan: tier };
+    localStorage.setItem('sah_current_user', JSON.stringify(sessionUser));
+    localStorage.setItem('sah_user', JSON.stringify(sessionUser));
+    localStorage.setItem('sah_token', 'local_' + userId);
+
+    return sessionUser;
+  } catch (e) {
+    console.warn('localStorage save error:', e);
+    return null;
+  }
+}
 
 // ══════════════════════════════════════════════════════════════════════════════
 //  COMPONENT
@@ -555,6 +577,7 @@ const Registration = () => {
   const navigate  = useNavigate();
   const location  = useLocation();
   const { showNotification } = useNotification();
+  const { login } = useAuth();
 
   const [step, setStep]                   = useState(1);
   const [data, setData]                   = useState({ listingPlan: 'Free Listing – basic profile', terms: false });
@@ -566,12 +589,6 @@ const Registration = () => {
   const [showSocialDropdown, setShowSocialDropdown] = useState(false);
   const [addedSocials, setAddedSocials]   = useState([]);
   const [termsOpen, setTermsOpen]         = useState(false);
-
-  // ── REMOVED: apiOnline state and health-check useEffect ──
-  // The banner text "Connected to database..." has been removed.
-  // Submit now tries the API directly with try/catch instead of
-  // relying on a pre-checked apiOnline flag.
-
   const [certFiles, setCertFiles]             = useState([]);
   const [clearanceFiles, setClearanceFiles]   = useState([]);
 
@@ -738,10 +755,8 @@ const Registration = () => {
   const prev = () => { setFieldErrors({}); setStep(s => s - 1); };
 
   // ── Submit ────────────────────────────────────────────────────────────────
-  // NOTE: apiOnline state removed. We now probe the API directly inside submit()
-  // using try/catch. If the API is reachable we use it; otherwise we fall through
-  // to the localStorage fallback. Both paths call navigate('/client-dashboard').
   const submit = async () => {
+    if (submitting) return;
     setSubmitting(true);
     setFieldErrors({});
 
@@ -771,6 +786,7 @@ const Registration = () => {
       accountType: data.accountType || 'Individual Provider',
       plan: tier, listingPlan: tier, tier,
       badge: tier === 'featured' ? 'featured' : tier === 'pro' ? 'verified' : null,
+      password: data.password || '',
       status: 'pending',
       registered: new Date().toISOString(),
       lastLogin: new Date().toISOString(),
@@ -818,29 +834,46 @@ const Registration = () => {
       listingPublic: true, publicToggle: true,
     };
 
-    // ── Try real API (probe + register in one try/catch) ──────────────────
-    try {
-      const healthRes = await fetch(`${API_URL}/health`, { signal: AbortSignal.timeout(3000) });
+    // Check localStorage for duplicate email first
+    const existingUsers     = JSON.parse(localStorage.getItem('sah_users')     || '[]');
+    const existingProviders = JSON.parse(localStorage.getItem('sah_providers') || '[]');
+    const emailLower        = (data.email || '').trim().toLowerCase();
 
-      if (healthRes.ok) {
-        const userRes = await fetch(`${API_URL}/auth/register`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email:       data.email.trim().toLowerCase(),
-            password:    data.password,
-            role:        'PROVIDER',
-            name:        data.fullName,
-            accountType: data.accountType || 'Individual Provider',
-          }),
-        });
-        const userData = await userRes.json();
-        if (!userRes.ok) {
-          setFieldErrors({ _submit: userData.message || 'Failed to create account.' });
-          setSubmitting(false);
-          return;
-        }
-        const dbUserId = userData.user.id;
+    const alreadyExists =
+      existingUsers.find(u => (u.email || '').toLowerCase() === emailLower) ||
+      existingProviders.find(p => (p.email || '').toLowerCase() === emailLower);
+
+    if (alreadyExists) {
+      setFieldErrors({ _submit: 'An account with this email already exists. Please log in instead.' });
+      setSubmitting(false);
+      return;
+    }
+
+    // ── Try real API ─────────────────────────────────────────────────────────
+    try {
+      const registerResponse = await fetch(`${API_URL}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: emailLower,
+          password: data.password,
+          role: 'PROVIDER',
+          name: data.fullName,
+          accountType: data.accountType || 'Individual Provider',
+        }),
+      });
+
+      if (registerResponse.status === 409) {
+        // User exists in DB but not localStorage — still let them proceed via localStorage
+        console.warn('409 from API — falling through to localStorage-only registration');
+      } else if (!registerResponse.ok) {
+        const errData = await registerResponse.json().catch(() => ({}));
+        // Non-fatal: fall through to localStorage fallback below
+        console.warn('Register API error:', errData.message);
+      } else {
+        // API success — also create provider profile
+        const userData = await registerResponse.json().catch(() => ({}));
+        const dbUserId = userData?.user?.id || userData?.userId || providerId;
 
         const formData = new FormData();
         formData.append('providerData', JSON.stringify({
@@ -881,55 +914,61 @@ const Registration = () => {
           listingPlan: tier,
           languages: data.languages || [],
         }));
-        certFiles.forEach((file, i)      => formData.append(`certFile_${i}`, file, file.name));
-        clearanceFiles.forEach((file, i) => formData.append(`clearanceFile_${i}`, file, file.name));
 
-        const providerRes  = await fetch(`${API_URL}/providers`, { method: 'POST', body: formData });
-        const providerData = await providerRes.json();
+        certFiles.forEach((file, i) => formData.append(`certFile_${i}`, file));
+        clearanceFiles.forEach((file, i) => formData.append(`clearanceFile_${i}`, file));
+
+        const providerRes = await fetch(`${API_URL}/providers`, { method: 'POST', body: formData });
         if (!providerRes.ok) {
-          setFieldErrors({ _submit: providerData.message || 'Failed to create provider profile.' });
-          setSubmitting(false);
-          return;
+          console.warn('Provider API failed — will use localStorage');
         }
 
-        saveToLocalStorage({
-          userId: dbUserId, email: data.email, fullName: data.fullName, tier,
-          newProvider: { ...newProvider, id: providerData.provider?.id || providerId, dbId: providerData.provider?.id },
+        // Save with DB user ID
+        const sessionUser = saveToLocalStorage({
+          userId: dbUserId,
+          email: emailLower,
+          fullName: data.fullName,
+          tier,
+          password: data.password,
+          newProvider: { ...newProvider, id: dbUserId },
         });
-        localStorage.setItem('sah_current_user', JSON.stringify({
-          role: 'client', email: data.email, id: dbUserId, name: data.fullName, plan: tier,
-        }));
+
+        if (sessionUser) {
+          // Update AuthContext state directly
+          login(sessionUser);
+        }
 
         showNotification?.('✅ Registration successful! Your profile is pending admin approval.', 'success');
-        navigate('/client-dashboard');
+        setTimeout(() => navigate('/client-dashboard'), 300);
         return;
       }
     } catch (apiErr) {
-      // API unreachable — fall through to localStorage fallback below
+      // Network error — continue to localStorage fallback
+      console.warn('API unreachable, using localStorage fallback:', apiErr.message);
     }
 
-    // ── localStorage fallback ─────────────────────────────────────────────
-    const existingUsers     = JSON.parse(localStorage.getItem('sah_users') || '[]');
-    const existingProviders = JSON.parse(localStorage.getItem('sah_providers') || '[]');
-    const emailLower        = data.email.trim().toLowerCase();
+    // ── localStorage-only fallback ───────────────────────────────────────────
+    try {
+      const sessionUser = saveToLocalStorage({
+        userId: providerId,
+        email: emailLower,
+        fullName: data.fullName,
+        tier,
+        password: data.password,
+        newProvider,
+      });
 
-    if (
-      existingUsers.find(u => u.email?.toLowerCase() === emailLower) ||
-      existingProviders.find(p => p.email?.toLowerCase() === emailLower)
-    ) {
-      setFieldErrors({ _submit: 'An account with this email already exists.' });
+      if (sessionUser) {
+        login(sessionUser);
+      }
+
+      showNotification?.('✅ Registration successful! Your profile is pending admin approval.', 'success');
+      setTimeout(() => navigate('/client-dashboard'), 300);
+    } catch (localErr) {
+      console.error('localStorage fallback failed:', localErr);
+      setFieldErrors({ _submit: 'Registration failed. Please try again.' });
       setSubmitting(false);
-      return;
     }
-
-    const localUserId = 'prov_' + Date.now();
-    saveToLocalStorage({
-      userId: localUserId, email: data.email, fullName: data.fullName, tier,
-      newProvider: { ...newProvider, id: localUserId },
-    });
-
-    showNotification?.('✅ Registration successful! Your profile is pending admin approval.', 'success');
-    navigate('/client-dashboard');
   };
 
   const fe = fieldErrors;
@@ -942,8 +981,6 @@ const Registration = () => {
   // ─────────────────────────────────────────────────────────────────────────
   //  STEP RENDERERS
   // ─────────────────────────────────────────────────────────────────────────
-
-  // Step 1 — Select Plan (banner removed entirely)
   const renderStep1 = () => (
     <div className="sah-plan-grid" style={{ marginTop: 8 }}>
       {PLANS.map(plan => {
@@ -984,7 +1021,6 @@ const Registration = () => {
     </div>
   );
 
-  // Step 2 — Account Setup
   const renderStep2 = () => (
     <div className="sah-form-grid">
       <div className="sah-field sah-full">
@@ -1022,7 +1058,6 @@ const Registration = () => {
     </div>
   );
 
-  // Step 3 — Identity & Trust
   const renderStep3 = () => (
     <div className="sah-form-grid">
       <div className="sah-field">
@@ -1159,7 +1194,6 @@ const Registration = () => {
     </div>
   );
 
-  // Step 4 — Services
   const renderStep4 = () => (
     <div className="sah-form-grid">
       <div className="sah-field">
@@ -1248,7 +1282,6 @@ const Registration = () => {
     </div>
   );
 
-  // Step 5 — Location
   const renderStep5 = () => (
     <div className="sah-form-grid">
       <div className="sah-field">
@@ -1291,7 +1324,6 @@ const Registration = () => {
     </div>
   );
 
-  // Step 6 — Pricing & Availability
   const renderStep6 = () => {
     const priceUnit = PRICING_UNIT_MAP[data.pricingModel] || '';
     return (
@@ -1344,7 +1376,6 @@ const Registration = () => {
     );
   };
 
-  // Step 7 — Contact Details
   const renderStep7 = () => {
     const availableToAdd = EXTRA_SOCIALS.filter(s => !addedSocials.includes(s.key));
     return (
@@ -1434,7 +1465,6 @@ const Registration = () => {
     );
   };
 
-  // Step 8 — Terms & Conditions
   const renderStep8 = () => (
     <>
       <div className="sah-terms-box">

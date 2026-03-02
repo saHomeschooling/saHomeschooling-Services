@@ -1,3 +1,4 @@
+// frontend/src/pages/Profile.js
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import Header from '../components/common/Header';
@@ -515,6 +516,18 @@ const Profile = () => {
   const navigate = useNavigate();
 
   const fromDashboard = searchParams.get('from') === 'dashboard';
+
+  // Authentication check - prevent unauthorized access
+  useEffect(() => {
+    // Check if user is logged in
+    const currentUser = JSON.parse(localStorage.getItem('sah_current_user'));
+    if (!currentUser) {
+      // Redirect to home page with a message
+      alert('Please log in to view provider profiles.');
+      navigate('/');
+      return;
+    }
+  }, [navigate]);
 
   useEffect(() => {
     injectStyles();

@@ -1,3 +1,4 @@
+// frontend/src/pages/HomePage.jsx
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
 
@@ -53,6 +54,30 @@ const CSS = `
     display:inline-block;cursor:pointer;text-decoration:none;
   }
   .sah-btn-solid-nav:hover{background:var(--accent-dark);}
+
+  /* User Profile Button in Header */
+  .sah-user-profile-btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 7px 16px; border-radius: 6px;
+    border: 1.5px solid rgba(255,255,255,0.55); background: transparent;
+    color: #fff; font-weight: 600; font-size: 0.85rem;
+    cursor: pointer; font-family: inherit; text-decoration: none;
+    transition: all 0.15s;
+  }
+  .sah-user-profile-btn:hover {
+    background: rgba(255,255,255,0.2); border-color: #fff;
+  }
+  .sah-user-profile-btn i { color: var(--accent-light); }
+
+  .sah-logout-btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 7px 18px; border-radius: 6px; border: none;
+    background: var(--accent); color: #fff; font-weight: 700;
+    font-size: 0.85rem; cursor: pointer; font-family: inherit;
+    transition: background 0.15s;
+  }
+  .sah-logout-btn:hover { background: var(--accent-dark); }
+  .sah-logout-btn i { color: rgba(255,255,255,0.9); }
 
   /* HERO */
   .sah-hero{position:relative;min-height:88vh;display:flex;align-items:center;overflow:hidden;background:#1e1e1e;}
@@ -573,6 +598,7 @@ export default function HomePage() {
   const [nlMsg, setNlMsg]               = useState({ text:"", type:"" });
   const [toast, setToast]               = useState({ show:false, msg:"", err:false });
   const [featuredSlotCount, setFeaturedSlotCount] = useState(0);
+  const [currentUser, setCurrentUser]   = useState(null);
 
   useEffect(() => {
     injectHead();
@@ -581,6 +607,20 @@ export default function HomePage() {
       s.id = "sah-styles"; s.textContent = CSS;
       document.head.appendChild(s);
     }
+
+    // Check for logged in user
+    const checkUser = () => {
+      try {
+        const user = JSON.parse(localStorage.getItem('sah_current_user'));
+        setCurrentUser(user);
+      } catch {
+        setCurrentUser(null);
+      }
+    };
+
+    checkUser();
+    window.addEventListener('storage', checkUser);
+    return () => window.removeEventListener('storage', checkUser);
   }, []);
 
   useEffect(() => {
@@ -651,6 +691,19 @@ export default function HomePage() {
     setNlEmail("");
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('sah_current_user');
+    localStorage.removeItem('sah_token');
+    setCurrentUser(null);
+    showToast("Logged out successfully");
+    navigate('/');
+  };
+
+  const getDashboardPath = () => {
+    if (!currentUser) return '/login';
+    return currentUser.role === 'admin' ? '/admin-dashboard' : '/client-dashboard';
+  };
+
   const FILTER_PILLS = [
     { cat:"all",            label:"All Services" },
     { cat:"tutor",          label:"Tutors",         icon:"fa-chalkboard-teacher" },
@@ -685,8 +738,23 @@ export default function HomePage() {
             </a>
           </nav>
           <div className="sah-nav-ctas">
-            <button className="sah-btn-ghost-nav" onClick={() => navigate('/login')}>Log In</button>
-            <button className="sah-btn-solid-nav" onClick={() => setRegModal(true)}>Register</button>
+            {currentUser ? (
+              <>
+                {currentUser.role === 'admin' || currentUser.role === 'provider' ? (
+                  <Link to={getDashboardPath()} className="sah-user-profile-btn">
+                    <i className="fas fa-user-circle" /> Profile
+                  </Link>
+                ) : null}
+                <button onClick={handleLogout} className="sah-logout-btn">
+                  <i className="fas fa-right-from-bracket" /> Log Out
+                </button>
+              </>
+            ) : (
+              <>
+                <button className="sah-btn-ghost-nav" onClick={() => navigate('/login')}>Log In</button>
+                <button className="sah-btn-solid-nav" onClick={() => setRegModal(true)}>Register</button>
+              </>
+            )}
           </div>
         </div>
       </header>

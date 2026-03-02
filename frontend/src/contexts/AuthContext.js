@@ -16,7 +16,6 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check localStorage for existing session
     try {
       const storedUser = localStorage.getItem('sah_user');
       if (storedUser) {
@@ -34,21 +33,17 @@ export const AuthProvider = ({ children }) => {
     return new Promise((resolve) => {
       setTimeout(() => {
         try {
-          // Get existing providers from localStorage
           const existingProviders = JSON.parse(localStorage.getItem('sah_providers') || '[]');
-          
-          // Safe email check
           const userEmail = userData?.email || '';
-          const emailExists = existingProviders.some(p => 
+          const emailExists = existingProviders.some(p =>
             p?.email && p.email.toLowerCase() === userEmail.toLowerCase()
           );
-          
+
           if (emailExists) {
             resolve({ success: false, error: 'Email already registered' });
             return;
           }
 
-          // Create new provider object with safe defaults
           const newProvider = {
             id: 'client-' + Date.now(),
             email: userData?.email || '',
@@ -60,25 +55,22 @@ export const AuthProvider = ({ children }) => {
             whatsapp: userData?.whatsapp || '',
             inquiryEmail: userData?.inquiryEmail || '',
             website: userData?.website || '',
-            socialLinks: {
-              facebook: userData?.facebook || '',
-              twitter: userData?.twitter || '',
-              instagram: userData?.instagram || '',
-              linkedin: userData?.linkedin || '',
-              pinterest: userData?.pinterest || '',
-              tiktok: userData?.tiktok || ''
-            },
+            facebook: userData?.facebook || '',
+            instagram: userData?.instagram || '',
+            linkedin: userData?.linkedin || '',
+            tiktok: userData?.tiktok || '',
+            twitter: userData?.twitter || '',
+            youtube: userData?.youtube || '',
             bio: userData?.bio || '',
             experience: userData?.experience || '',
             languages: userData?.languages || [],
-            otherLanguage: userData?.otherLanguage || '',
             primaryCategory: userData?.primaryCat || '',
             secondaryCategories: userData?.secondaryCats || [],
             serviceTitle: userData?.serviceTitle || '',
             serviceDescription: userData?.serviceDesc || '',
-            subjects: userData?.subjects || [],
+            subjects: userData?.subjects || '',
             ageGroups: userData?.ageGroups || [],
-            deliveryMode: userData?.deliveryMode || [],
+            deliveryMode: userData?.deliveryMode || '',
             city: userData?.city || '',
             province: userData?.province || '',
             serviceArea: userData?.serviceArea || 'local',
@@ -86,161 +78,172 @@ export const AuthProvider = ({ children }) => {
             pricingModel: userData?.pricingModel || '',
             startingPrice: userData?.startingPrice || '',
             daysAvailable: userData?.daysAvailable || [],
-            timeSlots: userData?.timeSlots || {},
+            timeSlots: userData?.timeSlots || '',
             listingPlan: userData?.listingPlan || 'Free Listing',
-            tier: userData?.listingPlan?.includes('Featured') ? 'featured' : 
-                  userData?.listingPlan?.includes('Professional') ? 'pro' : 'free',
+            tier: userData?.listingPlan?.includes('Deluxe') || userData?.listingPlan?.includes('R399')
+              ? 'featured'
+              : userData?.listingPlan?.includes('Professional') || userData?.listingPlan?.includes('R149')
+              ? 'pro'
+              : 'free',
+            plan: userData?.listingPlan?.includes('Deluxe') || userData?.listingPlan?.includes('R399')
+              ? 'featured'
+              : userData?.listingPlan?.includes('Professional') || userData?.listingPlan?.includes('R149')
+              ? 'pro'
+              : 'free',
+            password: userData?.password || '',
             status: 'pending',
             registered: new Date().toISOString(),
             rating: 0,
-            reviewCount: 0
+            reviewCount: 0,
           };
 
-          // Save to localStorage
           existingProviders.push(newProvider);
           localStorage.setItem('sah_providers', JSON.stringify(existingProviders));
-          
-          // Create user session
+
           const userSession = {
             email: userData?.email || '',
             role: 'client',
             name: userData?.fullName || userData?.businessName || (userData?.email || '').split('@')[0] || 'User',
             id: newProvider.id,
             plan: newProvider.tier,
-            status: 'pending'
+            status: 'pending',
           };
-          
+
           setUser(userSession);
           localStorage.setItem('sah_user', JSON.stringify(userSession));
-          
+          localStorage.setItem('sah_current_user', JSON.stringify(userSession));
+
           resolve({ success: true, user: userSession });
         } catch (error) {
           console.error('Registration error:', error);
           resolve({ success: false, error: 'Registration failed' });
         }
-      }, 500);
+      }, 300);
     });
   };
 
-  const login = (email, password) => {
+  // login accepts EITHER:
+  //   login(userObject)          — called from Registration after API success
+  //   login(email, password)     — called from Login page
+  const login = (emailOrUserObj, password) => {
+    // If first arg is an object, treat it as a pre-built user session
+    if (emailOrUserObj && typeof emailOrUserObj === 'object') {
+      const userData = emailOrUserObj;
+      setUser(userData);
+      localStorage.setItem('sah_user', JSON.stringify(userData));
+      localStorage.setItem('sah_current_user', JSON.stringify(userData));
+      return;
+    }
+
+    // Otherwise treat as (email, password) call from Login page
+    const email = emailOrUserObj;
     return new Promise((resolve) => {
       setTimeout(() => {
         try {
-          // Safe email check
-          const loginEmail = email?.toLowerCase() || '';
-          
-          // Check in providers list first
+          const loginEmail = (email || '').toLowerCase();
+
+          // Admin shortcut
+          if (loginEmail === 'admin@sahomeschooling.co.za' && password === 'admin123') {
+            const userData = { email: loginEmail, role: 'admin', name: 'Admin User', id: 'admin1' };
+            setUser(userData);
+            localStorage.setItem('sah_user', JSON.stringify(userData));
+            localStorage.setItem('sah_current_user', JSON.stringify(userData));
+            resolve({ success: true, user: userData, message: 'Admin login successful!' });
+            return;
+          }
+
+          // Check providers list
           const existingProviders = JSON.parse(localStorage.getItem('sah_providers') || '[]');
-          const providerMatch = existingProviders.find(p => 
+          const providerMatch = existingProviders.find(p =>
             p?.email && p.email.toLowerCase() === loginEmail
           );
 
-          // Admin login
-          if (loginEmail === 'admin@sahomeschooling.co.za' && password === 'admin123') {
-            const userData = {
-              email: loginEmail,
-              role: 'admin',
-              name: 'Admin User',
-              id: 'admin1'
-            };
-            setUser(userData);
-            localStorage.setItem('sah_user', JSON.stringify(userData));
-            resolve({ 
-              success: true, 
-              user: userData,
-              message: 'Admin login successful!'
-            });
-          } 
-          // Provider found in registered list
-          else if (providerMatch && password && password.length >= 6) {
+          if (providerMatch) {
+            const savedPw = (providerMatch.password || '').trim();
+            if (savedPw && savedPw !== password) {
+              resolve({ success: false, error: 'Invalid email or password.' });
+              return;
+            }
             const userData = {
               email: loginEmail,
               role: 'client',
-              name: providerMatch.fullName || providerMatch.businessName || loginEmail.split('@')[0] || 'User',
+              name: providerMatch.name || providerMatch.fullName || loginEmail.split('@')[0],
               id: providerMatch.id,
-              plan: providerMatch.tier || 'free',
-              status: providerMatch.status || 'active'
+              plan: providerMatch.plan || providerMatch.tier || 'free',
+              status: providerMatch.status || 'pending',
             };
             setUser(userData);
             localStorage.setItem('sah_user', JSON.stringify(userData));
-            resolve({ 
-              success: true, 
-              user: userData,
-              message: `Welcome back, ${userData.name}!`
-            });
+            localStorage.setItem('sah_current_user', JSON.stringify(userData));
+            resolve({ success: true, user: userData, message: `Welcome back, ${userData.name}!` });
+            return;
           }
-          // Demo user
-          else if (loginEmail === 'contact@khanacademy.org.za' && password && password.length >= 6) {
+
+          // Check sah_users
+          const storedUsers = JSON.parse(localStorage.getItem('sah_users') || '[]');
+          const userMatch = storedUsers.find(u =>
+            (u?.email || '').toLowerCase() === loginEmail
+          );
+
+          if (userMatch) {
+            const savedPw = (userMatch.password || '').trim();
+            if (savedPw && savedPw !== password) {
+              resolve({ success: false, error: 'Invalid email or password.' });
+              return;
+            }
             const userData = {
               email: loginEmail,
-              role: 'client',
-              name: 'Khan Academy SA',
-              id: 'khan',
-              plan: 'free',
-              status: 'pending'
+              role: userMatch.role || 'client',
+              name: userMatch.name || loginEmail.split('@')[0],
+              id: userMatch.id,
+              plan: userMatch.plan || 'free',
+              status: 'pending',
             };
             setUser(userData);
             localStorage.setItem('sah_user', JSON.stringify(userData));
-            resolve({ 
-              success: true, 
-              user: userData,
-              message: 'Welcome back!'
-            });
-          } 
-          // Allow any email with 6+ char password for demo
-          else if (password && password.length >= 6) {
-            const userData = {
-              email: loginEmail,
-              role: 'client',
-              name: loginEmail.split('@')[0] || 'User',
-              id: 'client-' + Date.now(),
-              plan: 'free',
-              status: 'pending'
-            };
-            setUser(userData);
-            localStorage.setItem('sah_user', JSON.stringify(userData));
-            resolve({ 
-              success: true, 
-              user: userData,
-              message: 'Login successful!'
-            });
-          } 
-          // Invalid credentials
-          else {
-            resolve({ 
-              success: false, 
-              error: 'Invalid credentials. Try admin@sahomeschooling.co.za / admin123'
-            });
+            localStorage.setItem('sah_current_user', JSON.stringify(userData));
+            resolve({ success: true, user: userData });
+            return;
           }
+
+          // Demo provider
+          if (loginEmail === 'contact@khanacademy.org.za') {
+            const userData = { email: loginEmail, role: 'client', name: 'Khan Academy SA', id: 'khan', plan: 'free', status: 'pending' };
+            setUser(userData);
+            localStorage.setItem('sah_user', JSON.stringify(userData));
+            localStorage.setItem('sah_current_user', JSON.stringify(userData));
+            resolve({ success: true, user: userData, message: 'Welcome back!' });
+            return;
+          }
+
+          resolve({ success: false, error: 'No account found for that email. Please register first.' });
         } catch (error) {
           console.error('Login error:', error);
-          resolve({ 
-            success: false, 
-            error: 'Login failed. Please try again.'
-          });
+          resolve({ success: false, error: 'Login failed. Please try again.' });
         }
-      }, 500);
+      }, 400);
     });
   };
 
   const logout = () => {
     setUser(null);
     localStorage.removeItem('sah_user');
+    localStorage.removeItem('sah_current_user');
   };
 
   const updateUserPlan = (plan) => {
     if (!user) return;
-    
     try {
       const updatedUser = { ...user, plan };
       setUser(updatedUser);
       localStorage.setItem('sah_user', JSON.stringify(updatedUser));
-      
-      // Also update in providers list if exists
+      localStorage.setItem('sah_current_user', JSON.stringify(updatedUser));
+
       const existingProviders = JSON.parse(localStorage.getItem('sah_providers') || '[]');
       const providerIndex = existingProviders.findIndex(p => p.id === user.id);
       if (providerIndex !== -1) {
         existingProviders[providerIndex].tier = plan;
+        existingProviders[providerIndex].plan = plan;
         localStorage.setItem('sah_providers', JSON.stringify(existingProviders));
       }
     } catch (error) {
@@ -248,14 +251,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const value = {
-    user,
-    loading,
-    register,
-    login,
-    logout,
-    updateUserPlan
-  };
+  const value = { user, loading, register, login, logout, updateUserPlan };
 
   return (
     <AuthContext.Provider value={value}>

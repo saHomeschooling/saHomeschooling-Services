@@ -1,3 +1,4 @@
+// frontend/src/pages/Login.js
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -145,93 +146,43 @@ const Login = () => {
     try {
       // ── Admin shortcut ──
       if (trimmedEmail === 'admin@sahomeschooling.co.za' && password === 'admin123') {
-        localStorage.setItem('sah_current_user', JSON.stringify({ role: 'admin', email: trimmedEmail }));
+        const adminData = { role: 'admin', email: trimmedEmail, name: 'Admin', id: 'admin1' };
+        localStorage.setItem('sah_current_user', JSON.stringify(adminData));
+        localStorage.setItem('sah_user', JSON.stringify(adminData));
+        login(adminData); // pass object directly
         setAlert({ msg: 'Admin login successful! Redirecting...', type: 'success' });
-        setTimeout(() => navigate('/admin-dashboard'), 1200);
+        showNotification?.('Admin login successful!', 'success');
+        setTimeout(() => navigate('/admin-dashboard'), 1000);
         return;
       }
 
-      // Helper: check if a record's email fields match the login email
-      const emailMatch = (p) => {
-        const candidates = [p.email, p.contactEmail, p.inquiryEmail]
-          .map(v => (v || '').toLowerCase().trim())
-          .filter(Boolean);
-        return candidates.includes(trimmedEmail);
-      };
-
-      // Helper: verify password (if no password stored, accept any valid password)
-      const passwordOk = (record) => {
-        const savedPw = (record.password || '').trim();
-        if (!savedPw) return true; // no password stored — accept any
-        return savedPw === password;
-      };
-
-      // ── 1. Check sah_providers (provider/business registrations) ──
-      let storedProviders = [];
-      try { storedProviders = JSON.parse(localStorage.getItem('sah_providers') || '[]'); } catch {}
-
-      const providerMatch = storedProviders.find(emailMatch);
-      if (providerMatch) {
-        if (!passwordOk(providerMatch)) {
-          setAlert({ msg: 'Invalid email or password. Please try again.', type: 'error' });
-          setLoading(false);
-          return;
-        }
-        const userData = {
-          role: 'client',
-          email: trimmedEmail,
-          id: providerMatch.id,
-          name: providerMatch.name || '',
-          plan: providerMatch.plan || 'free',
-        };
-        localStorage.setItem('sah_current_user', JSON.stringify(userData));
-        if (login) login(userData);
-        setAlert({ msg: `Welcome back, ${providerMatch.name || 'Provider'}! Redirecting…`, type: 'success' });
-        setTimeout(() => navigate('/client-dashboard'), 1200);
-        return;
-      }
-
-      // ── 2. Check sah_users (parent/family registrations) ──
-      let storedUsers = [];
-      try { storedUsers = JSON.parse(localStorage.getItem('sah_users') || '[]'); } catch {}
-
-      const userMatch = storedUsers.find(emailMatch);
-      if (userMatch) {
-        if (!passwordOk(userMatch)) {
-          setAlert({ msg: 'Invalid email or password. Please try again.', type: 'error' });
-          setLoading(false);
-          return;
-        }
-        const userData = {
-          role: userMatch.role || 'client',
-          email: trimmedEmail,
-          id: userMatch.id,
-          name: userMatch.name || '',
-          plan: userMatch.plan || 'free',
-        };
-        localStorage.setItem('sah_current_user', JSON.stringify(userData));
-        if (login) login(userData);
-        setAlert({ msg: `Welcome back! Redirecting…`, type: 'success' });
-        setTimeout(() => navigate('/client-dashboard'), 1200);
-        return;
-      }
-
-      // ── 3. Demo seed provider ──
+      // ── Demo seed provider ──
       if (trimmedEmail === 'contact@khanacademy.org.za') {
-        const userData = { role: 'client', email: trimmedEmail, id: 'khan', name: 'Khan Academy SA' };
+        const userData = { role: 'client', email: trimmedEmail, id: 'khan', name: 'Khan Academy SA', plan: 'free' };
         localStorage.setItem('sah_current_user', JSON.stringify(userData));
-        if (login) login(userData);
-        setAlert({ msg: 'Login successful! Redirecting…', type: 'success' });
-        setTimeout(() => navigate('/client-dashboard'), 1200);
+        localStorage.setItem('sah_user', JSON.stringify(userData));
+        login(userData);
+        setAlert({ msg: 'Login successful! Redirecting...', type: 'success' });
+        setTimeout(() => navigate('/client-dashboard'), 1000);
         return;
       }
 
-      // ── 4. Not found in any storage ──
-      setAlert({
-        msg: 'No account found for that email. Please register first, or check your spelling.',
-        type: 'error',
-      });
+      // ── Use AuthContext login (email + password) ──
+      const result = await login(trimmedEmail, password);
 
+      if (result && result.success) {
+        const userData = result.user;
+        setAlert({ msg: result.message || 'Login successful! Redirecting...', type: 'success' });
+        showNotification?.(result.message || 'Welcome back!', 'success');
+
+        const isAdmin = (userData.role || '').toLowerCase() === 'admin';
+        setTimeout(() => navigate(isAdmin ? '/admin-dashboard' : '/client-dashboard'), 1000);
+      } else {
+        setAlert({
+          msg: result?.error || 'Invalid email or password. Please try again.',
+          type: 'error',
+        });
+      }
     } catch (err) {
       console.error('Login error:', err);
       setAlert({ msg: 'An unexpected error occurred. Please try again.', type: 'error' });
@@ -365,7 +316,8 @@ const Login = () => {
                 <h4><i className="fas fa-flask" /> Demo Credentials</h4>
                 <p>
                   <strong>Admin:</strong> <code>admin@sahomeschooling.co.za</code> / <code>admin123</code><br />
-                  <strong>Client:</strong> <code>contact@khanacademy.org.za</code> + any password (6+ chars)
+                  <strong>Provider:</strong> Use your registered email and password<br />
+                  <strong>Demo Provider:</strong> <code>contact@khanacademy.org.za</code> + any password (6+ chars)
                 </p>
               </div>
             </div>
