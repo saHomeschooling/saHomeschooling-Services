@@ -103,15 +103,6 @@ const SEED_PROVIDERS = [
   },
 ];
 
-function isLoggedIn() {
-  try {
-    const u = localStorage.getItem("sah_current_user");
-    if (!u) return false;
-    const parsed = JSON.parse(u);
-    return !!(parsed && parsed.role);
-  } catch { return false; }
-}
-
 function findProvider(id, email) {
   try {
     const stored = JSON.parse(localStorage.getItem('sah_providers') || '[]');
@@ -170,16 +161,365 @@ const S = {
     background: '#d6d0c8',
     border: '1px solid #c8c2ba',
     borderRadius: '12px',
-    marginBottom: '20px',
     overflow: 'hidden',
   },
   white: {
     background: '#ede9e3',
     border: '1px solid #dedad4',
     borderRadius: '12px',
-    marginBottom: '20px',
     overflow: 'hidden',
   },
+};
+
+// Inject responsive CSS once
+const injectResponsiveStyles = () => {
+  if (document.getElementById('profile-responsive-styles')) return;
+  const style = document.createElement('style');
+  style.id = 'profile-responsive-styles';
+  style.textContent = `
+    /* ── Reset & base ── */
+    #profilePage * { box-sizing: border-box; }
+
+    /* ── Hero two-column grid ── */
+    .profile-hero-grid {
+      display: grid;
+      grid-template-columns: 68% 32%;
+      gap: 24px;
+      margin-bottom: 24px;
+      align-items: stretch;
+    }
+
+    /* ── Left card ── */
+    .profile-left-card {
+      background: #ede9e3;
+      border-radius: 12px;
+      padding: 32px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+      border: 1px solid #dedad4;
+    }
+
+    /* ── Section spacing within left card ── */
+    .profile-section {
+      margin-top: 32px;
+      padding-top: 28px;
+      border-top: 1px solid rgba(0,0,0,0.08);
+    }
+    .profile-section:first-child {
+      margin-top: 0;
+      padding-top: 0;
+      border-top: none;
+    }
+
+    /* ── Eyebrow & heading rhythm ── */
+    .sec-eyebrow {
+      display: block;
+      margin-bottom: 6px;
+    }
+    .card-heading {
+      margin: 0 0 16px 0;
+      font-size: 1.35rem;
+      line-height: 1.3;
+    }
+
+    /* ── Tag cloud (services & age groups) ── */
+    .tag-cloud,
+    .grade-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 0;
+    }
+    .tag-cloud .tag,
+    .grade-pills > div {
+      display: inline-flex;
+      align-items: center;
+      background: #ffffff;
+      color: ${ORANGE};
+      border: 1.5px solid ${ORANGE};
+      font-weight: 600;
+      padding: 7px 16px;
+      border-radius: 30px;
+      font-size: 0.85rem;
+      line-height: 1;
+      white-space: nowrap;
+      box-shadow: 0 2px 6px rgba(194,81,10,0.08);
+      transition: background 0.18s, color 0.18s;
+    }
+    .tag-cloud .tag:hover,
+    .grade-pills > div:hover {
+      background: ${ORANGE};
+      color: #fff;
+    }
+
+    /* ── "No services" message ── */
+    .no-services-msg {
+      color: #888;
+      font-style: italic;
+      font-size: 0.9rem;
+      margin: 0;
+      padding: 4px 0;
+    }
+
+    /* ── Age groups divider ── */
+    .age-groups-section {
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(0,0,0,0.07);
+    }
+    .age-groups-section .sec-eyebrow {
+      margin-bottom: 10px;
+    }
+
+    /* ── Right card (hero image panel) ── */
+    .profile-right-card {
+      position: relative;
+      border-radius: 14px;
+      overflow: hidden;
+      background-color: #2a2a2a;
+      background-size: cover;
+      background-position: center 20%;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+      /* Fills exact height of left card via stretch */
+      min-height: 0;
+      height: 100%;
+    }
+    .profile-right-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      background: linear-gradient(160deg, rgba(10,10,10,0.88) 0%, rgba(35,35,35,0.72) 55%, rgba(10,10,10,0.82) 100%);
+    }
+    .profile-right-content {
+      position: relative;
+      z-index: 1;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      /* Content starts at the top, never stretches awkwardly */
+      justify-content: flex-start;
+      height: 100%;
+    }
+
+    /* ── Rating bar ── */
+    .rating-bar {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: rgba(255,255,255,0.10);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-top: 20px;
+    }
+    .rating-big {
+      font-size: 2.2rem;
+      font-weight: 800;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+    .rating-stars {
+      font-size: 1rem;
+      line-height: 1.4;
+      letter-spacing: 1px;
+    }
+    .rating-sub {
+      font-size: 0.75rem;
+      line-height: 1.4;
+      margin-top: 2px;
+    }
+
+    /* ── Credentials + Availability two-col ── */
+    .profile-two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    /* ── Standalone section spacing ── */
+    .profile-section-block {
+      margin-bottom: 24px;
+    }
+
+    /* ── Day pills ── */
+    .avail-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .avail-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 48px;
+      padding: 7px 10px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    /* ── Card pad consistent ── */
+    .card-pad {
+      padding: 24px;
+    }
+
+    /* ── qual-list spacing ── */
+    .qual-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .qual-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 0.9rem;
+      color: #3a3a3a;
+      line-height: 1.5;
+    }
+    .qual-list li i {
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+
+    /* ── Contact section two-col ── */
+    .contact-two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+    .contact-right-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    /* The contact form card should not stretch to match right stack */
+    .contact-two-col > .card:first-child {
+      align-self: start;
+    }
+
+    /* ── Page inner padding (since inline padding was removed) ── */
+    .page-inner {
+      padding-left: 32px !important;
+      padding-right: 32px !important;
+      padding-top: 24px;
+      padding-bottom: 40px;
+    }
+
+    /* ── Form fields ── */
+    .form-group .field {
+      margin-bottom: 14px;
+    }
+    .form-group .field label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #444;
+      margin-bottom: 5px;
+    }
+    .form-group .field input,
+    .form-group .field select,
+    .form-group .field textarea {
+      width: 100%;
+      font-family: inherit;
+    }
+    .form-group .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    /* ── Responsive: tablet & mobile ── */
+    @media (max-width: 1024px) {
+      .profile-hero-grid {
+        grid-template-columns: 65% 35%;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .profile-hero-grid {
+        grid-template-columns: 1fr;
+        align-items: start;
+      }
+      .profile-right-card {
+        height: auto;
+        min-height: 340px;
+      }
+      .profile-two-col {
+        grid-template-columns: 1fr;
+      }
+      .contact-two-col {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .page-inner {
+        padding-left: 16px !important;
+        padding-right: 16px !important;
+      }
+      .profile-left-card {
+        padding: 20px;
+      }
+      .card-pad {
+        padding: 18px;
+      }
+      .tag-cloud,
+      .grade-pills {
+        gap: 8px;
+      }
+      .tag-cloud .tag,
+      .grade-pills > div {
+        font-size: 0.82rem;
+        padding: 6px 14px;
+      }
+      .avail-grid {
+        gap: 6px;
+      }
+      .avail-pill {
+        min-width: 42px;
+        padding: 6px 8px;
+        font-size: 0.75rem;
+      }
+      .form-group .form-row {
+        grid-template-columns: 1fr;
+      }
+      .rating-big {
+        font-size: 1.8rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .page-inner {
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+      }
+      .profile-left-card {
+        padding: 16px;
+      }
+      .card-pad {
+        padding: 16px;
+      }
+      .profile-section {
+        margin-top: 24px;
+        padding-top: 20px;
+      }
+      .profile-right-card {
+        min-height: 280px;
+      }
+    }
+  `;
+  document.head.appendChild(style);
 };
 
 const Eyebrow = ({ children }) => (
@@ -191,139 +531,16 @@ const Heading = ({ children, style = {}, as: Tag = 'h2' }) => (
   <Tag className="card-heading" style={{ color: '#1a1a1a', ...style }}>{children}</Tag>
 );
 
-/* ── LOGIN WALL STYLES ── */
-const loginWallStyles = `
-  .sah-profile-login-wall {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #f2f2f2;
-    padding: 40px 20px;
-  }
-  .sah-profile-login-box {
-    background: #fff;
-    border-radius: 14px;
-    box-shadow: 0 12px 48px rgba(0,0,0,0.13);
-    max-width: 460px;
-    width: 100%;
-    overflow: hidden;
-  }
-  .sah-profile-login-header {
-    background: #5a5a5a;
-    padding: 32px 36px 26px;
-    text-align: center;
-  }
-  .sah-profile-login-icon {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background: rgba(201,98,26,0.18);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 14px;
-    font-size: 1.5rem;
-    color: #c9621a;
-  }
-  .sah-profile-login-header h2 {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.55rem;
-    font-weight: 800;
-    color: #fff;
-    margin-bottom: 6px;
-  }
-  .sah-profile-login-header p {
-    font-size: 0.88rem;
-    color: rgba(255,255,255,0.68);
-    line-height: 1.55;
-  }
-  .sah-profile-login-body {
-    padding: 28px 36px 32px;
-  }
-  .sah-profile-login-desc {
-    font-size: 0.9rem;
-    color: #666;
-    text-align: center;
-    line-height: 1.65;
-    margin-bottom: 24px;
-  }
-  .sah-profile-login-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  .sah-profile-login-btn {
-    width: 100%;
-    padding: 13px;
-    border-radius: 8px;
-    font-family: inherit;
-    font-weight: 700;
-    font-size: 0.95rem;
-    cursor: pointer;
-    border: none;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    transition: all 0.15s;
-    text-decoration: none;
-  }
-  .sah-profile-login-btn.primary {
-    background: #c9621a;
-    color: #fff;
-  }
-  .sah-profile-login-btn.primary:hover { background: #a84e12; }
-  .sah-profile-login-btn.secondary {
-    background: #f2f2f2;
-    color: #3a3a3a;
-    border: 1.5px solid rgba(0,0,0,0.10);
-  }
-  .sah-profile-login-btn.secondary:hover {
-    border-color: #c9621a;
-    color: #c9621a;
-  }
-  .sah-profile-login-divider {
-    text-align: center;
-    font-size: 0.8rem;
-    color: #aaa;
-    margin: 4px 0;
-  }
-  .sah-profile-login-back {
-    text-align: center;
-    margin-top: 18px;
-    font-size: 0.84rem;
-    color: #888;
-  }
-  .sah-profile-login-back a {
-    color: #c9621a;
-    font-weight: 600;
-    text-decoration: none;
-  }
-  .sah-profile-login-back a:hover { text-decoration: underline; }
-`;
-
 const Profile = () => {
   const [searchParams] = useSearchParams();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [loggedIn, setLoggedIn] = useState(false);
   const navigate = useNavigate();
 
   const fromDashboard = searchParams.get('from') === 'dashboard';
 
   useEffect(() => {
-    /* Inject login wall styles */
-    if (!document.getElementById('sah-profile-login-styles')) {
-      const s = document.createElement('style');
-      s.id = 'sah-profile-login-styles';
-      s.textContent = loginWallStyles;
-      document.head.appendChild(s);
-    }
-
-    /* Check login */
-    setLoggedIn(isLoggedIn());
-
+    injectResponsiveStyles();
     const id = searchParams.get('id');
     const email = searchParams.get('email');
     let found = findProvider(id, email);
@@ -361,54 +578,6 @@ const Profile = () => {
       <main style={{ padding: '4rem', textAlign: 'center' }}>
         <div className="loading">Loading profile...</div>
       </main>
-      <Footer />
-    </>
-  );
-
-  /* ── LOGIN WALL — shown to guests who are not logged in ── */
-  if (!loggedIn) return (
-    <>
-      <Header />
-      <div className="sah-profile-login-wall">
-        <div className="sah-profile-login-box">
-          <div className="sah-profile-login-header">
-            <div className="sah-profile-login-icon">
-              <i className="fas fa-lock" />
-            </div>
-            <h2>Members Only</h2>
-            <p>You need to be logged in to view provider profiles.</p>
-          </div>
-          <div className="sah-profile-login-body">
-            <p className="sah-profile-login-desc">
-              Create a free account or log in to access full provider profiles, contact details, reviews and more.
-            </p>
-            <div className="sah-profile-login-actions">
-              <Link
-                to="/"
-                state={{ openLogin: true }}
-                className="sah-profile-login-btn primary"
-                onClick={() => {
-                  /* Store intent so HomePage can auto-open the login modal */
-                  sessionStorage.setItem('sah_open_login', '1');
-                  sessionStorage.setItem('sah_login_redirect', window.location.pathname + window.location.search);
-                }}
-              >
-                <i className="fas fa-sign-in-alt" /> Log In to Your Account
-              </Link>
-              <div className="sah-profile-login-divider">or</div>
-              <Link
-                to="/register/user"
-                className="sah-profile-login-btn secondary"
-              >
-                <i className="fas fa-user-plus" /> Create a Free Account
-              </Link>
-            </div>
-            <div className="sah-profile-login-back">
-              <Link to="/">← Back to the directory</Link>
-            </div>
-          </div>
-        </div>
-      </div>
       <Footer />
     </>
   );
@@ -500,204 +669,168 @@ const Profile = () => {
       )}
 
       <main className="page-wrap" id="profilePage" data-tier={tier} style={{ display: 'block' }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 32px' }}>
+        <div className="page-inner" style={{ maxWidth: '1280px', margin: '0 auto' }}>
 
-          {/* ── HERO (two‑column, background only on right) ── */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: '70% 30%',
-            gap: '24px',
-            marginBottom: '20px',
-          }}>
-            {/* Left column (70%): About + Services (now with card styling) */}
-            <div style={{
-              background: '#ede9e3',
-              borderRadius: '12px',
-              padding: '24px',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-            }}>
+          {/* ── HERO: two-column grid ── */}
+          <div className="profile-hero-grid">
+
+            {/* Left column: About + Services */}
+            <div className="profile-left-card">
+
               {/* About Us */}
-              <Eyebrow>About the Provider</Eyebrow>
-              <Heading>About Us</Heading>
-              <div className="content-body" style={{ color: '#3a3a3a', lineHeight: '1.7' }}>
-                <p>{profile.bio || 'This provider has not yet added a description.'}</p>
+              <div className="profile-section" style={{ marginTop: 0, paddingTop: 0, borderTop: 'none' }}>
+                <Eyebrow>About the Provider</Eyebrow>
+                <Heading>About Us</Heading>
+                <div className="content-body" style={{ color: '#3a3a3a', lineHeight: '1.7', margin: 0 }}>
+                  <p style={{ margin: 0 }}>{profile.bio || 'This provider has not yet added a description.'}</p>
+                </div>
               </div>
 
               {/* What We Offer */}
-              <div style={{ marginTop: '28px' }}>
+              <div className="profile-section">
                 <Eyebrow>Services</Eyebrow>
                 <Heading>What We Offer</Heading>
 
                 {profile.tags?.length > 0 && (
-                  <div className="tag-cloud" style={{ marginBottom: '16px', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                  <div className="tag-cloud" style={{ marginBottom: profile.services?.length > 0 ? '20px' : '0' }}>
                     {profile.tags.map((tag, idx) => (
-                      <span
-                        key={idx}
-                        className="tag"
-                        style={{
-                          background: '#ffffff',
-                          color: ORANGE,
-                          border: `1px solid ${ORANGE}`,
-                          fontWeight: 600,
-                          padding: '6px 14px',
-                          borderRadius: '30px',
-                          fontSize: '0.85rem',
-                          boxShadow: '0 2px 4px rgba(0,0,0,0.03)',
-                        }}
-                      >
-                        {tag}
-                      </span>
+                      <span key={idx} className="tag">{tag}</span>
                     ))}
                   </div>
                 )}
 
                 {profile.services?.length > 0 ? (
-                  profile.services.map((service, idx) => {
-                    if (typeof service === 'string') {
+                  <div style={{ marginTop: profile.tags?.length > 0 ? '16px' : '0' }}>
+                    {profile.services.map((service, idx) => {
+                      if (typeof service === 'string') {
+                        return (
+                          <span
+                            key={idx}
+                            style={{
+                              background: '#ffffff',
+                              color: ORANGE,
+                              border: `1.5px solid ${ORANGE}`,
+                              fontWeight: 600,
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              marginRight: 8,
+                              marginBottom: 8,
+                              padding: '7px 16px',
+                              borderRadius: '30px',
+                              fontSize: '0.85rem',
+                              boxShadow: '0 2px 6px rgba(194,81,10,0.08)',
+                            }}
+                          >
+                            {service}
+                          </span>
+                        );
+                      }
+                      const svcAgeGroups = service.ageGroups || [];
+                      const svcSubjects = service.subjects || '';
                       return (
-                        <span
-                          key={idx}
-                          style={{
-                            background: '#ffffff',
-                            color: ORANGE,
-                            border: `1px solid ${ORANGE}`,
-                            fontWeight: 600,
-                            display: 'inline-block',
-                            marginRight: 8,
-                            marginBottom: 8,
-                            padding: '6px 14px',
-                            borderRadius: '30px',
-                            fontSize: '0.85rem',
-                            boxShadow: '0 2px 4px rgba(0,0,0,0.03)',
-                          }}
-                        >
-                          {service}
-                        </span>
-                      );
-                    }
-                    const svcAgeGroups = service.ageGroups || [];
-                    const svcSubjects = service.subjects || '';
-                    return (
-                      <div
-                        key={idx}
-                        style={{
-                          background: '#ffffff',
-                          borderRadius: '12px',
-                          padding: '18px 20px',
-                          marginBottom: '12px',
-                          border: '1px solid rgba(194, 81, 10, 0.15)',
-                          boxShadow: '0 4px 10px rgba(0,0,0,0.02)',
-                          transition: 'box-shadow 0.2s ease',
-                          cursor: 'default',
-                        }}
-                        onMouseEnter={(e) => (e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.06)')}
-                        onMouseLeave={(e) => (e.currentTarget.style.boxShadow = '0 4px 10px rgba(0,0,0,0.02)')}
-                      >
-                        {service.title && (
-                          <div style={{ fontWeight: 700, color: '#1a1a1a', fontSize: '1.05rem', marginBottom: 6 }}>
-                            {service.title}
-                          </div>
-                        )}
-                        {service.description && (
-                          <div style={{ color: '#555', fontSize: '0.9rem', marginBottom: 12, lineHeight: '1.6' }}>
-                            {service.description}
-                          </div>
-                        )}
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                          {svcSubjects && svcSubjects.split(',').map((s, i) => s.trim() && (
-                            <span
-                              key={i}
-                              style={{
-                                background: '#f5f0ea',
-                                color: ORANGE,
-                                border: `1px solid ${ORANGE}`,
-                                fontWeight: 500,
-                                fontSize: '0.8rem',
-                                padding: '4px 12px',
-                                borderRadius: '20px',
-                              }}
-                            >
-                              {s.trim()}
-                            </span>
-                          ))}
-                        </div>
-                        {svcAgeGroups.length > 0 && (
-                          <div style={{ marginTop: 12, display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
-                            <span style={{ fontSize: '0.8rem', color: '#777', fontWeight: 500 }}>Ages:</span>
-                            {svcAgeGroups.map((age, i) => (
-                              <span
-                                key={i}
-                                style={{
-                                  background: ORANGE,
-                                  color: '#fff',
-                                  fontSize: '0.8rem',
-                                  padding: '4px 12px',
-                                  borderRadius: '20px',
-                                  fontWeight: 600,
-                                }}
-                              >
-                                {age}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                        {service.deliveryMode && (
-                          <div style={{ marginTop: 10, fontSize: '0.8rem', color: '#666' }}>
-                            <i className="fas fa-laptop-house" style={{ marginRight: 6, color: ORANGE }} />
-                            {service.deliveryMode}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })
-                ) : (
-                  <p style={{ color: '#888', fontStyle: 'italic', fontSize: '0.9rem' }}>No services listed yet.</p>
-                )}
-
-                {profile.ageGroups?.length > 0 && (
-                  <>
-                    <div style={{ margin: '20px 0 12px', height: '1px', background: 'rgba(0,0,0,0.08)' }} />
-                    <Eyebrow><span style={{ display: 'block' }}>Age Groups / Grades</span></Eyebrow>
-                    <div className="grade-pills" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                      {profile.ageGroups.map((age, idx) => (
                         <div
                           key={idx}
                           style={{
                             background: '#ffffff',
-                            color: ORANGE,
-                            border: `1px solid ${ORANGE}`,
-                            fontWeight: 600,
-                            padding: '6px 16px',
-                            borderRadius: '30px',
-                            fontSize: '0.85rem',
-                            boxShadow: '0 2px 4px rgba(0,0,0,0.03)',
+                            borderRadius: '12px',
+                            padding: '18px 20px',
+                            marginBottom: '12px',
+                            border: '1px solid rgba(194, 81, 10, 0.15)',
+                            boxShadow: '0 4px 10px rgba(0,0,0,0.02)',
+                            transition: 'box-shadow 0.2s ease',
+                            cursor: 'default',
                           }}
+                          onMouseEnter={(e) => (e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.06)')}
+                          onMouseLeave={(e) => (e.currentTarget.style.boxShadow = '0 4px 10px rgba(0,0,0,0.02)')}
                         >
-                          {age}
+                          {service.title && (
+                            <div style={{ fontWeight: 700, color: '#1a1a1a', fontSize: '1.05rem', marginBottom: 6 }}>
+                              {service.title}
+                            </div>
+                          )}
+                          {service.description && (
+                            <div style={{ color: '#555', fontSize: '0.9rem', marginBottom: 12, lineHeight: '1.6' }}>
+                              {service.description}
+                            </div>
+                          )}
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                            {svcSubjects && svcSubjects.split(',').map((s, i) => s.trim() && (
+                              <span
+                                key={i}
+                                style={{
+                                  background: '#f5f0ea',
+                                  color: ORANGE,
+                                  border: `1px solid ${ORANGE}`,
+                                  fontWeight: 500,
+                                  fontSize: '0.8rem',
+                                  padding: '4px 12px',
+                                  borderRadius: '20px',
+                                }}
+                              >
+                                {s.trim()}
+                              </span>
+                            ))}
+                          </div>
+                          {svcAgeGroups.length > 0 && (
+                            <div style={{ marginTop: 12, display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
+                              <span style={{ fontSize: '0.8rem', color: '#777', fontWeight: 500 }}>Ages:</span>
+                              {svcAgeGroups.map((age, i) => (
+                                <span
+                                  key={i}
+                                  style={{
+                                    background: ORANGE,
+                                    color: '#fff',
+                                    fontSize: '0.8rem',
+                                    padding: '4px 12px',
+                                    borderRadius: '20px',
+                                    fontWeight: 600,
+                                  }}
+                                >
+                                  {age}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                          {service.deliveryMode && (
+                            <div style={{ marginTop: 10, fontSize: '0.8rem', color: '#666' }}>
+                              <i className="fas fa-laptop-house" style={{ marginRight: 6, color: ORANGE }} />
+                              {service.deliveryMode}
+                            </div>
+                          )}
                         </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  /* Only show "no services" when there are also no tags */
+                  !profile.tags?.length && (
+                    <p className="no-services-msg">No services listed yet.</p>
+                  )
+                )}
+
+                {/* Age Groups */}
+                {profile.ageGroups?.length > 0 && (
+                  <div className="age-groups-section">
+                    <Eyebrow>Age Groups / Grades</Eyebrow>
+                    <div className="grade-pills">
+                      {profile.ageGroups.map((age, idx) => (
+                        <div key={idx}>{age}</div>
                       ))}
                     </div>
-                  </>
+                  </div>
                 )}
               </div>
             </div>
 
-            {/* Right column (30%): Profile summary with background image & overlay (unchanged) */}
-            <div style={{
-              position: 'relative',
-              borderRadius: '14px',
-              overflow: 'hidden',
-              backgroundImage: profile.image ? `url(${profile.image})` : 'none',
-              backgroundColor: '#2a2a2a',
-              backgroundSize: 'cover',
-              backgroundPosition: 'center 20%',
-              boxShadow: '0 12px 40px rgba(0,0,0,0.35)',
-            }}>
-              <div style={{
-                position: 'absolute', inset: 0, zIndex: 0,
-                background: 'linear-gradient(120deg, rgba(15,15,15,0.82) 0%, rgba(40,40,40,0.68) 60%, rgba(15,15,15,0.76) 100%)',
-              }} />
-              <div style={{ position: 'relative', zIndex: 1, padding: '20px' }}>
+            {/* Right column: Profile summary card */}
+            <div
+              className="profile-right-card"
+              style={{
+                backgroundImage: profile.image ? `url(${profile.image})` : 'none',
+              }}
+            >
+              <div className="profile-right-overlay" />
+              <div className="profile-right-content">
                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
                   <button className="btn btn-outline" style={{ borderColor: 'rgba(255,255,255,0.50)', color: '#fff' }} onClick={shareProfile}>
                     <i className="fas fa-share-alt"></i> Share
@@ -727,7 +860,7 @@ const Profile = () => {
                   <div className="meta-item" style={{ color: 'rgba(255,255,255,0.82)' }}><i className="fas fa-laptop-house" style={{ color: ORANGE }}></i><span>{profile.deliveryMode || profile.delivery || 'Online'}</span></div>
                 </div>
                 {(tier === 'pro' || tier === 'featured') && profile.reviews?.average > 0 && (
-                  <div className="rating-bar" style={{ background: 'rgba(255,255,255,0.10)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', marginTop: '16px' }}>
+                  <div className="rating-bar">
                     <div className="rating-big" style={{ color: ORANGE }}>{profile.reviews.average}</div>
                     <div>
                       <div className="rating-stars" style={{ color: ORANGE }}>{ratingStars(profile.reviews.average)}</div>
@@ -739,8 +872,8 @@ const Profile = () => {
             </div>
           </div>
 
-          {/* ── Certifications & Availability (unchanged) ── */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
+          {/* ── Credentials & Availability ── */}
+          <div className="profile-two-col">
             <div className="card" style={S.white}>
               <div className="card-pad">
                 <Eyebrow>Credentials</Eyebrow>
@@ -773,16 +906,16 @@ const Profile = () => {
                     );
                   })}
                 </div>
-                <p style={{ fontSize: '0.82rem', color: '#777', marginTop: '8px' }}>
+                <p style={{ fontSize: '0.82rem', color: '#777', margin: 0 }}>
                   {profile.availabilityNotes || 'Contact for availability'}
                 </p>
               </div>
             </div>
           </div>
 
-          {/* ── Reviews (unchanged) ── */}
+          {/* ── Reviews ── */}
           {(tier === 'pro' || tier === 'featured') && profile.reviews?.items?.length > 0 && (
-            <div className="card paid-only" style={{ ...S.gray, marginBottom: '20px' }}>
+            <div className="card paid-only profile-section-block" style={S.gray}>
               <div className="card-pad">
                 <Eyebrow>Testimonials</Eyebrow>
                 <Heading>Parent Reviews</Heading>
@@ -799,10 +932,10 @@ const Profile = () => {
             </div>
           )}
 
-          {/* ── CONTACT SECTION (unchanged) ── */}
+          {/* ── CONTACT SECTION ── */}
           <div id="contactSection" style={{ marginTop: '40px' }}>
             {tier === 'free' && (
-              <div className="card" id="upgradeCard" style={{ ...S.gray, marginBottom: '20px' }}>
+            <div className="card profile-section-block" id="upgradeCard" style={S.gray}>
                 <div className="card-pad" style={{ textAlign: 'center' }}>
                   <i className="fas fa-lock" style={{ fontSize: '1.4rem', color: ORANGE, marginBottom: '10px' }}></i>
                   <p style={{ fontSize: '0.85rem', color: '#555', marginBottom: '14px' }}>
@@ -815,8 +948,8 @@ const Profile = () => {
               </div>
             )}
 
-            {tier === 'pro' || tier === 'featured' ? (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+            {(tier === 'pro' || tier === 'featured') ? (
+              <div className="contact-two-col">
                 <div className="card" style={S.white}>
                   <div className="card-pad">
                     <Eyebrow>Get in Touch</Eyebrow>
@@ -859,7 +992,7 @@ const Profile = () => {
                     </div>
                   </div>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <div className="contact-right-stack">
                   <div className="card paid-only" style={S.gray}>
                     <div className="card-pad">
                       <Eyebrow>Direct Contact</Eyebrow>
