@@ -103,15 +103,6 @@ const SEED_PROVIDERS = [
   },
 ];
 
-function isLoggedIn() {
-  try {
-    const u = localStorage.getItem("sah_current_user");
-    if (!u) return false;
-    const parsed = JSON.parse(u);
-    return !!(parsed && parsed.role);
-  } catch { return false; }
-}
-
 function findProvider(id, email) {
   try {
     const stored = JSON.parse(localStorage.getItem('sah_providers') || '[]');
@@ -154,6 +145,10 @@ function findProvider(id, email) {
 const DAYS_OF_WEEK = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const ORANGE = '#c2510a';
 
+/* ─── Design tokens ────────────────────────────────────────────
+   Single card style used throughout — keeps all cards visually
+   identical so the only differentiator is content.
+──────────────────────────────────────────────────────────────── */
 const S = {
   hero: {
     background: 'rgba(255, 255, 255, 0.06)',
@@ -166,20 +161,511 @@ const S = {
     position: 'relative',
     zIndex: 1,
   },
-  gray: {
-    background: '#d6d0c8',
-    border: '1px solid #c8c2ba',
+  card: {
+    background: '#ede9e3',
+    border: '1px solid #dedad4',
     borderRadius: '12px',
-    marginBottom: '20px',
     overflow: 'hidden',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
+  },
+  // Kept for backward-compat — same values as card
+  gray: {
+    background: '#ede9e3',
+    border: '1px solid #dedad4',
+    borderRadius: '12px',
+    overflow: 'hidden',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
   },
   white: {
     background: '#ede9e3',
     border: '1px solid #dedad4',
     borderRadius: '12px',
-    marginBottom: '20px',
     overflow: 'hidden',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
   },
+};
+
+/* ─── CSS injection ─────────────────────────────────────────────
+   All spacing uses one rhythm unit: 24px.
+   Sections are separated by 24px.  Internal card padding: 24px.
+   No element has its own ad-hoc marginBottom — everything flows
+   from .profile-section-block + the grid gap values.
+──────────────────────────────────────────────────────────────── */
+const injectResponsiveStyles = () => {
+  if (document.getElementById('profile-responsive-styles')) return;
+  const style = document.createElement('style');
+  style.id = 'profile-responsive-styles';
+  style.textContent = `
+
+    /* ── Global box-sizing reset (scoped) ── */
+    #profilePage *,
+    #profilePage *::before,
+    #profilePage *::after {
+      box-sizing: border-box;
+    }
+
+    /* ════════════════════════════════════════
+       PAGE WRAPPER
+       Handles all outer padding.  Never add
+       padding to individual sections — use
+       this class only.
+    ════════════════════════════════════════ */
+    .page-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      /* top 24px | sides 32px | bottom 48px */
+      padding: 24px 32px 48px;
+    }
+
+    /* ════════════════════════════════════════
+       SECTION RHYTHM
+       Every top-level block gets exactly 24px
+       below it.  The last block (#contactSection)
+       needs no bottom margin — the page-inner
+       bottom padding handles the footer gap.
+    ════════════════════════════════════════ */
+    .profile-section-block {
+      margin-bottom: 24px;
+    }
+    .profile-section-block > *:last-child {
+      margin-bottom: 0;
+    }
+
+    /* ════════════════════════════════════════
+       HERO GRID
+    ════════════════════════════════════════ */
+    .profile-hero-grid {
+      display: grid;
+      grid-template-columns: 68% 1fr;
+      gap: 24px;
+      align-items: stretch;
+      /* margin handled exclusively by .profile-section-block */
+    }
+
+    /* ── Left card ── */
+    .profile-left-card {
+      background: #ede9e3;
+      border: 1px solid #dedad4;
+      border-radius: 12px;
+      padding: 32px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    }
+
+    /* Sections inside the left card */
+    .profile-section {
+      margin-top: 32px;
+      padding-top: 28px;
+      border-top: 1px solid rgba(0,0,0,0.08);
+    }
+    .profile-section.no-border {
+      margin-top: 0;
+      padding-top: 0;
+      border-top: none;
+    }
+
+    /* ── Right card (image/profile panel) ── */
+    .profile-right-card {
+      position: relative;
+      border-radius: 14px;
+      overflow: hidden;
+      background-color: #2a2a2a;
+      background-size: cover;
+      background-position: center 20%;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.30);
+      min-height: 0;
+      height: 100%;      /* fills grid row via align-items:stretch */
+    }
+    .profile-right-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      background: linear-gradient(
+        160deg,
+        rgba(10,10,10,0.88) 0%,
+        rgba(35,35,35,0.70) 55%,
+        rgba(10,10,10,0.82) 100%
+      );
+    }
+    .profile-right-content {
+      position: relative;
+      z-index: 1;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: flex-start;
+      height: 100%;
+    }
+
+    /* ════════════════════════════════════════
+       TYPOGRAPHY HELPERS
+    ════════════════════════════════════════ */
+    .sec-eyebrow {
+      display: block;
+      margin-bottom: 6px;
+    }
+    .card-heading {
+      margin: 0 0 16px 0;
+      font-size: 1.35rem;
+      line-height: 1.3;
+    }
+
+    /* ════════════════════════════════════════
+       TAG CLOUD & GRADE PILLS
+    ════════════════════════════════════════ */
+    .tag-cloud,
+    .grade-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 0;
+    }
+    .tag-cloud .tag,
+    .grade-pills > div {
+      display: inline-flex;
+      align-items: center;
+      background: #ffffff;
+      color: ${ORANGE};
+      border: 1.5px solid ${ORANGE};
+      font-weight: 600;
+      padding: 7px 16px;
+      border-radius: 30px;
+      font-size: 0.85rem;
+      line-height: 1;
+      white-space: nowrap;
+      box-shadow: 0 2px 6px rgba(194,81,10,0.08);
+      transition: background 0.18s, color 0.18s;
+    }
+    .tag-cloud .tag:hover,
+    .grade-pills > div:hover {
+      background: ${ORANGE};
+      color: #fff;
+    }
+    .no-services-msg {
+      color: #888;
+      font-style: italic;
+      font-size: 0.9rem;
+      margin: 0;
+      padding: 4px 0;
+    }
+    .age-groups-section {
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(0,0,0,0.07);
+    }
+    .age-groups-section .sec-eyebrow {
+      margin-bottom: 10px;
+    }
+
+    /* ════════════════════════════════════════
+       RATING BAR (inside right card)
+    ════════════════════════════════════════ */
+    .rating-bar {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      width: 100%;
+      background: rgba(255,255,255,0.10);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-top: 20px;
+    }
+    .rating-big {
+      font-size: 2.2rem;
+      font-weight: 800;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+    .rating-stars { font-size: 1rem; line-height: 1.4; letter-spacing: 1px; }
+    .rating-sub   { font-size: 0.75rem; line-height: 1.4; margin-top: 2px; }
+
+    /* ════════════════════════════════════════
+       CREDENTIALS + AVAILABILITY ROW
+    ════════════════════════════════════════ */
+    .profile-two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    /* ════════════════════════════════════════
+       CARD PADDING — uniform across every card
+    ════════════════════════════════════════ */
+    .card-pad {
+      padding: 24px;
+    }
+
+    /* ════════════════════════════════════════
+       DAY PILLS
+    ════════════════════════════════════════ */
+    .avail-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .avail-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 48px;
+      padding: 7px 10px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    /* ════════════════════════════════════════
+       QUALIFICATIONS LIST
+    ════════════════════════════════════════ */
+    .qual-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .qual-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 0.9rem;
+      color: #3a3a3a;
+      line-height: 1.5;
+    }
+    .qual-list li i { margin-top: 2px; flex-shrink: 0; }
+
+    /* ════════════════════════════════════════
+       CONTACT SECTION
+    ════════════════════════════════════════ */
+
+    /* Outer two-col: form left | right stack
+       align-items: stretch makes both columns
+       exactly the same height.               */
+    .contact-two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      align-items: stretch;
+    }
+
+    /* Form card — anchors to top, natural height */
+    .contact-form-card {
+      align-self: start;
+    }
+
+    /* Right stack fills the full column height
+       so Contact Details + Location together
+       match the form height on the left.     */
+    .contact-right-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      width: 100%;
+      height: 100%;           /* fills grid row height */
+    }
+
+    /* Location card grows to fill whatever
+       space remains after Contact Details.   */
+    .location-card {
+      flex: 1;                /* takes up remaining height */
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+    /* card-pad inside location must also flex */
+    .location-card > .card-pad {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .location-card .location-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    /* Push delivery line to bottom of card */
+    .location-card .location-delivery {
+      margin-top: auto;
+      padding-top: 16px;
+      border-top: 1px solid rgba(0,0,0,0.08);
+    }
+
+    /* Location inner layout */
+    .location-body {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+    /* Place row: icon + name + badge */
+    .location-place {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+      margin-bottom: 16px;
+    }
+    .location-place-name {
+      font-weight: 600;
+      font-size: 0.92rem;
+      color: #2a2a2a;
+    }
+    .location-badge {
+      font-size: 0.72rem;
+      color: #777;
+      background: rgba(0,0,0,0.05);
+      padding: 3px 10px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+    /* Delivery row — pushed to bottom by margin-top:auto */
+    .location-delivery {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      color: #555;
+      margin-top: auto;
+      padding-top: 16px;
+      border-top: 1px solid rgba(0,0,0,0.08);
+    }
+
+    /* ════════════════════════════════════════
+       FORM FIELDS
+    ════════════════════════════════════════ */
+    .form-group .field {
+      margin-bottom: 14px;
+    }
+    .form-group .field label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #444;
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+    .form-group .field input,
+    .form-group .field select,
+    .form-group .field textarea {
+      width: 100%;
+      font-family: inherit;
+    }
+    .form-group .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    /* ════════════════════════════════════════
+       RESPONSIVE BREAKPOINTS
+    ════════════════════════════════════════ */
+
+    /* Large tablet */
+    @media (max-width: 1024px) {
+      .profile-hero-grid {
+        grid-template-columns: 63% 1fr;
+      }
+    }
+
+    /* Tablet portrait — single column */
+    @media (max-width: 900px) {
+      .profile-hero-grid {
+        grid-template-columns: 1fr;
+        align-items: start;
+      }
+      .profile-right-card {
+        height: auto;
+        min-height: 320px;
+      }
+      .profile-two-col {
+        grid-template-columns: 1fr;
+      }
+      /* Stack contact columns — reset height stretching */
+      .contact-two-col {
+        grid-template-columns: 1fr;
+        align-items: start;
+      }
+      .contact-right-stack {
+        height: auto;
+      }
+      .location-card {
+        flex: none;
+      }
+      .location-card > .card-pad,
+      .location-card .location-body {
+        flex: none;
+      }
+      .location-delivery {
+        margin-top: 16px;
+        padding-top: 16px;
+      }
+    }
+
+    /* Mobile landscape / small tablet */
+    @media (max-width: 768px) {
+      .page-inner {
+        padding: 16px 16px 40px;
+      }
+      .profile-left-card {
+        padding: 20px;
+      }
+      .card-pad {
+        padding: 18px;
+      }
+      /* All section gaps drop to 16px on mobile */
+      .profile-hero-grid,
+      .profile-two-col,
+      .contact-two-col,
+      .contact-right-stack {
+        gap: 16px;
+      }
+      .profile-section-block {
+        margin-bottom: 16px;
+      }
+      .tag-cloud,
+      .grade-pills { gap: 8px; }
+      .tag-cloud .tag,
+      .grade-pills > div { font-size: 0.82rem; padding: 6px 14px; }
+      .avail-grid   { gap: 6px; }
+      .avail-pill   { min-width: 42px; padding: 6px 8px; font-size: 0.75rem; }
+      .form-group .form-row { grid-template-columns: 1fr; }
+      .rating-big   { font-size: 1.8rem; }
+    }
+
+    /* Small mobile */
+    @media (max-width: 480px) {
+      .page-inner {
+        padding: 12px 12px 32px;
+      }
+      .profile-left-card {
+        padding: 16px;
+      }
+      .card-pad {
+        padding: 16px;
+      }
+      .profile-section {
+        margin-top: 24px;
+        padding-top: 20px;
+      }
+      .profile-right-card {
+        min-height: 260px;
+      }
+      .card-heading {
+        font-size: 1.15rem;
+      }
+    }
+  `;
+  document.head.appendChild(style);
 };
 
 const Eyebrow = ({ children }) => (
@@ -191,139 +677,16 @@ const Heading = ({ children, style = {}, as: Tag = 'h2' }) => (
   <Tag className="card-heading" style={{ color: '#1a1a1a', ...style }}>{children}</Tag>
 );
 
-/* ── LOGIN WALL STYLES ── */
-const loginWallStyles = `
-  .sah-profile-login-wall {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #f2f2f2;
-    padding: 40px 20px;
-  }
-  .sah-profile-login-box {
-    background: #fff;
-    border-radius: 14px;
-    box-shadow: 0 12px 48px rgba(0,0,0,0.13);
-    max-width: 460px;
-    width: 100%;
-    overflow: hidden;
-  }
-  .sah-profile-login-header {
-    background: #5a5a5a;
-    padding: 32px 36px 26px;
-    text-align: center;
-  }
-  .sah-profile-login-icon {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background: rgba(201,98,26,0.18);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 14px;
-    font-size: 1.5rem;
-    color: #c9621a;
-  }
-  .sah-profile-login-header h2 {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.55rem;
-    font-weight: 800;
-    color: #fff;
-    margin-bottom: 6px;
-  }
-  .sah-profile-login-header p {
-    font-size: 0.88rem;
-    color: rgba(255,255,255,0.68);
-    line-height: 1.55;
-  }
-  .sah-profile-login-body {
-    padding: 28px 36px 32px;
-  }
-  .sah-profile-login-desc {
-    font-size: 0.9rem;
-    color: #666;
-    text-align: center;
-    line-height: 1.65;
-    margin-bottom: 24px;
-  }
-  .sah-profile-login-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  .sah-profile-login-btn {
-    width: 100%;
-    padding: 13px;
-    border-radius: 8px;
-    font-family: inherit;
-    font-weight: 700;
-    font-size: 0.95rem;
-    cursor: pointer;
-    border: none;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    transition: all 0.15s;
-    text-decoration: none;
-  }
-  .sah-profile-login-btn.primary {
-    background: #c9621a;
-    color: #fff;
-  }
-  .sah-profile-login-btn.primary:hover { background: #a84e12; }
-  .sah-profile-login-btn.secondary {
-    background: #f2f2f2;
-    color: #3a3a3a;
-    border: 1.5px solid rgba(0,0,0,0.10);
-  }
-  .sah-profile-login-btn.secondary:hover {
-    border-color: #c9621a;
-    color: #c9621a;
-  }
-  .sah-profile-login-divider {
-    text-align: center;
-    font-size: 0.8rem;
-    color: #aaa;
-    margin: 4px 0;
-  }
-  .sah-profile-login-back {
-    text-align: center;
-    margin-top: 18px;
-    font-size: 0.84rem;
-    color: #888;
-  }
-  .sah-profile-login-back a {
-    color: #c9621a;
-    font-weight: 600;
-    text-decoration: none;
-  }
-  .sah-profile-login-back a:hover { text-decoration: underline; }
-`;
-
 const Profile = () => {
   const [searchParams] = useSearchParams();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [loggedIn, setLoggedIn] = useState(false);
   const navigate = useNavigate();
 
   const fromDashboard = searchParams.get('from') === 'dashboard';
 
   useEffect(() => {
-    /* Inject login wall styles */
-    if (!document.getElementById('sah-profile-login-styles')) {
-      const s = document.createElement('style');
-      s.id = 'sah-profile-login-styles';
-      s.textContent = loginWallStyles;
-      document.head.appendChild(s);
-    }
-
-    /* Check login */
-    setLoggedIn(isLoggedIn());
-
+    injectResponsiveStyles();
     const id = searchParams.get('id');
     const email = searchParams.get('email');
     let found = findProvider(id, email);
@@ -331,7 +694,7 @@ const Profile = () => {
       try {
         const cu = JSON.parse(localStorage.getItem('sah_current_user') || 'null');
         if (cu?.id) found = findProvider(cu.id, null);
-      } catch {}
+      } catch { }
     }
     if (!found) found = SEED_PROVIDERS.find(p => p.id === 'khan');
     setProfile(found);
@@ -361,54 +724,6 @@ const Profile = () => {
       <main style={{ padding: '4rem', textAlign: 'center' }}>
         <div className="loading">Loading profile...</div>
       </main>
-      <Footer />
-    </>
-  );
-
-  /* ── LOGIN WALL — shown to guests who are not logged in ── */
-  if (!loggedIn) return (
-    <>
-      <Header />
-      <div className="sah-profile-login-wall">
-        <div className="sah-profile-login-box">
-          <div className="sah-profile-login-header">
-            <div className="sah-profile-login-icon">
-              <i className="fas fa-lock" />
-            </div>
-            <h2>Members Only</h2>
-            <p>You need to be logged in to view provider profiles.</p>
-          </div>
-          <div className="sah-profile-login-body">
-            <p className="sah-profile-login-desc">
-              Create a free account or log in to access full provider profiles, contact details, reviews and more.
-            </p>
-            <div className="sah-profile-login-actions">
-              <Link
-                to="/"
-                state={{ openLogin: true }}
-                className="sah-profile-login-btn primary"
-                onClick={() => {
-                  /* Store intent so HomePage can auto-open the login modal */
-                  sessionStorage.setItem('sah_open_login', '1');
-                  sessionStorage.setItem('sah_login_redirect', window.location.pathname + window.location.search);
-                }}
-              >
-                <i className="fas fa-sign-in-alt" /> Log In to Your Account
-              </Link>
-              <div className="sah-profile-login-divider">or</div>
-              <Link
-                to="/register/user"
-                className="sah-profile-login-btn secondary"
-              >
-                <i className="fas fa-user-plus" /> Create a Free Account
-              </Link>
-            </div>
-            <div className="sah-profile-login-back">
-              <Link to="/">← Back to the directory</Link>
-            </div>
-          </div>
-        </div>
-      </div>
       <Footer />
     </>
   );
@@ -500,205 +815,169 @@ const Profile = () => {
       )}
 
       <main className="page-wrap" id="profilePage" data-tier={tier} style={{ display: 'block' }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 32px' }}>
+        {/*
+          .page-inner owns ALL outer spacing.
+          No inline padding here — CSS class handles it.
+        */}
+        <div className="page-inner">
 
-          {/* ── HERO (two‑column, background only on right) ── */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: '70% 30%',
-            gap: '24px',
-            marginBottom: '20px',
-          }}>
-            {/* Left column (70%): About + Services (now with card styling) */}
-            <div style={{
-              background: '#ede9e3',
-              borderRadius: '12px',
-              padding: '24px',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-            }}>
-              {/* About Us */}
-              <Eyebrow>About the Provider</Eyebrow>
-              <Heading>About Us</Heading>
-              <div className="content-body" style={{ color: '#3a3a3a', lineHeight: '1.7' }}>
-                <p>{profile.bio || 'This provider has not yet added a description.'}</p>
+          {/* ════════════════════════════════════
+              HERO — two-column
+          ════════════════════════════════════ */}
+          <div className="profile-hero-grid profile-section-block">
+
+            {/* Left: About + Services */}
+            <div className="profile-left-card">
+
+              <div className="profile-section no-border">
+                <Eyebrow>About the Provider</Eyebrow>
+                <Heading>About Us</Heading>
+                <div className="content-body" style={{ color: '#3a3a3a', lineHeight: '1.7', margin: 0 }}>
+                  <p style={{ margin: 0 }}>{profile.bio || 'This provider has not yet added a description.'}</p>
+                </div>
               </div>
 
-              {/* What We Offer */}
-              <div style={{ marginTop: '28px' }}>
+              <div className="profile-section">
                 <Eyebrow>Services</Eyebrow>
                 <Heading>What We Offer</Heading>
 
                 {profile.tags?.length > 0 && (
-                  <div className="tag-cloud" style={{ marginBottom: '16px', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                  <div className="tag-cloud" style={{ marginBottom: profile.services?.length > 0 ? '20px' : '0' }}>
                     {profile.tags.map((tag, idx) => (
-                      <span
-                        key={idx}
-                        className="tag"
-                        style={{
-                          background: '#ffffff',
-                          color: ORANGE,
-                          border: `1px solid ${ORANGE}`,
-                          fontWeight: 600,
-                          padding: '6px 14px',
-                          borderRadius: '30px',
-                          fontSize: '0.85rem',
-                          boxShadow: '0 2px 4px rgba(0,0,0,0.03)',
-                        }}
-                      >
-                        {tag}
-                      </span>
+                      <span key={idx} className="tag">{tag}</span>
                     ))}
                   </div>
                 )}
 
                 {profile.services?.length > 0 ? (
-                  profile.services.map((service, idx) => {
-                    if (typeof service === 'string') {
+                  <div style={{ marginTop: profile.tags?.length > 0 ? '16px' : '0' }}>
+                    {profile.services.map((service, idx) => {
+                      if (typeof service === 'string') {
+                        return (
+                          <span
+                            key={idx}
+                            style={{
+                              background: '#ffffff',
+                              color: ORANGE,
+                              border: `1.5px solid ${ORANGE}`,
+                              fontWeight: 600,
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              marginRight: 8,
+                              marginBottom: 8,
+                              padding: '7px 16px',
+                              borderRadius: '30px',
+                              fontSize: '0.85rem',
+                              boxShadow: '0 2px 6px rgba(194,81,10,0.08)',
+                            }}
+                          >
+                            {service}
+                          </span>
+                        );
+                      }
+                      const svcAgeGroups = service.ageGroups || [];
+                      const svcSubjects = service.subjects || '';
                       return (
-                        <span
-                          key={idx}
-                          style={{
-                            background: '#ffffff',
-                            color: ORANGE,
-                            border: `1px solid ${ORANGE}`,
-                            fontWeight: 600,
-                            display: 'inline-block',
-                            marginRight: 8,
-                            marginBottom: 8,
-                            padding: '6px 14px',
-                            borderRadius: '30px',
-                            fontSize: '0.85rem',
-                            boxShadow: '0 2px 4px rgba(0,0,0,0.03)',
-                          }}
-                        >
-                          {service}
-                        </span>
-                      );
-                    }
-                    const svcAgeGroups = service.ageGroups || [];
-                    const svcSubjects = service.subjects || '';
-                    return (
-                      <div
-                        key={idx}
-                        style={{
-                          background: '#ffffff',
-                          borderRadius: '12px',
-                          padding: '18px 20px',
-                          marginBottom: '12px',
-                          border: '1px solid rgba(194, 81, 10, 0.15)',
-                          boxShadow: '0 4px 10px rgba(0,0,0,0.02)',
-                          transition: 'box-shadow 0.2s ease',
-                          cursor: 'default',
-                        }}
-                        onMouseEnter={(e) => (e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.06)')}
-                        onMouseLeave={(e) => (e.currentTarget.style.boxShadow = '0 4px 10px rgba(0,0,0,0.02)')}
-                      >
-                        {service.title && (
-                          <div style={{ fontWeight: 700, color: '#1a1a1a', fontSize: '1.05rem', marginBottom: 6 }}>
-                            {service.title}
-                          </div>
-                        )}
-                        {service.description && (
-                          <div style={{ color: '#555', fontSize: '0.9rem', marginBottom: 12, lineHeight: '1.6' }}>
-                            {service.description}
-                          </div>
-                        )}
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                          {svcSubjects && svcSubjects.split(',').map((s, i) => s.trim() && (
-                            <span
-                              key={i}
-                              style={{
-                                background: '#f5f0ea',
-                                color: ORANGE,
-                                border: `1px solid ${ORANGE}`,
-                                fontWeight: 500,
-                                fontSize: '0.8rem',
-                                padding: '4px 12px',
-                                borderRadius: '20px',
-                              }}
-                            >
-                              {s.trim()}
-                            </span>
-                          ))}
-                        </div>
-                        {svcAgeGroups.length > 0 && (
-                          <div style={{ marginTop: 12, display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
-                            <span style={{ fontSize: '0.8rem', color: '#777', fontWeight: 500 }}>Ages:</span>
-                            {svcAgeGroups.map((age, i) => (
-                              <span
-                                key={i}
-                                style={{
-                                  background: ORANGE,
-                                  color: '#fff',
-                                  fontSize: '0.8rem',
-                                  padding: '4px 12px',
-                                  borderRadius: '20px',
-                                  fontWeight: 600,
-                                }}
-                              >
-                                {age}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                        {service.deliveryMode && (
-                          <div style={{ marginTop: 10, fontSize: '0.8rem', color: '#666' }}>
-                            <i className="fas fa-laptop-house" style={{ marginRight: 6, color: ORANGE }} />
-                            {service.deliveryMode}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })
-                ) : (
-                  <p style={{ color: '#888', fontStyle: 'italic', fontSize: '0.9rem' }}>No services listed yet.</p>
-                )}
-
-                {profile.ageGroups?.length > 0 && (
-                  <>
-                    <div style={{ margin: '20px 0 12px', height: '1px', background: 'rgba(0,0,0,0.08)' }} />
-                    <Eyebrow><span style={{ display: 'block' }}>Age Groups / Grades</span></Eyebrow>
-                    <div className="grade-pills" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                      {profile.ageGroups.map((age, idx) => (
                         <div
                           key={idx}
                           style={{
                             background: '#ffffff',
-                            color: ORANGE,
-                            border: `1px solid ${ORANGE}`,
-                            fontWeight: 600,
-                            padding: '6px 16px',
-                            borderRadius: '30px',
-                            fontSize: '0.85rem',
-                            boxShadow: '0 2px 4px rgba(0,0,0,0.03)',
+                            borderRadius: '12px',
+                            padding: '18px 20px',
+                            marginBottom: '12px',
+                            border: '1px solid rgba(194, 81, 10, 0.15)',
+                            boxShadow: '0 4px 10px rgba(0,0,0,0.02)',
+                            transition: 'box-shadow 0.2s ease',
+                            cursor: 'default',
                           }}
+                          onMouseEnter={(e) => (e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.06)')}
+                          onMouseLeave={(e) => (e.currentTarget.style.boxShadow = '0 4px 10px rgba(0,0,0,0.02)')}
                         >
-                          {age}
+                          {service.title && (
+                            <div style={{ fontWeight: 700, color: '#1a1a1a', fontSize: '1.05rem', marginBottom: 6 }}>
+                              {service.title}
+                            </div>
+                          )}
+                          {service.description && (
+                            <div style={{ color: '#555', fontSize: '0.9rem', marginBottom: 12, lineHeight: '1.6' }}>
+                              {service.description}
+                            </div>
+                          )}
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                            {svcSubjects && svcSubjects.split(',').map((s, i) => s.trim() && (
+                              <span
+                                key={i}
+                                style={{
+                                  background: '#f5f0ea',
+                                  color: ORANGE,
+                                  border: `1px solid ${ORANGE}`,
+                                  fontWeight: 500,
+                                  fontSize: '0.8rem',
+                                  padding: '4px 12px',
+                                  borderRadius: '20px',
+                                }}
+                              >
+                                {s.trim()}
+                              </span>
+                            ))}
+                          </div>
+                          {svcAgeGroups.length > 0 && (
+                            <div style={{ marginTop: 12, display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
+                              <span style={{ fontSize: '0.8rem', color: '#777', fontWeight: 500 }}>Ages:</span>
+                              {svcAgeGroups.map((age, i) => (
+                                <span
+                                  key={i}
+                                  style={{
+                                    background: ORANGE,
+                                    color: '#fff',
+                                    fontSize: '0.8rem',
+                                    padding: '4px 12px',
+                                    borderRadius: '20px',
+                                    fontWeight: 600,
+                                  }}
+                                >
+                                  {age}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                          {service.deliveryMode && (
+                            <div style={{ marginTop: 10, fontSize: '0.8rem', color: '#666' }}>
+                              <i className="fas fa-laptop-house" style={{ marginRight: 6, color: ORANGE }} />
+                              {service.deliveryMode}
+                            </div>
+                          )}
                         </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  !profile.tags?.length && (
+                    <p className="no-services-msg">No services listed yet.</p>
+                  )
+                )}
+
+                {profile.ageGroups?.length > 0 && (
+                  <div className="age-groups-section">
+                    <Eyebrow>Age Groups / Grades</Eyebrow>
+                    <div className="grade-pills">
+                      {profile.ageGroups.map((age, idx) => (
+                        <div key={idx}>{age}</div>
                       ))}
                     </div>
-                  </>
+                  </div>
                 )}
               </div>
             </div>
 
-            {/* Right column (30%): Profile summary with background image & overlay (unchanged) */}
-            <div style={{
-              position: 'relative',
-              borderRadius: '14px',
-              overflow: 'hidden',
-              backgroundImage: profile.image ? `url(${profile.image})` : 'none',
-              backgroundColor: '#2a2a2a',
-              backgroundSize: 'cover',
-              backgroundPosition: 'center 20%',
-              boxShadow: '0 12px 40px rgba(0,0,0,0.35)',
-            }}>
-              <div style={{
-                position: 'absolute', inset: 0, zIndex: 0,
-                background: 'linear-gradient(120deg, rgba(15,15,15,0.82) 0%, rgba(40,40,40,0.68) 60%, rgba(15,15,15,0.76) 100%)',
-              }} />
-              <div style={{ position: 'relative', zIndex: 1, padding: '20px' }}>
-                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
+            {/* Right: Profile summary */}
+            <div
+              className="profile-right-card"
+              style={{ backgroundImage: profile.image ? `url(${profile.image})` : 'none' }}
+            >
+              <div className="profile-right-overlay" />
+              <div className="profile-right-content">
+                <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%', marginBottom: '16px' }}>
                   <button className="btn btn-outline" style={{ borderColor: 'rgba(255,255,255,0.50)', color: '#fff' }} onClick={shareProfile}>
                     <i className="fas fa-share-alt"></i> Share
                   </button>
@@ -727,7 +1006,7 @@ const Profile = () => {
                   <div className="meta-item" style={{ color: 'rgba(255,255,255,0.82)' }}><i className="fas fa-laptop-house" style={{ color: ORANGE }}></i><span>{profile.deliveryMode || profile.delivery || 'Online'}</span></div>
                 </div>
                 {(tier === 'pro' || tier === 'featured') && profile.reviews?.average > 0 && (
-                  <div className="rating-bar" style={{ background: 'rgba(255,255,255,0.10)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', marginTop: '16px' }}>
+                  <div className="rating-bar">
                     <div className="rating-big" style={{ color: ORANGE }}>{profile.reviews.average}</div>
                     <div>
                       <div className="rating-stars" style={{ color: ORANGE }}>{ratingStars(profile.reviews.average)}</div>
@@ -738,10 +1017,13 @@ const Profile = () => {
               </div>
             </div>
           </div>
+          {/* end .profile-hero-grid */}
 
-          {/* ── Certifications & Availability (unchanged) ── */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
-            <div className="card" style={S.white}>
+          {/* ════════════════════════════════════
+              CREDENTIALS + AVAILABILITY
+          ════════════════════════════════════ */}
+          <div className="profile-two-col profile-section-block">
+            <div className="card" style={S.card}>
               <div className="card-pad">
                 <Eyebrow>Credentials</Eyebrow>
                 <Heading>Qualifications</Heading>
@@ -756,7 +1038,7 @@ const Profile = () => {
                 </ul>
               </div>
             </div>
-            <div className="card" style={S.white}>
+            <div className="card" style={S.card}>
               <div className="card-pad">
                 <Eyebrow>Schedule</Eyebrow>
                 <Heading as="h3" style={{ fontSize: '1rem' }}>Availability</Heading>
@@ -773,21 +1055,23 @@ const Profile = () => {
                     );
                   })}
                 </div>
-                <p style={{ fontSize: '0.82rem', color: '#777', marginTop: '8px' }}>
+                <p style={{ fontSize: '0.82rem', color: '#777', margin: 0 }}>
                   {profile.availabilityNotes || 'Contact for availability'}
                 </p>
               </div>
             </div>
           </div>
 
-          {/* ── Reviews (unchanged) ── */}
+          {/* ════════════════════════════════════
+              REVIEWS
+          ════════════════════════════════════ */}
           {(tier === 'pro' || tier === 'featured') && profile.reviews?.items?.length > 0 && (
-            <div className="card paid-only" style={{ ...S.gray, marginBottom: '20px' }}>
+            <div className="card paid-only profile-section-block" style={S.card}>
               <div className="card-pad">
                 <Eyebrow>Testimonials</Eyebrow>
                 <Heading>Parent Reviews</Heading>
                 {profile.reviews.items.map((review, idx) => (
-                  <div key={idx} className="review-card" style={{ background: '#ede9e3' }}>
+                  <div key={idx} className="review-card" style={{ background: '#f5f1eb' }}>
                     <div className="review-header">
                       <span className="reviewer-name" style={{ color: '#1a1a1a' }}>{review.reviewer}</span>
                       <span className="review-stars" style={{ color: ORANGE }}>{'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}</span>
@@ -799,10 +1083,14 @@ const Profile = () => {
             </div>
           )}
 
-          {/* ── CONTACT SECTION (unchanged) ── */}
-          <div id="contactSection" style={{ marginTop: '40px' }}>
+          {/* ════════════════════════════════════
+              CONTACT SECTION
+          ════════════════════════════════════ */}
+          <div id="contactSection">
+
+            {/* Upgrade prompt — free tier */}
             {tier === 'free' && (
-              <div className="card" id="upgradeCard" style={{ ...S.gray, marginBottom: '20px' }}>
+              <div className="card profile-section-block" id="upgradeCard" style={S.card}>
                 <div className="card-pad" style={{ textAlign: 'center' }}>
                   <i className="fas fa-lock" style={{ fontSize: '1.4rem', color: ORANGE, marginBottom: '10px' }}></i>
                   <p style={{ fontSize: '0.85rem', color: '#555', marginBottom: '14px' }}>
@@ -815,9 +1103,11 @@ const Profile = () => {
               </div>
             )}
 
-            {tier === 'pro' || tier === 'featured' ? (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                <div className="card" style={S.white}>
+            {(tier === 'pro' || tier === 'featured') ? (
+              <div className="contact-two-col">
+
+                {/* ── Left: Enquiry form ── */}
+                <div className="card contact-form-card" style={S.card}>
                   <div className="card-pad">
                     <Eyebrow>Get in Touch</Eyebrow>
                     <Heading as="h3" style={{ fontSize: '1rem' }}>Send an Enquiry</Heading>
@@ -859,8 +1149,12 @@ const Profile = () => {
                     </div>
                   </div>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                  <div className="card paid-only" style={S.gray}>
+
+                {/* ── Right: Contact details + Location ── */}
+                <div className="contact-right-stack">
+
+                  {/* Contact Details */}
+                  <div className="card paid-only" style={S.card}>
                     <div className="card-pad">
                       <Eyebrow>Direct Contact</Eyebrow>
                       <Heading as="h3" style={{ fontSize: '1rem' }}>Contact Details</Heading>
@@ -909,31 +1203,53 @@ const Profile = () => {
                       )}
                     </div>
                   </div>
-                  <div className="card" style={S.gray}>
+
+                  {/* ── Location card ──
+                      Same .card-pad as every other card (24px).
+                      Content uses .location-body → .location-place
+                      (icon + name + badge) separated from the
+                      delivery line by a subtle border.             */}
+                  <div className="card location-card" style={S.card}>
                     <div className="card-pad">
                       <Eyebrow>Location</Eyebrow>
                       <Heading as="h3" style={{ fontSize: '1rem' }}>Where We Operate</Heading>
-                      <div className="map-ph">
-                        <i className="fas fa-map-marker-alt" style={{ color: ORANGE }}></i>
-                        <span>{profile.city ? `${profile.city}, ${profile.province}` : profile.location || 'South Africa'}</span>
-                        <span style={{ fontSize: '0.75rem' }}>
-                          {profile.serviceAreaType === 'national' ? 'National'
-                            : profile.serviceAreaType === 'local' ? `Local (${profile.radius} km radius)`
-                            : 'Online only'}
-                        </span>
+
+                      <div className="location-body">
+
+                        {/* Row 1: pin icon + place name + service-area badge */}
+                        <div className="location-place">
+                          <i className="fas fa-map-marker-alt" style={{ color: ORANGE, flexShrink: 0 }}></i>
+                          <span className="location-place-name">
+                            {profile.city
+                              ? `${profile.city}, ${profile.province}`
+                              : profile.location || 'South Africa'}
+                          </span>
+                          <span className="location-badge">
+                            {profile.serviceAreaType === 'national'
+                              ? 'National'
+                              : profile.serviceAreaType === 'local'
+                                ? `Local (${profile.radius} km radius)`
+                                : 'Online only'}
+                          </span>
+                        </div>
+
+                        {/* Row 2: delivery mode note */}
+                        <p className="location-delivery">
+                          <i className="fas fa-laptop" style={{ color: ORANGE, flexShrink: 0 }}></i>
+                          {(profile.deliveryMode || profile.delivery || '').includes('Online')
+                            ? 'Online sessions available nationwide'
+                            : 'In-person sessions available'}
+                        </p>
+
                       </div>
-                      <p style={{ fontSize: '0.82rem', color: '#777', marginTop: '10px' }}>
-                        <i className="fas fa-laptop" style={{ color: ORANGE, marginRight: '5px' }}></i>
-                        {(profile.deliveryMode || profile.delivery || '').includes('Online')
-                          ? 'Online sessions available nationwide'
-                          : 'In-person sessions available'}
-                      </p>
                     </div>
                   </div>
-                </div>
+
+                </div>{/* end .contact-right-stack */}
               </div>
             ) : (
-              <div className="card" style={S.white}>
+              /* Free tier — enquiry form only, full-width */
+              <div className="card" style={S.card}>
                 <div className="card-pad">
                   <Eyebrow>Get in Touch</Eyebrow>
                   <Heading as="h3" style={{ fontSize: '1rem' }}>Send an Enquiry</Heading>
@@ -976,8 +1292,9 @@ const Profile = () => {
                 </div>
               </div>
             )}
-          </div>
-        </div>
+
+          </div>{/* end #contactSection */}
+        </div>{/* end .page-inner */}
       </main>
       <Footer />
     </>
