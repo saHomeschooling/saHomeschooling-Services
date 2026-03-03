@@ -381,7 +381,7 @@ const CSS = `
 
   @media (max-width: 480px) {
     .sah-brand-name {
-      font-size: 0.9rem;
+      font-size: 0.6rem;
     }
     .sah-brand-tag {
       font-size: 0.6rem;
