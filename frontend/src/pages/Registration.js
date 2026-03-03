@@ -238,7 +238,14 @@ const Registration = () => {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const plan = params.get('plan');
+    const stepParam = params.get('step');
     if (plan) setData(p => ({ ...p, listingPlan: decodeURIComponent(plan) }));
+    if (stepParam) {
+      const parsedStep = parseInt(stepParam, 10);
+      if (!isNaN(parsedStep) && parsedStep >= 1 && parsedStep <= TOTAL) {
+        setStep(parsedStep);
+      }
+    }
   }, [location.search]);
 
   // ── Scroll + clear errors on step change ──
