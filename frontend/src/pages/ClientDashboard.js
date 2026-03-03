@@ -11,7 +11,7 @@ import { getPlanLimits } from '../utils/helpers';
 
 const API_URL = (typeof process !== 'undefined' && process.env?.REACT_APP_API_URL)
   ? process.env.REACT_APP_API_URL
-  : 'http://localhost:5000/api';
+  : 'https://sahomeschooling-services.onrender.com/api';
 
 /* ─────────────── localStorage helpers ─────────────── */
 function getCurrentUser() {
