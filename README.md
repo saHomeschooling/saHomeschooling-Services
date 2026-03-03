@@ -102,15 +102,15 @@ Start the backendBashnpm run dev→ API should be running at http://localhost:50
 Start the frontend (in another terminal)Bashcd frontend
 npm run dev→ App opens at http://localhost:5173 (or similar)
 
-Default Tests
-
+## Default Tests
+```
 /                 → Home / Directory
 /login            → Login page
 /register         → Provider registration (multi-step)
 /client-dashboard → Provider edit dashboard
 /admin-dashboard  → Admin control panel
 /profile?id=xxx   → Public provider profile
-
+```
 Screenshots
 <img src="frontend/public/Screenshot.png" alt="Platform Screenshot">
 Development Notes
