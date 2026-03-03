@@ -747,6 +747,7 @@ const Registration = () => {
     </>
   );
 
+  // CHANGE 2: Profile Photo and Years of Experience are now side-by-side (no sah-full on either)
   const renderStep3 = () => (
     <div className="sah-form-grid">
       <div className="sah-field" style={{ alignSelf: 'start' }}>
@@ -1012,8 +1013,15 @@ const Registration = () => {
     </div>
   );
 
+  // CHANGE 3: Pricing Model and Starting Price side-by-side; day shortcut buttons added
   const renderStep6 = () => {
     const priceUnit = PRICING_UNIT_MAP[data.pricingModel] || '';
+
+    const setDays = (days) => {
+      setData(p => ({ ...p, daysAvailable: days }));
+      setFieldErrors(prev => ({ ...prev, daysAvailable: '' }));
+    };
+
     return (
       <div className="sah-form-grid">
         <div className="sah-field" style={{ alignSelf: 'start' }}>
@@ -1054,6 +1062,7 @@ const Registration = () => {
           </div>
           <div className="sah-check-group">
             {ALL_DAYS.map(d => (
+            {ALL_DAYS.map(d => (
               <label key={d}><input type="checkbox" value={d} checked={(data.daysAvailable || []).includes(d)} onChange={e => toggleMulti('daysAvailable', d, e.target.checked)} />{d}</label>
             ))}
           </div>
@@ -1077,6 +1086,7 @@ const Registration = () => {
     );
   };
 
+  // CHANGE 4: Phone Number and WhatsApp Number are now side-by-side (removed sah-full from phone field)
   const renderStep7 = () => {
     const availableToAdd = EXTRA_SOCIALS.filter(s => !addedSocials.includes(s.key));
     return (

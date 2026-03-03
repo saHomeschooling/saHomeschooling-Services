@@ -817,22 +817,25 @@ export default function HomePage() {
           </nav>
           <div className="sah-nav-ctas">
             {currentUser ? (
-              <>
-                {currentUser.role === 'admin' || currentUser.role === 'provider' ? (
-                  <Link to={getDashboardPath()} className="sah-user-profile-btn">
-                    <i className="fas fa-user-circle" /> Profile
-                  </Link>
-                ) : null}
-                <button onClick={handleLogout} className="sah-logout-btn">
-                  <i className="fas fa-right-from-bracket" /> Log Out
-                </button>
-              </>
-            ) : (
-              <>
-                <button className="sah-btn-ghost-nav" onClick={() => navigate('/login')}>Log In</button>
-                <button className="sah-btn-solid-nav" onClick={() => setRegModal(true)}>Register</button>
-              </>
-            )}
+  <>
+    <Link to={getDashboardPath()} className="sah-user-profile-btn">
+      <i className="fas fa-user-circle" />
+      <span style={{ maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        {currentUser.name
+          ? currentUser.name.split(' ')[0]
+          : (currentUser.email ? currentUser.email.split('@')[0] : 'My Account')}
+      </span>
+    </Link>
+    <button onClick={handleLogout} className="sah-logout-btn">
+      <i className="fas fa-right-from-bracket" /> Log Out
+    </button>
+  </>
+) : (
+  <>
+    <button className="sah-btn-ghost-nav" onClick={() => navigate('/login')}>Log In</button>
+    <button className="sah-btn-solid-nav" onClick={() => setRegModal(true)}>Register</button>
+  </>
+)}
           </div>
         </div>
       </header>
