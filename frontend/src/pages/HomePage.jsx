@@ -344,16 +344,103 @@ const CSS = `
     .sah-fpill{font-size:0.95rem;padding:9px 18px;}
     .sah-hero-plans-grid{grid-template-columns:1fr;}
   }
-  @media(max-width:480px){
-    .sah-provider-grid{grid-template-columns:1fr;}
-    .sah-container{padding:0 16px;}
-    .sah-become-btn{padding:11px 20px;font-size:0.88rem;}
-  }
   @media(max-width:640px){
     .sah-footer{padding:44px 0 24px;}
     .sah-footer-grid{grid-template-columns:1fr;gap:28px;}
     .sah-footer-bottom{flex-direction:column;align-items:flex-start;gap:12px;}
     .sah-footer-bottom-links{flex-wrap:wrap;gap:12px;}
+  }
+  @media(max-width:480px){
+    .sah-provider-grid{grid-template-columns:1fr;}
+    .sah-container{padding:0 16px;}
+    .sah-become-btn{padding:11px 20px;font-size:0.88rem;}
+  }
+
+  /* ADDITIONAL RESPONSIVE IMPROVEMENTS FOR HEADER AND HERO */
+  @media (max-width: 640px) {
+    .sah-header {
+      height: auto;
+      min-height: var(--header-h);
+      padding: 8px 0;
+    }
+    .sah-nav-inner {
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .sah-brand {
+      flex: 1;
+    }
+    .sah-nav-ctas {
+      margin-left: auto;
+    }
+    .sah-btn-ghost-nav, .sah-btn-solid-nav, .sah-user-profile-btn, .sah-logout-btn {
+      padding: 6px 12px;
+      font-size: 0.8rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .sah-brand-name {
+      font-size: 0.9rem;
+    }
+    .sah-brand-tag {
+      font-size: 0.6rem;
+    }
+    .sah-brand-divider {
+      height: 24px;
+    }
+    .sah-btn-ghost-nav, .sah-btn-solid-nav, .sah-user-profile-btn, .sah-logout-btn {
+      padding: 5px 10px;
+      font-size: 0.75rem;
+    }
+    .sah-user-profile-btn span {
+      max-width: 80px;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .sah-hero-search {
+      flex-direction: column;
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .sah-hs-icon {
+      display: none;
+    }
+    .sah-hero-search input,
+    .sah-hero-search select,
+    .sah-hs-btn {
+      width: 100%;
+      border-radius: 0;
+      padding: 14px 16px;
+    }
+    .sah-hs-sep {
+      display: none;
+    }
+    .sah-hero-search select {
+      background-position: right 16px center;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .sah-hs-btn {
+      border-radius: 0 0 var(--radius) var(--radius);
+    }
+  }
+
+  @media (max-width: 480px) {
+    .sah-hero-h1 {
+      font-size: clamp(2rem, 7vw, 2.5rem);
+    }
+    .sah-hero-tagline h2 {
+      font-size: 1rem;
+    }
+    .sah-hero-tagline p {
+      font-size: 0.85rem;
+    }
+    .sah-become-btn {
+      padding: 10px 20px;
+      font-size: 0.85rem;
+    }
   }
 `;
 
