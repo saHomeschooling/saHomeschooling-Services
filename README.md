@@ -113,14 +113,14 @@ npm run dev→ App opens at http://localhost:5173 (or similar)
 ```
 Screenshots
 <img src="frontend/public/Screenshot.png" alt="Platform Screenshot">
-Development Notes
+## Development Notes
 
 Currently using LocalStorage as primary storage for quick development
 Backend API integration is prepared (auth, providers, file upload)
 Switch to real database + API by uncommenting fetch calls in Registration.js and ClientDashboard.js
 
-License
+## License
 MIT
 
-Built with for South African homeschooling families
-© 2025 SA Homeschooling Services Directory
+```Built with for South African homeschooling families```
+```© 2025 SA Homeschooling Services Directory```
