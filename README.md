@@ -73,7 +73,7 @@ SAHOMESCHOOLING-SERVICES/
 ├── .gitignore
 └── README.md
 ```
-text## Getting Started
+## Getting Started
 
 ### Prerequisites
 
