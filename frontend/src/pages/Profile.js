@@ -193,32 +193,36 @@ const injectStyles = () => {
 
     /* ── TOP GRID ── */
     .pv2-top-grid {
-      display: grid;
-      grid-template-columns: 62% 1fr;
+      display: flex;
+      flex-direction: column;
       gap: 24px;
-      align-items: start;
+      align-items: stretch;
       margin-bottom: 24px;
     }
 
-    /* ── Left panel ── */
+    /* ── Left panel — side-by-side sections ── */
     .pv2-left {
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
       gap: 0;
       background: #ede9e3;
       border-radius: 14px;
       border: 1px solid #dedad4;
       overflow: hidden;
       box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+      order: 2;
     }
 
     .pv2-services-section {
-      padding: 28px 30px 24px;
-      border-bottom: 1px solid rgba(0,0,0,0.08);
+      flex: 1;
+      padding: 28px 30px 28px;
+      border-right: 1px solid rgba(0,0,0,0.08);
+      overflow-y: auto;
     }
 
     .pv2-about-section {
-      padding: 24px 30px 28px;
+      flex: 1;
+      padding: 28px 30px 28px;
     }
 
     /* ── Eyebrow / heading shared ── */
@@ -312,8 +316,9 @@ const injectStyles = () => {
       margin: 0;
     }
 
-    /* ── RIGHT CARD: Profile summary ── */
+    /* ── RIGHT CARD: Profile summary — full-width landscape banner ── */
     .pv2-right {
+      order: 1;
       border-radius: 14px;
       overflow: hidden;
       position: relative;
@@ -321,84 +326,142 @@ const injectStyles = () => {
       background-size: cover;
       background-position: center 20%;
       box-shadow: 0 12px 40px rgba(0,0,0,0.32);
+      width: 100%;
+      min-height: 420px;
     }
     .pv2-right-overlay {
       position: absolute;
       inset: 0;
-      background: linear-gradient(160deg, rgba(5,5,5,0.95) 0%, rgba(20,20,20,0.88) 55%, rgba(5,5,5,0.92) 100%);
+      background: linear-gradient(105deg, rgba(5,5,5,0.97) 0%, rgba(10,10,10,0.82) 50%, rgba(5,5,5,0.75) 100%);
       z-index: 0;
     }
     .pv2-right-content {
       position: relative;
       z-index: 1;
-      padding: 24px;
+      padding: 44px 48px;
+      display: flex;
+      flex-direction: row;
+      align-items: stretch;
+      gap: 0;
+      min-height: 420px;
+    }
+
+    /* Avatar column — left strip */
+    .pv2-right-avatar-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding-right: 40px;
+      border-right: 1px solid rgba(255,255,255,0.1);
+      flex-shrink: 0;
+      width: 160px;
+    }
+
+    /* Info column — center, takes all remaining space */
+    .pv2-right-info-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 0 44px;
+    }
+
+    /* Actions column — right strip */
+    .pv2-right-actions-col {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      justify-content: space-between;
+      flex-shrink: 0;
+      width: 220px;
+      padding-left: 40px;
+      border-left: 1px solid rgba(255,255,255,0.1);
     }
 
     .pv2-avatar {
-      width: 80px; height: 80px;
+      width: 130px; height: 130px;
       border-radius: 50%; object-fit: cover;
-      border: 3px solid ${ORANGE};
-      display: block; margin-bottom: 14px;
+      border: 4px solid ${ORANGE};
+      display: block;
+      box-shadow: 0 8px 28px rgba(194,81,10,0.45);
     }
     .pv2-avatar-placeholder {
-      width: 80px; height: 80px;
+      width: 130px; height: 130px;
       border-radius: 50%;
-      background: rgba(255,255,255,0.12);
-      border: 3px solid ${ORANGE};
+      background: rgba(255,255,255,0.1);
+      border: 4px solid ${ORANGE};
       display: flex; align-items: center; justify-content: center;
-      color: rgba(255,255,255,0.6); font-size: 1.8rem;
-      margin-bottom: 14px;
+      color: rgba(255,255,255,0.5); font-size: 2.8rem;
+      box-shadow: 0 8px 28px rgba(194,81,10,0.35);
     }
-    .pv2-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+    .pv2-badges {
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+    }
     .pv2-badge-featured {
-      display: inline-flex; align-items: center; gap: 5px;
+      display: inline-flex; align-items: center; gap: 6px;
       background: rgba(201,98,26,0.28); color: #f0c89a;
       border: 1px solid rgba(201,98,26,0.5);
-      font-size: 0.71rem; font-weight: 700; padding: 3px 10px; border-radius: 20px;
+      font-size: 0.78rem; font-weight: 700; padding: 5px 12px; border-radius: 20px;
+      white-space: nowrap;
     }
     .pv2-badge-verified {
-      display: inline-flex; align-items: center; gap: 5px;
+      display: inline-flex; align-items: center; gap: 6px;
       background: rgba(16,185,129,0.2); color: #6ee7b7;
       border: 1px solid rgba(16,185,129,0.35);
-      font-size: 0.71rem; font-weight: 700; padding: 3px 10px; border-radius: 20px;
+      font-size: 0.78rem; font-weight: 700; padding: 5px 12px; border-radius: 20px;
+      white-space: nowrap;
     }
     .pv2-name {
       font-family: 'Playfair Display', serif;
-      font-size: 1.35rem; font-weight: 900; color: #fff;
-      line-height: 1.15; margin: 0 0 4px;
+      font-size: 2.4rem; font-weight: 900; color: #fff;
+      line-height: 1.1; margin: 0 0 6px;
     }
-    .pv2-tagline { color: rgba(255,255,255,0.7); font-size: 0.85rem; margin-bottom: 10px; }
+    .pv2-tagline {
+      color: rgba(255,255,255,0.65);
+      font-size: 1.05rem;
+      font-weight: 500;
+      margin-bottom: 0;
+      letter-spacing: 0.2px;
+    }
     .pv2-price-badge {
-      display: inline-flex; align-items: center; gap: 6px;
+      display: inline-flex; align-items: center; gap: 7px;
       background: ${ORANGE}; color: #fff;
-      font-size: 0.8rem; font-weight: 700; padding: 5px 13px;
-      border-radius: 20px; margin-bottom: 14px;
+      font-size: 0.95rem; font-weight: 700; padding: 8px 18px;
+      border-radius: 24px;
+      box-shadow: 0 4px 14px rgba(194,81,10,0.4);
     }
-    .pv2-meta-strip { display: flex; flex-direction: column; gap: 7px; margin-bottom: 14px; }
-    .pv2-meta-item { display: flex; align-items: center; gap: 8px; font-size: 0.82rem; color: rgba(255,255,255,0.85); }
-    .pv2-meta-item i { color: ${ORANGE}; width: 14px; text-align: center; }
+    .pv2-meta-strip {
+      display: flex; flex-wrap: wrap; gap: 6px 28px;
+    }
+    .pv2-meta-item {
+      display: flex; align-items: center; gap: 9px;
+      font-size: 0.95rem; color: rgba(255,255,255,0.85);
+      font-weight: 500;
+    }
+    .pv2-meta-item i { color: ${ORANGE}; width: 16px; text-align: center; font-size: 0.9rem; }
     .pv2-rating-bar {
-      display: flex; align-items: center; gap: 12px;
-      background: rgba(255,255,255,0.12);
+      display: flex; align-items: center; gap: 14px;
+      background: rgba(255,255,255,0.1);
       backdrop-filter: blur(8px);
-      border: 1px solid rgba(255,255,255,0.2);
-      border-radius: 10px; padding: 12px 14px;
-      margin-bottom: 16px;
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 12px; padding: 16px 20px;
     }
-    .pv2-rating-num { font-size: 2rem; font-weight: 800; color: ${ORANGE}; line-height: 1; }
-    .pv2-rating-stars { color: ${ORANGE}; font-size: 0.95rem; letter-spacing: 1px; }
-    .pv2-rating-sub { font-size: 0.72rem; color: rgba(255,255,255,0.7); margin-top: 2px; }
+    .pv2-rating-num { font-size: 2.6rem; font-weight: 800; color: ${ORANGE}; line-height: 1; }
+    .pv2-rating-stars { color: ${ORANGE}; font-size: 1.1rem; letter-spacing: 2px; }
+    .pv2-rating-sub { font-size: 0.8rem; color: rgba(255,255,255,0.65); margin-top: 3px; }
     .pv2-share-btn {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 6px 14px; border-radius: 6px;
-      border: 1.5px solid rgba(255,255,255,0.5); background: rgba(255,255,255,0.1);
-      color: #fff; font-size: 0.78rem; font-weight: 600;
-      cursor: pointer; font-family: inherit; margin-bottom: 16px;
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 20px; border-radius: 8px;
+      border: 1.5px solid rgba(255,255,255,0.45); background: rgba(255,255,255,0.08);
+      color: #fff; font-size: 0.88rem; font-weight: 600;
+      cursor: pointer; font-family: inherit;
       transition: background 0.15s;
+      white-space: nowrap;
     }
-    .pv2-share-btn:hover { background: rgba(255,255,255,0.22); }
+    .pv2-share-btn:hover { background: rgba(255,255,255,0.2); }
 
-    /* ── Contact accordion — DARKER for visibility ── */
+    /* ── Contact accordion ── */
     .pv2-contact-accordion {
       background: rgba(0,0,0,0.5);
       border: 1.5px solid rgba(255,255,255,0.3);
@@ -478,7 +541,7 @@ const injectStyles = () => {
     .pv2-review-text  { font-size: 0.86rem; color: #555; font-style: italic; }
     .pv2-review-name  { font-size: 0.74rem; color: #888; margin-top: 4px; font-weight: 600; }
 
-    /* ── BOTTOM: Send Enquiry — CENTERED heading ── */
+    /* ── BOTTOM: Send Enquiry ── */
     .pv2-enquiry-section {
       background: #ede9e3;
       border: 1px solid #dedad4;
@@ -545,13 +608,45 @@ const injectStyles = () => {
 
     /* ── Responsive ── */
     @media (max-width: 1024px) {
-      .pv2-top-grid { grid-template-columns: 60% 1fr; }
       .pv2-enquiry-grid { grid-template-columns: 1fr 1fr; }
     }
     @media (max-width: 900px) {
-      .pv2-top-grid { grid-template-columns: 1fr; }
+      .pv2-right-content {
+        flex-direction: column;
+        gap: 24px;
+        min-height: unset;
+        padding: 32px 28px;
+      }
+      .pv2-right-avatar-col {
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-start;
+        width: 100%;
+        padding-right: 0;
+        border-right: none;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        padding-bottom: 20px;
+        gap: 20px;
+      }
+      .pv2-right-info-col {
+        padding: 0;
+        gap: 16px;
+      }
+      .pv2-right-actions-col {
+        align-items: flex-start;
+        flex-direction: row;
+        flex-wrap: wrap;
+        width: 100%;
+        padding-left: 0;
+        border-left: none;
+        border-top: 1px solid rgba(255,255,255,0.1);
+        padding-top: 20px;
+        gap: 12px;
+      }
       .pv2-mid-row  { grid-template-columns: 1fr; }
       .pv2-enquiry-grid { grid-template-columns: 1fr 1fr; }
+      .pv2-left { flex-direction: column !important; }
+      .pv2-services-section { border-right: none !important; border-bottom: 1px solid rgba(0,0,0,0.08) !important; }
     }
     @media (max-width: 700px) {
       .pv2-inner { padding: 16px 14px 48px; }
@@ -621,7 +716,6 @@ const Profile = () => {
   const fromDashboard = searchParams.get('from') === 'dashboard';
 
   useEffect(() => {
-    // Check authentication
     try {
       const cu = JSON.parse(localStorage.getItem('sah_current_user'));
       setIsAuthenticated(!!cu);
@@ -679,7 +773,6 @@ const Profile = () => {
     </>
   );
 
-  // Show members-only gate for unauthenticated users (unless viewing from dashboard)
   if (!isAuthenticated && !fromDashboard) {
     return (
       <>
@@ -739,11 +832,101 @@ const Profile = () => {
       <main id="profilePageV2">
         <div className="pv2-inner">
 
-          {/* TOP GRID */}
+          {/* ── TOP GRID ── */}
           <div className="pv2-top-grid">
 
-            {/* LEFT: Services + About */}
+            {/* RIGHT: Profile banner — rendered first (order:1) */}
+            <div
+              className="pv2-right"
+              style={{ backgroundImage: profile.image ? `url(${profile.image})` : 'none' }}
+            >
+              <div className="pv2-right-overlay" />
+              <div className="pv2-right-content">
+
+                {/* Avatar column */}
+                <div className="pv2-right-avatar-col">
+                  {profile.image || profile.photo
+                    ? <img src={profile.image || profile.photo} alt={profile.name} className="pv2-avatar" />
+                    : <div className="pv2-avatar-placeholder"><i className="fas fa-user" /></div>}
+                  <div className="pv2-badges">
+                    {tier === 'featured' && <span className="pv2-badge-featured"><i className="fas fa-star" /> Featured Partner</span>}
+                    {isPaid && <span className="pv2-badge-verified"><i className="fas fa-check" /> Verified</span>}
+                  </div>
+                </div>
+
+                {/* Info column — top: name+tagline, bottom: price+meta+rating */}
+                <div className="pv2-right-info-col">
+                  {/* Top: name */}
+                  <div>
+                    <h1 className="pv2-name">{profile.name}</h1>
+                    <p className="pv2-tagline">{profile.primaryCategory || profile.category || ''}</p>
+                  </div>
+
+                  {/* Middle: price + meta */}
+                  <div>
+                    {profile.startingPrice && profile.startingPrice !== 'Contact' && (
+                      <div className="pv2-price-badge" style={{ alignSelf: 'flex-start', marginBottom: 18 }}>
+                        <i className="fas fa-tag" /> From {profile.startingPrice || profile.priceFrom}
+                      </div>
+                    )}
+                    <div className="pv2-meta-strip">
+                      <div className="pv2-meta-item">
+                        <i className="fas fa-tag" />
+                        <strong>{profile.primaryCategory || profile.category || 'Provider'}</strong>
+                      </div>
+                      <div className="pv2-meta-item">
+                        <i className="fas fa-map-marker-alt" />
+                        <span>{profile.city ? `${profile.city}, ${profile.province}` : profile.location || 'South Africa'}</span>
+                      </div>
+                      <div className="pv2-meta-item">
+                        <i className="fas fa-laptop-house" />
+                        <span>{profile.deliveryMode || profile.delivery || 'Online'}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Bottom: rating */}
+                  {isPaid && profile.reviews?.average > 0 && (
+                    <div className="pv2-rating-bar">
+                      <div className="pv2-rating-num">{profile.reviews.average}</div>
+                      <div>
+                        <div className="pv2-rating-stars">{ratingStars(profile.reviews.average)}</div>
+                        <div className="pv2-rating-sub">Based on {profile.reviews.count} reviews</div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Actions column — share at top, contact at bottom */}
+                <div className="pv2-right-actions-col">
+                  <button className="pv2-share-btn" onClick={shareProfile}>
+                    <i className="fas fa-share-alt" /> Share Profile
+                  </button>
+
+                  {isPaid ? (
+                    <button
+                      className="pv2-contact-toggle"
+                      onClick={() => document.getElementById('pv2-get-in-touch')?.scrollIntoView({ behavior: 'smooth' })}
+                      style={{ width: '100%', borderRadius: 8 }}
+                    >
+                      <span><i className="fas fa-address-book" style={{ marginRight: 8, color: ORANGE }} />Contact Details</span>
+                      <i className="fas fa-arrow-down" style={{ fontSize: '0.8rem' }} />
+                    </button>
+                  ) : (
+                    <div className="pv2-upgrade-note">
+                      <i className="fas fa-lock" style={{ marginRight: 6 }} />
+                      Upgrade to <strong>Trusted Provider</strong> to display your contact details.
+                    </div>
+                  )}
+                </div>
+
+              </div>
+            </div>
+
+            {/* LEFT: Services + About — side by side (order:2) */}
             <div className="pv2-left">
+
+              {/* What We Offer */}
               <div className="pv2-services-section">
                 <span className="pv2-eyebrow">What We Offer</span>
                 <h2 className="pv2-heading">Our Services</h2>
@@ -801,6 +984,7 @@ const Profile = () => {
                 )}
               </div>
 
+              {/* About the Provider */}
               <div className="pv2-about-section">
                 <span className="pv2-eyebrow">About the Provider</span>
                 <h2 className="pv2-heading">About Us</h2>
@@ -808,153 +992,21 @@ const Profile = () => {
                   {profile.bio || 'This provider has not yet added a description.'}
                 </p>
               </div>
+
             </div>
-
-            {/* RIGHT: Profile card */}
-            <div
-              className="pv2-right"
-              style={{ backgroundImage: profile.image ? `url(${profile.image})` : 'none' }}
-            >
-              <div className="pv2-right-overlay" />
-              <div className="pv2-right-content">
-
-                <button className="pv2-share-btn" onClick={shareProfile}>
-                  <i className="fas fa-share-alt" /> Share Profile
-                </button>
-
-                {profile.image || profile.photo
-                  ? <img src={profile.image || profile.photo} alt={profile.name} className="pv2-avatar" />
-                  : <div className="pv2-avatar-placeholder"><i className="fas fa-user" /></div>}
-
-                <div className="pv2-badges">
-                  {tier === 'featured' && <span className="pv2-badge-featured"><i className="fas fa-star" /> Featured Partner</span>}
-                  {isPaid && <span className="pv2-badge-verified"><i className="fas fa-check" /> Verified</span>}
-                </div>
-
-                <h1 className="pv2-name">{profile.name}</h1>
-                <p className="pv2-tagline">{profile.primaryCategory || profile.category || ''}</p>
-
-                {profile.startingPrice && profile.startingPrice !== 'Contact' && (
-                  <div className="pv2-price-badge">
-                    <i className="fas fa-tag" /> From {profile.startingPrice || profile.priceFrom}
-                  </div>
-                )}
-
-                <div className="pv2-meta-strip">
-                  <div className="pv2-meta-item">
-                    <i className="fas fa-tag" />
-                    <strong>{profile.primaryCategory || profile.category || 'Provider'}</strong>
-                  </div>
-                  <div className="pv2-meta-item">
-                    <i className="fas fa-map-marker-alt" />
-                    <span>{profile.city ? `${profile.city}, ${profile.province}` : profile.location || 'South Africa'}</span>
-                  </div>
-                  <div className="pv2-meta-item">
-                    <i className="fas fa-laptop-house" />
-                    <span>{profile.deliveryMode || profile.delivery || 'Online'}</span>
-                  </div>
-                </div>
-
-                {isPaid && profile.reviews?.average > 0 && (
-                  <div className="pv2-rating-bar">
-                    <div className="pv2-rating-num">{profile.reviews.average}</div>
-                    <div>
-                      <div className="pv2-rating-stars">{ratingStars(profile.reviews.average)}</div>
-                      <div className="pv2-rating-sub">Based on {profile.reviews.count} reviews</div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Contact Details Accordion */}
-                {isPaid ? (
-                  <div className="pv2-contact-accordion">
-                    <button className="pv2-contact-toggle" onClick={() => setContactOpen(o => !o)}>
-                      <span><i className="fas fa-address-book" style={{ marginRight: 8, color: ORANGE }} />Contact Details</span>
-                      <i className={`fas fa-chevron-down arrow ${contactOpen ? 'open' : ''}`} />
-                    </button>
-                    <div className={`pv2-contact-panel ${contactOpen ? 'open' : ''}`}>
-                      {profile.phone && (
-                        <div className="pv2-contact-row">
-                          <i className="fas fa-phone" />
-                          <div>
-                            <span className="pv2-contact-row-label">Phone</span>
-                            <span className="pv2-contact-row-val">{profile.phone}</span>
-                          </div>
-                        </div>
-                      )}
-                      {(profile.whatsapp || profile.phone) && (
-                        <div className="pv2-contact-row">
-                          <i className="fab fa-whatsapp" style={{ color: '#25d366' }} />
-                          <div>
-                            <span className="pv2-contact-row-label">WhatsApp</span>
-                            <span className="pv2-contact-row-val">{profile.whatsapp || profile.phone}</span>
-                          </div>
-                        </div>
-                      )}
-                      {(profile.contactEmail || profile.email) && (
-                        <div className="pv2-contact-row">
-                          <i className="fas fa-envelope" />
-                          <div>
-                            <span className="pv2-contact-row-label">Email</span>
-                            <a className="pv2-contact-row-val" href={`mailto:${profile.contactEmail || profile.email}`}>
-                              {profile.contactEmail || profile.email}
-                            </a>
-                          </div>
-                        </div>
-                      )}
-                      {(profile.website || profile.social) && (
-                        <div className="pv2-contact-row">
-                          <i className="fas fa-globe" />
-                          <div>
-                            <span className="pv2-contact-row-label">Website</span>
-                            <a className="pv2-contact-row-val" href={profile.website || profile.social} target="_blank" rel="noopener noreferrer">
-                              {profile.website || profile.social}
-                            </a>
-                          </div>
-                        </div>
-                      )}
-                      {profile.facebook && (
-                        <div className="pv2-contact-row">
-                          <i className="fab fa-facebook" style={{ color: '#1877f2' }} />
-                          <div>
-                            <span className="pv2-contact-row-label">Facebook</span>
-                            <a className="pv2-contact-row-val" href={profile.facebook} target="_blank" rel="noopener noreferrer">
-                              {profile.facebook}
-                            </a>
-                          </div>
-                        </div>
-                      )}
-                      <div className="pv2-contact-row" style={{ borderBottom: 'none' }}>
-                        <i className="fas fa-map-marker-alt" />
-                        <div>
-                          <span className="pv2-contact-row-label">Location</span>
-                          <span className="pv2-contact-row-val">
-                            {profile.city ? `${profile.city}, ${profile.province}` : profile.location || 'South Africa'}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="pv2-upgrade-note">
-                    <i className="fas fa-lock" style={{ marginRight: 6 }} />
-                    Upgrade to <strong>Trusted Provider</strong> to display your contact details.
-                  </div>
-                )}
-              </div>
-            </div>
+            {/* ── end pv2-top-grid ── */}
           </div>
 
-          {/* MIDDLE: Credentials + Availability */}
+          {/* ── MIDDLE: Credentials + Availability ── */}
           <div className="pv2-mid-row">
             <div className="pv2-card">
               <span className="pv2-eyebrow">Credentials</span>
               <h3 className="pv2-heading pv2-heading-sm">Qualifications</h3>
               <ul className="pv2-qual-list">
-                {profile.degrees     && <li><i className="fas fa-graduation-cap" />{profile.degrees}</li>}
+                {profile.degrees        && <li><i className="fas fa-graduation-cap" />{profile.degrees}</li>}
                 {profile.certifications && <li><i className="fas fa-certificate" />{profile.certifications}</li>}
-                {profile.memberships && <li><i className="fas fa-check-circle" />{profile.memberships}</li>}
-                {profile.clearance   && <li><i className="fas fa-shield-alt" />{profile.clearance}</li>}
+                {profile.memberships    && <li><i className="fas fa-check-circle" />{profile.memberships}</li>}
+                {profile.clearance      && <li><i className="fas fa-shield-alt" />{profile.clearance}</li>}
                 {!profile.degrees && !profile.certifications && !profile.memberships && !profile.clearance && (
                   <li style={{ color: '#aaa', fontStyle: 'italic' }}>No qualifications listed yet.</li>
                 )}
@@ -979,7 +1031,7 @@ const Profile = () => {
             </div>
           </div>
 
-          {/* Reviews */}
+          {/* ── Reviews ── */}
           {isPaid && profile.reviews?.items?.length > 0 && (
             <div className="pv2-card pv2-card-gray pv2-reviews">
               <span className="pv2-eyebrow">Testimonials</span>
@@ -994,18 +1046,15 @@ const Profile = () => {
             </div>
           )}
 
-          {/* BOTTOM: Send Enquiry — Centered heading */}
-          <div className="pv2-enquiry-section">
-            {/* CENTERED header */}
+          {/* ── BOTTOM: Get in Touch ── */}
+          <div className="pv2-enquiry-section" id="pv2-get-in-touch">
             <div className="pv2-enquiry-header">
-              <span className="pv2-eyebrow" style={{ display: 'block', textAlign: 'center' }}>Get in Touch</span>
-              <h2 className="pv2-heading" style={{ textAlign: 'center', marginBottom: 8 }}>Send an Enquiry</h2>
+              <h2 className="pv2-heading" style={{ textAlign: 'center', marginBottom: 8, color: '#1a1a1a', fontSize: '1.6rem' }}>Get in Touch</h2>
               <p style={{ fontSize: '0.88rem', color: '#777', textAlign: 'center' }}>
                 Fill in your details below and we'll connect you with {profile.name || 'this provider'}.
               </p>
             </div>
 
-            {/* Row 1: Name + Email + Phone */}
             <div className="pv2-enquiry-grid">
               <div className="pv2-enquiry-field">
                 <label>First Name</label>
@@ -1025,7 +1074,6 @@ const Profile = () => {
               </div>
             </div>
 
-            {/* Row 2: Subject + Message */}
             <div className="pv2-enquiry-grid-wide">
               <div className="pv2-enquiry-field">
                 <label>Subject</label>
@@ -1043,10 +1091,13 @@ const Profile = () => {
               </div>
             </div>
 
-            {/* Send + location — centered */}
             <div className="pv2-enquiry-footer">
-              <button className="pv2-enquiry-send-btn" style={{ width: 'auto', paddingLeft: 40, paddingRight: 40 }} onClick={() => alert('Enquiry sent! (Demo)')}>
-                <i className="fas fa-paper-plane" /> Send Enquiry
+              <button
+                className="pv2-enquiry-send-btn"
+                style={{ width: 'auto', paddingLeft: 40, paddingRight: 40 }}
+                onClick={() => alert('Enquiry sent! (Demo)')}
+              >
+                <i className="fas fa-paper-plane" /> Get in Touch
               </button>
               {profile.city && (
                 <div className="pv2-location-note">

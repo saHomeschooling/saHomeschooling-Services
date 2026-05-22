@@ -489,23 +489,26 @@ function getAll() {
 }
 
 // ── Validate that a stored session is legitimate ───────────────────────────
-// A session is only valid if BOTH sah_current_user AND sah_token exist,
-// AND the token is not an admin shortcut token left from a previous session.
+// Accepts sessions set by either Registration/Login page (sah_token) or
+// the AuthContext login (sah_user) so the user stays logged in on the
+// homepage regardless of which login path was used.
 function getValidSession() {
   try {
     const token = localStorage.getItem('sah_token');
-    const raw   = localStorage.getItem('sah_current_user');
-    if (!token || !raw) return null;
+    const raw   = localStorage.getItem('sah_current_user') || localStorage.getItem('sah_user');
+    if (!raw) return null;
 
     const user = JSON.parse(raw);
     if (!user || !user.id) return null;
 
-    // If the stored user is admin but there's no matching valid token, clear it
-    if (user.role === 'admin' && token !== `admin_${user.id}`) {
-      localStorage.removeItem('sah_current_user');
-      localStorage.removeItem('sah_token');
-      localStorage.removeItem('sah_user');
-      return null;
+    // Admin users must have a matching token
+    if (user.role === 'admin') {
+      if (!token || token !== `admin_${user.id}`) {
+        localStorage.removeItem('sah_current_user');
+        localStorage.removeItem('sah_token');
+        localStorage.removeItem('sah_user');
+        return null;
+      }
     }
 
     return user;
@@ -530,7 +533,7 @@ function ProviderCard({ p, onView }) {
   const [imgErr, setImgErr] = useState(false);
   const ic = CAT_ICON[p.category] || "fa-star";
   return (
-    <article className={`sah-provider-card${p._inFeaturedSlot ? " is-featured-slot" : ""}`} data-cat={p.category}>
+    <article className={`sah-provider-card${p._inFeaturedSlot ? " is-featured-slot" : ""}`} data-cat={p.category} onClick={() => onView(p.id)} style={{ cursor: 'pointer' }}>
       <div className="sah-card-thumb">
         {p.image && !imgErr
           ? <img src={p.image} alt={p.name} loading="lazy" onError={() => setImgErr(true)} />
@@ -539,7 +542,7 @@ function ProviderCard({ p, onView }) {
         <div className="sah-card-badges">
           <Badge badge={p.badge} />
         </div>
-        <button className="sah-card-save"><i className="far fa-heart" /></button>
+        <button className="sah-card-save" onClick={e => e.stopPropagation()}><i className="far fa-heart" /></button>
       </div>
       <div className="sah-card-provider-row">
         <div className="sah-pav"><i className={`fas ${ic}`} /></div>
@@ -672,7 +675,7 @@ export default function HomePage() {
   const [nlEmail, setNlEmail]           = useState("");
   const [nlMsg, setNlMsg]               = useState({ text:"", type:"" });
   const [toast, setToast]               = useState({ show:false, msg:"", err:false });
-  const [currentUser, setCurrentUser]   = useState(null); // always null until verified
+  const [currentUser, setCurrentUser]   = useState(() => getValidSession()); // restore session immediately on first render
   const [loginModal, setLoginModal]     = useState({ open:false, message:"" });
 
   useEffect(() => {

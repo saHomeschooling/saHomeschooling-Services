@@ -227,7 +227,7 @@ const Header = () => {
           <div className="sah-hdr-left">
             {showBackButton && (
               <>
-                <button className="sah-hdr-back" onClick={() => navigate(-1)}>
+                <button className="sah-hdr-back" onClick={() => navigate('/')}>
                   <i className="fas fa-arrow-left" />
                   <span>Back to Directory</span>
                 </button>
