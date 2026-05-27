@@ -325,6 +325,19 @@ const DASH_CSS = `
   .cd-docs-empty { font-size:0.8rem; color:#bbb; font-style:italic; padding:8px 0; }
   @media(max-width:1024px) { .cd-layout { grid-template-columns:1fr; } .cd-plan-grid { grid-template-columns:1fr; } }
   @media(max-width:768px)  { .cd-main { padding:16px 14px 48px; } .cd-hero-top { padding:0 16px 24px; } .cd-tab-bar { padding:0 14px; overflow-x:auto; flex-wrap:nowrap; } .cd-row { grid-template-columns:1fr; } .cd-svc-grid { grid-template-columns:1fr 1fr; } }
+  @media(max-width:768px){
+  .cd-hero-top { padding: 0 14px 20px; }
+  .cd-tab-bar { padding: 0 10px; gap: 1px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .cd-tab-btn { padding: 8px 10px; font-size: 0.72rem; white-space: nowrap; flex-shrink: 0; }
+  .cd-tab-btn i { display: none; }
+  .cd-layout { grid-template-columns: 1fr; }
+  .cd-row { grid-template-columns: 1fr; }
+  .cd-card-body { padding: 14px; }
+  .cd-hero-title { font-size: 1.3rem; }
+  .cd-btn-ghost, .cd-btn-solid { font-size: 0.75rem; padding: 6px 10px; }
+  .cd-plan-grid { grid-template-columns: 1fr; }
+  .cd-svc-grid { grid-template-columns: 1fr; }
+}
   @media(max-width:520px)  { .cd-svc-grid { grid-template-columns:1fr; } .cd-row-3 { grid-template-columns:1fr 1fr; } .cd-plan-grid { grid-template-columns:1fr; } }
 `;
 
