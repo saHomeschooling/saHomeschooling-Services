@@ -344,6 +344,31 @@ const CSS = `
     .sah-fpill{font-size:0.95rem;padding:9px 18px;}
     .sah-hero-plans-grid{grid-template-columns:1fr;}
   }
+    @media(max-width:768px){
+  .sah-hero-search {
+    flex-direction: column;
+    border-radius: var(--radius);
+  }
+  .sah-hs-sep { display: none; }
+  .sah-hero-search select {
+    min-width: unset;
+    width: 100%;
+    border-top: 1px solid var(--border);
+  }
+  .sah-hs-btn {
+    width: 100%;
+    padding: 14px;
+  }
+  .sah-hero-plans-grid { grid-template-columns: 1fr; }
+  .sah-nav-links { display: none; }
+}
+
+@media(max-width:480px){
+  .sah-hero-h1 { font-size: clamp(1.8rem, 7vw, 2.5rem); }
+  .sah-container { padding: 0 16px; }
+  .sah-provider-grid { grid-template-columns: 1fr; }
+  .sah-become-btn { width: 100%; justify-content: center; }
+}
   @media(max-width:480px){
     .sah-provider-grid{grid-template-columns:1fr;}
     .sah-container{padding:0 16px;}
@@ -355,6 +380,8 @@ const CSS = `
     .sah-footer-bottom{flex-direction:column;align-items:flex-start;gap:12px;}
     .sah-footer-bottom-links{flex-wrap:wrap;gap:12px;}
   }
+
+  
 `;
 
 /* ─── DATA ──────────────────────────────────────────────────────────────── */

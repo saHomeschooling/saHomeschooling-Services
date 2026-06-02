@@ -658,6 +658,16 @@ const injectStyles = () => {
       .pv2-enquiry-grid-wide { grid-template-columns: 1fr; }
       .pv2-gate-card { padding: 32px 24px; }
     }
+
+    @media(max-width:480px){
+  .pv2-inner { padding: 12px 12px 40px; }
+  .pv2-name { font-size: 1.6rem; }
+  .pv2-right-content { padding: 24px 18px; gap: 18px; }
+  .pv2-mid-row { grid-template-columns: 1fr; }
+  .pv2-enquiry-grid { grid-template-columns: 1fr; }
+  .pv2-enquiry-grid-wide { grid-template-columns: 1fr; }
+  .pv2-enquiry-section { padding: 24px 16px; }
+}
   `;
   document.head.appendChild(style);
 

@@ -168,6 +168,16 @@ const HEADER_CSS = `
     .sah-hdr-brand-name { font-size: 0.9rem; }
     .sah-hdr-brand-tag { font-size: 0.62rem; }
   }
+
+  @media(max-width:480px){
+  .sah-hdr-inner { padding: 0 12px; gap: 8px; }
+  .sah-hdr-brand-name { font-size: 0.82rem; }
+  .sah-hdr-brand-tag { display: none; }
+  .sah-hdr-back span { display: none; }
+  .sah-hdr-back-div { margin: 0 8px; }
+  .sah-hdr-ctas { display: none; }
+  .sah-hdr-ham { display: flex; }
+}
 `;
 
 function injectCSS() {

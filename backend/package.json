@@ -5,11 +5,13 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
+    "build": "prisma generate",
     "migrate": "npx prisma migrate dev",
     "seed": "node seed.js"
   },
-  "dependencies": {
+"dependencies": {
     "@prisma/client": "^5.0.0",
+    "prisma": "^5.22.0",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
@@ -18,7 +20,6 @@
     "multer": "^2.1.0"
   },
   "devDependencies": {
-    "nodemon": "^3.0.1",
-    "prisma": "^5.0.0"
+    "nodemon": "^3.0.1"
   }
 }

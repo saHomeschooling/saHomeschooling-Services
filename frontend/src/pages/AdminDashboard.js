@@ -496,6 +496,17 @@ const ADMIN_CSS = `
   @media (max-width:900px) { .adm-featured-slots-grid { grid-template-columns:1fr 1fr; } .adm-file-grid { grid-template-columns:1fr 1fr; } .modal-file-grid { grid-template-columns:1fr 1fr; } .adm-pkg-grid { grid-template-columns:1fr; } .adm-revenue-summary { grid-template-columns:1fr 1fr; } }
   @media (max-width:800px) { .adm-detail-grid { grid-template-columns:1fr 1fr; } .adm-detail-section { border-right:none; border-bottom:1px solid #f0ece5; } }
   @media (max-width:600px) { .adm-featured-slots-grid { grid-template-columns:1fr; } .adm-detail-grid { grid-template-columns:1fr; } .adm-row-actions { flex-wrap:wrap; } .adm-file-grid { grid-template-columns:1fr; } .modal-file-grid { grid-template-columns:1fr; } .adm-revenue-summary { grid-template-columns:1fr; } .adm-float-card { width:100%; } }
+
+  @media(max-width:640px){
+  .admin-tabs { overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; padding: 0 12px; gap: 4px; }
+  .tab-btn { flex-shrink: 0; padding: 10px 12px; font-size: 0.75rem; white-space: nowrap; }
+  .adm-detail-grid { grid-template-columns: 1fr; }
+  .adm-file-grid { grid-template-columns: 1fr; }
+  .adm-pkg-grid { grid-template-columns: 1fr; }
+  .adm-revenue-summary { grid-template-columns: 1fr 1fr; }
+  .adm-float-card { width: 100%; max-height: 90vh; border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
+  .adm-floating-overlay { padding: 0; align-items: flex-end; }
+}
 `;
 
 /* ── Reusable multi-file document list ── */

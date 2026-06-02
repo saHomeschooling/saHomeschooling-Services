@@ -179,6 +179,12 @@ const CSS = `
   .sah-fp-info-box i { flex-shrink: 0; margin-top: 1px; }
 
   @media (max-width: 768px) { .sah-login-left { display: none; } .sah-login-right { padding: 24px 20px; } }
+
+  @media(max-width:480px){
+  .sah-login-right { padding: 20px 16px; }
+  .sah-login-card-body { padding: 14px; }
+  .sah-login-heading { font-size: 1.5rem; }
+}
 `;
 
 const generateCode = () => Math.floor(100000 + Math.random() * 900000).toString();
@@ -491,17 +497,7 @@ const Login = () => {
     const trimmedEmail = email.trim().toLowerCase();
 
     try {
-      // ── Admin shortcut ──
-      if (trimmedEmail === 'admin@sahomeschooling.co.za' && password === 'admin123') {
-        const adminData = { role: 'admin', email: trimmedEmail, name: 'Admin', id: 'admin1' };
-        localStorage.setItem('sah_current_user', JSON.stringify(adminData));
-        localStorage.setItem('sah_user', JSON.stringify(adminData));
-        login(adminData);
-        setAlert({ msg: 'Admin login successful! Redirecting...', type: 'success' });
-        showNotification?.('Admin login successful!', 'success');
-        setTimeout(() => navigate('/admin-dashboard'), 1000);
-        return;
-      }
+      
 
       // ── Use AuthContext login ──
       const result = await login(trimmedEmail, password);
