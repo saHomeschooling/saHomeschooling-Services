@@ -49,9 +49,8 @@ const MAX_FEATURED_SLOTS = 4;
 
 /* ── Package pricing config — must match Registration.js exactly ── */
 const PACKAGE_CONFIG = {
-  community: { label: 'Community',         tier: 'free',     price: 0,    color: '#6b7280', bg: '#f9fafb', badge: 'community' },
-  trusted:   { label: 'Trusted Provider',  tier: 'pro',      price: 149,  color: '#1d4ed8', bg: '#eff6ff', badge: 'pro'       },
-  deluxe:    { label: 'Deluxe Provider',   tier: 'featured', price: 399,  color: '#d97706', bg: '#fffbeb', badge: 'featured'  },
+  community: { label: 'Free Listing',   tier: 'free', price: 0,   color: '#6b7280', bg: '#f9fafb', badge: 'community' },
+  trusted:   { label: 'Parental Plus+', tier: 'pro',  price: 149, color: '#1d4ed8', bg: '#eff6ff', badge: 'pro'       },
 };
 
 /* ── Date helpers ── */
@@ -81,8 +80,7 @@ function isThisYear(dateStr) {
 /* ── Helper: resolve package key from provider ── */
 function resolvePackageKey(provider) {
   const tier = (provider.tier || provider.listingPlan || 'free').toLowerCase();
-  if (tier === 'featured' || tier === 'deluxe') return 'deluxe';
-  if (tier === 'pro' || tier === 'trusted')     return 'trusted';
+  if (tier === 'pro' || tier === 'trusted') return 'trusted';
   return 'community';
 }
 
@@ -609,7 +607,7 @@ const ExpandablePendingRow = ({ provider, onApprove, onReject }) => {
           <div className="adm-row-name">
             {provider.name}
             <span className="adm-badge pending">Pending</span>
-            {provider.tier === 'featured' && <span className="adm-badge featured"><i className="fas fa-crown"></i> Featured Plan</span>}
+            {provider.tier === 'pro' && <span className="adm-badge pro"><i className="fas fa-crown"></i> Parental Plus+</span>}
             {provider.tier === 'pro'      && <span className="adm-badge pro"><i className="fas fa-check-circle"></i> Pro Plan</span>}
             {certFiles.length > 0      && <span style={{ fontSize: '0.66rem', fontWeight: 700, padding: '2px 7px', borderRadius: 4, background: '#ecfdf5', color: '#065f46', border: '1px solid #a7f3d0' }}><i className="fas fa-file-alt" style={{ marginRight: 3 }}></i>Cert ({certFiles.length})</span>}
             {clearanceFiles.length > 0 && <span style={{ fontSize: '0.66rem', fontWeight: 700, padding: '2px 7px', borderRadius: 4, background: '#eff6ff', color: '#1e40af', border: '1px solid #bfdbfe' }}><i className="fas fa-shield-alt" style={{ marginRight: 3 }}></i>Clearance ({clearanceFiles.length})</span>}
@@ -875,7 +873,7 @@ const FloatingProfileCard = ({ provider, featuredSlots, onApprove, onReject, onC
             <div className="adm-float-name">{provider.name || '—'}</div>
             <div className="adm-float-meta" style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
               <span className={`adm-badge ${provider.status}`}>{provider.status}</span>
-              {provider.tier === 'featured' && <span className="adm-badge featured"><i className="fas fa-crown"></i> featured</span>}
+              {provider.tier === 'pro' && <span className="adm-badge pro"><i className="fas fa-crown"></i> Parental Plus+</span>}
               {provider.tier === 'pro'      && <span className="adm-badge pro"><i className="fas fa-check-circle"></i> trusted</span>}
               {featuredSlots?.some(s => s.providerId === provider.id) && (
                 <span style={{ fontSize: '0.65rem', fontWeight: 700, padding: '2px 7px', borderRadius: 4, background: '#fde68a', color: '#92400e' }}>
@@ -1161,11 +1159,10 @@ const AdminDashboard = () => {
   const packageSales = {
     community: providers.filter(p => resolvePackageKey(p) === 'community'),
     trusted:   providers.filter(p => resolvePackageKey(p) === 'trusted'),
-    deluxe:    providers.filter(p => resolvePackageKey(p) === 'deluxe'),
   };
   const totalRevenue = providers.reduce((sum, p) => {
     const key = resolvePackageKey(p);
-    return sum + PACKAGE_CONFIG[key].price;
+    return sum + (PACKAGE_CONFIG[key]?.price || 0);
   }, 0);
   const paidProviders = providers.filter(p => {
     const key = resolvePackageKey(p);
@@ -1198,7 +1195,7 @@ const AdminDashboard = () => {
 
   const handleBadgeSelect = (providerId, badgeType) => {
     setFeaturedError('');
-    const tierMap = { community: 'free', trusted: 'pro', featured: 'featured' };
+    const tierMap = { community: 'free', trusted: 'pro' };
     const provider = providers.find(p => p.id === providerId);
     if (badgeType === 'featured') {
       const alreadyInSlot = featuredSlots.some(s => s.providerId === providerId);
@@ -1285,7 +1282,7 @@ const AdminDashboard = () => {
     if (filterType !== 'all') {
       filtered = filtered.filter(p => {
         switch (filterType) {
-          case 'featured':  return p.tier === 'featured';
+
           case 'trusted':   return p.tier === 'pro';
           case 'community': return p.tier === 'free' || !p.tier;
           case 'promoted':  return p.promoted === true;
@@ -1487,7 +1484,7 @@ const AdminDashboard = () => {
                               <span className={`adm-badge ${provider.status}`}>{provider.status}</span>
                               {provider.promoted && <span className="adm-badge" style={{ background: '#dcfce7', color: '#166534' }}>Promoted</span>}
                               {provider.demoted  && <span className="adm-badge" style={{ background: '#fee2e2', color: '#991b1b' }}>Demoted</span>}
-                              {provider.tier === 'featured' && <span className="adm-badge featured"><i className="fas fa-crown"></i> featured</span>}
+                              {provider.tier === 'pro' && <span className="adm-badge pro"><i className="fas fa-crown"></i> Parental Plus+</span>}
                               {provider.tier === 'pro'      && <span className="adm-badge pro"><i className="fas fa-check-circle"></i> trusted</span>}
                               {provCertFiles.length > 0      && <span style={{ fontSize: '0.65rem', padding: '2px 6px', borderRadius: 3, background: '#ecfdf5', color: '#065f46', fontWeight: 700 }}><i className="fas fa-file-alt" style={{ marginRight: 2 }}></i>Cert ({provCertFiles.length})</span>}
                               {provClearanceFiles.length > 0 && <span style={{ fontSize: '0.65rem', padding: '2px 6px', borderRadius: 3, background: '#eff6ff', color: '#1e40af', fontWeight: 700 }}><i className="fas fa-shield-alt" style={{ marginRight: 2 }}></i>Clearance ({provClearanceFiles.length})</span>}
@@ -1508,8 +1505,8 @@ const AdminDashboard = () => {
                               <button className="adm-demote-btn"  onClick={() => handleDemote(provider.id)}><i className="fas fa-arrow-down"></i> Demote</button>
                             </div>
                             <div style={{ display: 'flex', gap: 4 }}>
-                              {['community', 'trusted', 'featured'].map(b => {
-                                const isSelected = provider.tier === (b === 'community' ? 'free' : b === 'trusted' ? 'pro' : 'featured');
+                              {['community', 'trusted'].map(b => {
+                                const isSelected = provider.tier === (b === 'community' ? 'free' : 'pro');
                                 const inSlot = b === 'featured' && featuredSlots.some(s => s.providerId === provider.id);
                                 return (
                                   <span key={b} className={`adm-badge-opt ${b} ${isSelected ? 'selected' : ''}`}
@@ -1587,7 +1584,7 @@ const AdminDashboard = () => {
                         <span className="adm-pkg-card-name" style={{ color: cfg.color }}>
                           {key === 'community' && <i className="fas fa-users" style={{ marginRight: 6 }}></i>}
                           {key === 'trusted'   && <i className="fas fa-check-circle" style={{ marginRight: 6 }}></i>}
-                          {key === 'deluxe'    && <i className="fas fa-crown" style={{ marginRight: 6 }}></i>}
+                          {key === 'pro'       && <i className="fas fa-crown" style={{ marginRight: 6 }}></i>}
                           {cfg.label}
                         </span>
                         <span className="adm-pkg-price-tag" style={{ background: cfg.color + '22', color: cfg.color }}>
@@ -1645,8 +1642,7 @@ const AdminDashboard = () => {
                   value={revenueSearch} onChange={e => setRevenueSearch(e.target.value)} />
                 <select className="adm-filter-select" value={revenuePkgFilter} onChange={e => setRevenuePkgFilter(e.target.value)}>
                   <option value="ALL">All Paid Packages</option>
-                  <option value="trusted">Trusted Provider</option>
-                  <option value="deluxe">Deluxe Provider</option>
+                  <option value="trusted">Parental Plus+</option>
                 </select>
               </div>
               {revenueProviders.length === 0 ? (

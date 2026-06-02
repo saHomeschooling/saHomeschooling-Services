@@ -9,9 +9,33 @@ import TagsInput from '../components/client/TagsInput';
 import { DAYS_OF_WEEK, PRICING_MODELS, PROVINCES } from '../utils/constants';
 import { getPlanLimits } from '../utils/helpers';
 
-const API_URL = (typeof process !== 'undefined' && process.env?.REACT_APP_API_URL)
-  ? process.env.REACT_APP_API_URL
-  : 'http://localhost:5000/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
+// ── Paystack helpers ──────────────────────────────────────────────────────────
+const loadPaystackScript = () => new Promise((resolve) => {
+  if (window.PaystackPop) return resolve();
+  const s = document.createElement('script');
+  s.src = 'https://js.paystack.co/v1/inline.js';
+  s.onload = resolve;
+  document.head.appendChild(s);
+});
+
+const PAYSTACK_PUBLIC_KEY = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || '';
+
+const triggerPaystackPayment = async ({ email, amount, planName, onSuccess, onCancel }) => {
+  await loadPaystackScript();
+  const handler = window.PaystackPop.setup({
+    key: PAYSTACK_PUBLIC_KEY,
+    email,
+    amount,
+    currency: 'ZAR',
+    ref: 'SAH-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9),
+    metadata: { plan: planName },
+    callback: (response) => onSuccess(response),
+    onClose: onCancel,
+  });
+  handler.openIframe();
+};
 
 /* ─────────────── localStorage helpers ─────────────── */
 function getCurrentUser() {
@@ -165,16 +189,12 @@ const EMPTY_PROFILE = {
 /* ─────────────── plan definitions ─────────────── */
 const PLAN_CARDS = [
   {
-    id: 'free', name: 'Community Member', desc: 'Basic profile — always free', price: 'R0',
-    features: ['Basic profile information', '1 service listing', 'Contact form only', 'Max 1 service'],
+    id: 'free', name: 'Free Listing', desc: 'Basic profile — always free', price: 'R0',
+    features: ['Company logo', 'Short description', 'Contact form (clickable)', 'Social media handles'],
   },
   {
-    id: 'pro', name: 'Trusted Provider', desc: 'Full profile + direct contact details', price: 'R149',
-    features: ['Everything in Community', 'Up to 5 services', 'Direct contact details', 'Phone & WhatsApp visible', 'Max 5 services'],
-  },
-  {
-    id: 'featured', name: 'Featured Partner', desc: 'Homepage placement + analytics', price: 'R399',
-    features: ['Everything in Trusted', 'Homepage featured slot', 'Priority in search results', 'Basic analytics', 'Max 10 services'],
+    id: 'pro', name: 'Parental Plus+', desc: 'Full profile + direct contact details', price: 'R149',
+    features: ['Company logo & short description', 'Contact details — clickable', 'Social media handles', 'Monthly newsletter inclusion', '1x Facebook & Instagram post', '1x Native article (800 words)'],
   },
 ];
 const TABS = [
@@ -257,7 +277,7 @@ const DASH_CSS = `
   .cd-plan-badge.free     { background:#f9f9f9; color:#666;    border-color:#e5e5e5; }
   .cd-plan-badge.pro      { background:#eff6ff; color:#1d4ed8; border-color:#bfdbfe; }
   .cd-plan-badge.featured { background:#fffbeb; color:#d97706; border-color:#fde68a; }
-  .cd-plan-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+  .cd-plan-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:14px; }
   .cd-plan-card { border:2px solid #e5e0d8; border-radius:11px; padding:17px; background:#fff; position:relative; transition:border-color .18s; }
   .cd-plan-card.is-current { border-color:#c9621a; background:#fffaf6; }
   .cd-plan-current-badge { position:absolute; top:-1px; right:14px; background:#c9621a; color:#fff; font-size:0.63rem; font-weight:800; letter-spacing:.8px; text-transform:uppercase; padding:3px 9px; border-radius:0 0 7px 7px; }
@@ -416,10 +436,10 @@ const ClientDashboard = () => {
 
   /* computed */
   const maxServices = (getPlanLimits && getPlanLimits(profileData.plan)?.maxServices)
-    || (profileData.plan === 'featured' ? 10 : profileData.plan === 'pro' ? 5 : 1);
+    || (profileData.plan === 'pro' ? 5 : 1);
   const svcCount    = profileData.services?.length || 1;
-  const isPaidPlan  = profileData.plan === 'pro' || profileData.plan === 'featured';
-  const planOrder   = { free: 0, pro: 1, featured: 2 };
+  const isPaidPlan  = profileData.plan === 'pro';
+  const planOrder   = { free: 0, pro: 1 };
   const days        = DAYS_OF_WEEK || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
   /* ─── edit helpers ─── */
@@ -600,11 +620,39 @@ const ClientDashboard = () => {
   });
 
   /* ─── plan change ─── */
-  const handlePlanChange = (p) => {
-    upd({ plan: p });
-    if (updateUserPlan) updateUserPlan(p);
-    const names = { free: 'Community Member', pro: 'Trusted Provider', featured: 'Featured Partner' };
-    showNotification(`Plan changed to ${names[p] || p}`, 'success');
+  const handlePlanChange = async (p) => {
+    const names = { free: 'Free Listing', pro: 'Parental Plus+' };
+    if (p === 'free') {
+      upd({ plan: p });
+      if (updateUserPlan) updateUserPlan(p);
+      showNotification(`Plan changed to ${names[p]}`, 'success');
+      return;
+    }
+    const planAmounts = { pro: 14900 };
+    const amount = planAmounts[p];
+    if (!amount) return;
+    const email = profileData.inquiryEmail || user?.email;
+    if (!email) {
+      showNotification('Please add a contact email to your profile before upgrading.', 'error');
+      return;
+    }
+    try {
+      await triggerPaystackPayment({
+        email,
+        amount,
+        planName: names[p],
+        onSuccess: (res) => {
+          upd({ plan: p });
+          if (updateUserPlan) updateUserPlan(p);
+          showNotification(`✅ Upgraded to ${names[p]}! Ref: ${res.reference}`, 'success');
+        },
+        onCancel: () => {
+          showNotification('Payment cancelled — plan not changed.', 'info');
+        },
+      });
+    } catch (err) {
+      showNotification('Payment could not be loaded. Please try again.', 'error');
+    }
   };
 
   /* ─── file download ─── */
@@ -619,7 +667,7 @@ const ClientDashboard = () => {
   };
 
   /* ─── misc ─── */
-  const getPlanName = () => ({ free: 'Community Member (Free)', pro: 'Trusted Provider (R149/mo)', featured: 'Featured Partner (R399/mo)' }[profileData.plan] || 'Community Member');
+  const getPlanName = () => ({ free: 'Free Listing', pro: 'Parental Plus+ (R149/mo)' }[profileData.plan] || 'Free Listing');
   const statusInfo  = { approved: { cls: 'approved', icon: 'fa-check-circle', label: 'Approved — Live' }, rejected: { cls: 'rejected', icon: 'fa-times-circle', label: 'Rejected' }, pending: { cls: 'pending', icon: 'fa-clock', label: 'Pending Approval' } }[profileData.status] || { cls: 'pending', icon: 'fa-clock', label: 'Pending Approval' };
 
   /* completeness */
@@ -1058,9 +1106,8 @@ const ClientDashboard = () => {
           <div className="cd-card-body">
             <div className="cd-info-note">
               <i className="fas fa-info-circle"></i>
-              {profileData.plan === 'featured' ? 'Featured Partner: up to 10 services.'
-                : profileData.plan === 'pro' ? 'Trusted Provider: up to 5 services.'
-                : 'Free plan: 1 service. Upgrade to add more.'}
+              {profileData.plan === 'pro' ? 'Parental Plus+: up to 5 services.'
+                : 'Free Listing: 1 service. Upgrade to Parental Plus+ to add more.'}
             </div>
             {(profileData.services || []).map((svc, idx) => (
               <div key={idx} className={`cd-svc-card ${editing ? 'editing' : ''}`}>

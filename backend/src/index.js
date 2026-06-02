@@ -8,6 +8,7 @@ const providerRoutes     = require('./routes/providerRoutes');
 const reviewRoutes       = require('./routes/reviewRoutes');
 const featuredSlotRoutes = require('./routes/featuredSlotRoutes');
 const statsRoutes        = require('./routes/statsRoutes');
+const paymentRoutes      = require('./routes/paymentRoutes');
 
 const app = express();
 
@@ -25,6 +26,7 @@ app.use('/api/providers',      providerRoutes);
 app.use('/api/reviews',        reviewRoutes);
 app.use('/api/featured-slots', featuredSlotRoutes);
 app.use('/api/stats',          statsRoutes);
+app.use('/api/payments',       paymentRoutes);
 
 // ── 404 handler ───────────────────────────────────────────────
 app.use((req, res) => {

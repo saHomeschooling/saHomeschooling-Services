@@ -3,23 +3,20 @@ import { PLAN_LIMITS } from '../../utils/constants';
 
 const PlanSelector = ({ currentPlan, onSelectPlan }) => {
   const plans = [
-    { key: 'free', name: 'Community Member', desc: 'Basic profile — always free', price: 'R0', features: [
-      'Basic profile information',
-      '1 service listing',
-      'Contact form only'
+    { key: 'free', name: 'Free Listing', desc: 'Basic profile — always free', price: 'R0', features: [
+      'Company logo',
+      'Short description',
+      'Contact form (clickable)',
+      'Social media handles',
     ]},
-    { key: 'pro', name: 'Trusted Provider', desc: 'Full profile + direct contact details', price: 'R149', features: [
-      'Everything in Community',
-      'Up to 5 services',
-      'Direct contact details',
-      'Phone & WhatsApp visible'
+    { key: 'pro', name: 'Parental Plus+', desc: 'Full profile + direct contact details', price: 'R149', features: [
+      'Company logo & short description',
+      'Direct contact details — clickable',
+      'Social media handles',
+      'Monthly newsletter inclusion',
+      '1x Facebook & Instagram post',
+      '1x Native article (800 words)',
     ]},
-    { key: 'featured', name: 'Featured Partner', desc: 'Homepage placement + analytics', price: 'R399', features: [
-      'Everything in Trusted',
-      'Homepage featured slot',
-      'Priority in search results',
-      'Basic analytics'
-    ]}
   ];
 
   return (

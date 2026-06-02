@@ -134,7 +134,7 @@ const CSS = `
   .sah-hero-plans-wrap.open{grid-template-rows:1fr;}
   .sah-hero-plans-inner{overflow:hidden;}
   .sah-hero-plans-grid-outer{padding-top:24px;padding-bottom:8px;}
-  .sah-hero-plans-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+  .sah-hero-plans-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
 
   /* PLAN CARDS */
   .sah-plan-item{border:1px solid rgba(255,255,255,0.28);border-radius:var(--radius-lg);background:rgba(20,20,20,0.58);transition:border-color 0.2s,background 0.2s;cursor:pointer;overflow:hidden;user-select:none;backdrop-filter:blur(6px);display:flex;flex-direction:column;}
@@ -332,7 +332,7 @@ const CSS = `
     .sah-steps-grid{grid-template-columns:repeat(2,1fr);}
     .sah-step:nth-child(2){border-right:none;}
     .sah-step:nth-child(1),.sah-step:nth-child(2){border-bottom:1px solid var(--border);}
-    .sah-hero-plans-grid{grid-template-columns:repeat(3,1fr);}
+    .sah-hero-plans-grid{grid-template-columns:repeat(2,1fr);}
     .sah-footer-grid{grid-template-columns:1fr 1fr;gap:32px;}
   }
   @media(max-width:768px){
@@ -430,42 +430,29 @@ const TIER_LBL = { featured:"Deluxe Package", pro:"Trusted Provider", free:"Comm
 
 const PLANS = [
   {
-    id:"community", name:"Community Member", desc:"Basic profile — always free", price:"R0", highlight:false,
+    id:"community", name:"Free Listing", desc:"Basic profile — always free", price:"R0", highlight:false,
     features:[
-      {text:"Public profile listing",yes:true},
-      {text:"1 service category",yes:true},
-      {text:"Basic contact form",yes:true},
-      {text:"No direct contact details",yes:false},
-      {text:"No featured placement",yes:false},
+      {text:"Company logo",yes:true},
+      {text:"Short description",yes:true},
+      {text:"Contact form (clickable)",yes:true},
+      {text:"Social media handles",yes:true},
+      {text:"Direct contact details",yes:false},
+      {text:"Newsletter inclusion",yes:false},
     ],
     cta:"Get Started Free", planParam:"Free Listing – basic profile"
   },
   {
-    id:"trusted", name:"Trusted Provider", desc:"Full profile + direct contact details", price:"R149", highlight:true,
+    id:"trusted", name:"Parental Plus+", desc:"Full profile + direct contact details", price:"R149", highlight:true,
     features:[
-      {text:"Everything in Community",yes:true},
-      {text:"Direct phone & email visible",yes:true},
-      {text:"Up to 3 service categories",yes:true},
-      {text:"Verified badge on profile",yes:true},
-      {text:"Priority in search results",yes:true},
+      {text:"Company logo",yes:true},
+      {text:"Short description",yes:true},
+      {text:"Contact details (tel, email, address, website) — clickable",yes:true},
+      {text:"Social media handles",yes:true},
+      {text:"Monthly newsletter inclusion",yes:true},
+      {text:"1x Facebook & Instagram post",yes:true},
+      {text:"1x Native article (800 words) with image & bio",yes:true},
     ],
-    cta:"Start Trusted Plan", planParam:"Professional Listing – R149/month"
-  },
-  {
-    id:"featured", name:"Deluxe Package", desc:"3-month campaign · maximum exposure", price:"R399", highlight:false,
-    features:[
-      {text:"24x Billboard banners",yes:true},
-      {text:"24x Leaderboard banners",yes:true},
-      {text:"24x Skyscrapers / side panels",yes:true},
-      {text:"1x Business listing",yes:true},
-      {text:"6x Newsletter banner ads",yes:true},
-      {text:"6x Facebook post / reel",yes:true},
-      {text:"6x Instagram posts / reels",yes:true},
-      {text:"4x Newsletter ad posting",yes:true},
-      {text:"2x Full page ad in PDF per magazine",yes:true},
-      {text:"1x Native article per month",yes:true},
-    ],
-    cta:"Get the Deluxe Package", planParam:"Deluxe Package – R399/month"
+    cta:"Start Parental Plus+", planParam:"Parental Plus+ – R149/month"
   },
 ];
 
