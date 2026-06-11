@@ -93,7 +93,7 @@ function findProvider(id, email) {
 }
 
 const DAYS_OF_WEEK = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-const ORANGE = '#c2510a';
+const ORANGE = '#c2410c';
 
 /* ── Inject all styles ── */
 const injectStyles = () => {
@@ -400,8 +400,8 @@ const injectStyles = () => {
     }
     .pv2-badge-featured {
       display: inline-flex; align-items: center; gap: 6px;
-      background: rgba(201,98,26,0.28); color: #f0c89a;
-      border: 1px solid rgba(201,98,26,0.5);
+      background: rgba(249,115,22,0.28); color: #f0c89a;
+      border: 1px solid rgba(249,115,22,0.5);
       font-size: 0.78rem; font-weight: 700; padding: 5px 12px; border-radius: 20px;
       white-space: nowrap;
     }
@@ -494,7 +494,7 @@ const injectStyles = () => {
     .pv2-contact-row a { color: #fbbf7a; text-decoration: none; font-weight: 600; }
     .pv2-contact-row a:hover { text-decoration: underline; color: #fff; }
     .pv2-upgrade-note {
-      background: rgba(201,98,26,0.2); border: 1px solid rgba(201,98,26,0.45);
+      background: rgba(249,115,22,0.2); border: 1px solid rgba(249,115,22,0.45);
       border-radius: 8px; padding: 12px 16px; margin-top: 4px;
       font-size: 0.8rem; color: rgba(255,255,255,0.8); text-align: center;
     }
@@ -694,7 +694,7 @@ const MembersOnlyGate = () => (
       </div>
       <h1 className="pv2-gate-title">Members Only</h1>
       <p className="pv2-gate-subtitle">
-        Provider profiles are exclusively available to registered members of the SA Homeschooling Directory community.
+        Provider profiles are exclusively available to registered members of the Parentals community.
       </p>
       <div className="pv2-gate-perks">
         <div className="pv2-gate-perk"><i className="fas fa-check-circle" /> View full provider contact details</div>
@@ -821,7 +821,7 @@ const Profile = () => {
               </button>
               <span style={{ width: 1, height: 28, background: 'rgba(255,255,255,0.28)', margin: '0 16px' }} />
               <div>
-                <span style={{ fontFamily: "'Playfair Display', serif", fontWeight: 800, fontSize: '1.02rem', color: '#fff', display: 'block' }}>SA Homeschooling</span>
+                <span style={{ fontFamily: "'Playfair Display', serif", fontWeight: 800, fontSize: '1.02rem', color: '#fff', display: 'block' }}>Parentals</span>
                 <span style={{ fontSize: '0.66rem', color: 'rgba(255,255,255,0.68)', fontWeight: 500, letterSpacing: '0.45px', display: 'block' }}>Education Services Directory</span>
               </div>
             </div>

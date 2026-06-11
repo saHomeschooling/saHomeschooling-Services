@@ -7,8 +7,8 @@ const HEADER_CSS = `
   :root {
     --hdr-bg:       #5a5a5a;
     --hdr-bg-mob:   #4a4a4a;
-    --hdr-accent:   #f97316;
-    --hdr-accent-dk:#ea580c;
+    --hdr-accent:   #c2410c;
+    --hdr-accent-dk:#9a3412;
     --hdr-accent-lt:#fed7aa;
     --hdr-h:        68px;
   }
@@ -53,7 +53,8 @@ const HEADER_CSS = `
   .sah-hdr-brand-text {
     display: flex; flex-direction: column; line-height: 1.15;
   }
-  .sah-hdr-brand-name {
+  .sah-hdr-brand-logo { height: 95px !important; width: auto !important; min-width: 160px; max-width: 320px; display: block !important; object-fit: contain; filter: drop-shadow(0 2px 10px rgba(0,0,0,0.5)) brightness(1.08); }
+    .sah-hdr-brand-name {
     font-family: 'Playfair Display', serif; font-weight: 800;
     font-size: 1.02rem; color: #fff; letter-spacing: 0.15px;
   }
@@ -246,8 +247,7 @@ const Header = () => {
             )}
             <Link to="/" className="sah-hdr-brand">
               <div className="sah-hdr-brand-text">
-                <span className="sah-hdr-brand-name">SA Homeschooling</span>
-                <span className="sah-hdr-brand-tag">Education Services Directory</span>
+                <img src="/logo.2.png" alt="Parentals" className="sah-hdr-brand-logo" style={{ height: '52px', width: 'auto', minWidth: '160px', display: 'block', objectFit: 'contain' }} />
               </div>
             </Link>
           </div>

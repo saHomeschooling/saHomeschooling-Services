@@ -24,7 +24,7 @@ const injectHead = () => {
 
 const CSS = `
   :root {
-    --accent: #c9621a; --accent-dark: #a84e12; --accent-light: #f0dcc8;
+    --accent: #c2410c; --accent-dark: #9a3412; --accent-light: #f0dcc8;
     --dark: #3a3a3a; --mid: #555; --muted: #888;
     --card-gray: #d6d0c8; --card-white: #ede9e3;
     --border: rgba(0,0,0,0.10); --header-h: 68px;
@@ -39,7 +39,8 @@ const CSS = `
   .sah-lhdr-back { display: inline-flex; align-items: center; gap: 8px; background: none; border: none; color: rgba(255,255,255,0.88); font-size: 0.88rem; font-weight: 600; font-family: 'DM Sans', sans-serif; cursor: pointer; padding: 6px 0; text-decoration: none; white-space: nowrap; }
   .sah-lhdr-back:hover { color: #fff; }
   .sah-lhdr-div { width: 1px; height: 28px; background: rgba(255,255,255,0.28); margin: 0 16px; }
-  .sah-lhdr-brand { text-decoration: none; }
+  .sah-lhdr-brand { text-decoration: none; display: flex; align-items: center; }
+  .sah-lhdr-brand-logo { height: 56px; width: auto; max-width: 260px; display: block; filter: drop-shadow(0 2px 10px rgba(0,0,0,0.5)) brightness(1.08); }
   .sah-lhdr-brand-name { font-family: 'Playfair Display', serif; font-weight: 800; font-size: 1.02rem; color: #fff; display: block; }
   .sah-lhdr-brand-tag { font-size: 0.66rem; color: rgba(255,255,255,0.68); font-weight: 500; letter-spacing: 0.45px; display: block; }
   .sah-lhdr-right { display: flex; align-items: center; gap: 10px; }
@@ -74,7 +75,7 @@ const CSS = `
   .sah-lfield label i { color: var(--accent); font-size: 0.72rem; }
   .sah-lfield label span { color: var(--accent); font-size: 1rem; }
   .sah-lfield input { width: 100%; padding: 10px 13px; border: 1.5px solid rgba(0,0,0,0.12); border-radius: var(--radius); background: var(--card-white); font-family: 'DM Sans', sans-serif; font-size: 0.91rem; color: var(--dark); outline: none; transition: border-color 0.15s, box-shadow 0.15s; }
-  .sah-lfield input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(201,98,26,0.15); }
+  .sah-lfield input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(194,65,12,0.15); }
   .sah-lfield input.error { border-color: #dc2626; background: #fff8f8; }
   .sah-field-err { margin-top: 4px; font-size: 0.73rem; color: #dc2626; display: flex; align-items: center; gap: 4px; }
   .sah-pw-wrap { position: relative; }
@@ -145,7 +146,7 @@ const CSS = `
     background: #fff; font-family: 'DM Sans', sans-serif; font-size: 0.91rem;
     color: var(--dark); outline: none; transition: border-color 0.15s, box-shadow 0.15s;
   }
-  .sah-fp-field input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(201,98,26,0.15); }
+  .sah-fp-field input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(194,65,12,0.15); }
   .sah-fp-field input.error { border-color: #dc2626; background: #fff8f8; }
   .sah-fp-error { font-size: 0.74rem; color: #dc2626; display: flex; align-items: center; gap: 4px; margin-top: 4px; }
   .sah-fp-code-row { display: flex; gap: 8px; justify-content: center; margin: 8px 0 16px; }
@@ -156,7 +157,7 @@ const CSS = `
     color: var(--dark); background: #fff; outline: none;
     transition: border-color 0.15s, box-shadow 0.15s;
   }
-  .sah-fp-code-box:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(201,98,26,0.15); }
+  .sah-fp-code-box:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(194,65,12,0.15); }
   .sah-fp-resend { text-align: center; font-size: 0.78rem; color: var(--muted); margin-bottom: 14px; }
   .sah-fp-resend button { background: none; border: none; color: var(--accent); font-weight: 600; cursor: pointer; font-family: inherit; font-size: inherit; padding: 0; }
   .sah-fp-resend button:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -535,8 +536,7 @@ const Login = () => {
             </button>
             <div className="sah-lhdr-div" />
             <Link to="/" className="sah-lhdr-brand">
-              <span className="sah-lhdr-brand-name">SA Homeschooling</span>
-              <span className="sah-lhdr-brand-tag">Education Services Directory</span>
+              <img src="/logo.2.png" alt="Parentals" className="sah-lhdr-brand-logo" />
             </Link>
           </div>
           <div className="sah-lhdr-right">
@@ -573,7 +573,7 @@ const Login = () => {
 
         <div className="sah-login-right">
           <h1 className="sah-login-heading">Welcome Back</h1>
-          <p className="sah-login-sub">Sign in to your SA Homeschooling Directory account</p>
+          <p className="sah-login-sub">Sign in to your Parentals account</p>
 
           {alert.msg && (
             <div className={`sah-login-alert show ${alert.type}`}>

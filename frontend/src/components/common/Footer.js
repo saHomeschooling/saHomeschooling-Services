@@ -4,8 +4,8 @@ import { Link } from 'react-router-dom';
 /* ── Inject footer CSS once — exact match to HomePage ───────────────────── */
 const FOOTER_CSS = `
   :root {
-    --ft-accent: #c9621a;
-    --ft-accent-dark: #a84e12;
+    --ft-accent: #f97316;
+    --ft-accent-dark: #ea580c;
   }
 
   .sah-footer {
@@ -223,7 +223,7 @@ const Footer = () => {
 
           {/* Brand + newsletter */}
           <div className="sah-footer-brand">
-            <Link to="/" className="sah-footer-logo">SA Homeschooling Directory</Link>
+            <Link to="/" className="sah-footer-logo">Parentals</Link>
             <p>
               Connecting South African homeschooling families with verified tutors,
               therapists, curriculum providers and education specialists nationwide.
@@ -268,9 +268,9 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* SA Homeschooling */}
+          {/* Parentals */}
           <div className="sah-footer-col">
-            <h4>SA Homeschooling</h4>
+            <h4>Parentals</h4>
             <ul>
               <li><a href="https://sahomeschooling.com" target="_blank" rel="noreferrer">Magazine</a></li>
               <li><Link to="/about">About the Directory</Link></li>
@@ -306,7 +306,7 @@ const Footer = () => {
 
         {/* ── Bottom bar ── */}
         <div className="sah-footer-bottom">
-          <p>&copy; 2025 SA Homeschooling Directory. All rights reserved.</p>
+          <p>&copy; 2025 Parentals. All rights reserved.</p>
 
           <div className="sah-footer-bottom-links">
             <a href="https://sahomeschooling.com/privacy-policy-for-sa-homeschooling-beyond/" target="_blank" rel="noreferrer">

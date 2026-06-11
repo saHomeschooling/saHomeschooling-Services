@@ -16,7 +16,7 @@ const injectHead = () => {
 
 const CSS = `
   :root {
-    --accent:#c9621a; --accent-dark:#a84e12; --accent-light:#f5e0cc;
+    --accent:#c2410c; --accent-dark:#9a3412; --accent-light:#ffedd5;
     --red:#c0234a; --red-dark:#96183a; --red-light:#f5d0d8;
     --dark:#3a3a3a; --mid:#555; --muted:#888;
     --grey:#b5b5b5; --grey-dark:#7a7a7a; --light-bg:#f2f2f2; --white:#fff;
@@ -37,6 +37,7 @@ const CSS = `
   .sah-header{position:sticky;top:0;z-index:1000;height:var(--header-h);background:#5a5a5a;}
   .sah-nav-inner{height:100%;display:flex;justify-content:space-between;align-items:center;}
   .sah-brand{display:flex;align-items:center;gap:12px;}
+  .sah-brand-logo{height:56px;width:auto;max-width:260px;display:block;filter:drop-shadow(0 2px 10px rgba(0,0,0,0.5)) brightness(1.08);}
   .sah-brand-divider{width:2px;height:30px;background:rgba(255,255,255,0.5);border-radius:1px;}
   .sah-brand-text{display:flex;flex-direction:column;line-height:1.15;}
   .sah-brand-name{font-family:'Playfair Display',serif;font-weight:800;font-size:1rem;color:#fff;letter-spacing:0.2px;}
@@ -138,7 +139,7 @@ const CSS = `
 
   /* PLAN CARDS */
   .sah-plan-item{border:1px solid rgba(255,255,255,0.28);border-radius:var(--radius-lg);background:rgba(20,20,20,0.58);transition:border-color 0.2s,background 0.2s;cursor:pointer;overflow:hidden;user-select:none;backdrop-filter:blur(6px);display:flex;flex-direction:column;}
-  .sah-plan-item:hover{border-color:rgba(201,98,26,0.65);background:rgba(20,20,20,0.68);}
+  .sah-plan-item:hover{border-color:rgba(194,65,12,0.65);background:rgba(20,20,20,0.68);}
   .sah-plan-item.highlight{border-color:var(--accent);background:rgba(20,20,20,0.70);box-shadow:0 0 0 1px var(--accent);}
   .sah-plan-header{display:flex;align-items:flex-start;justify-content:space-between;padding:18px 18px 12px;}
   .sah-plan-info{flex:1;}
@@ -184,11 +185,11 @@ const CSS = `
   .sah-provider-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;}
   .sah-provider-card{background:var(--white);border-radius:var(--radius-lg);overflow:hidden;border:1px solid var(--border);box-shadow:var(--shadow-sm);transition:box-shadow 0.2s,transform 0.2s;display:flex;flex-direction:column;}
   .sah-provider-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);}
-  .sah-provider-card.is-featured-slot{border-color:rgba(201,98,26,0.35);box-shadow:0 2px 12px rgba(201,98,26,0.12);}
+  .sah-provider-card.is-featured-slot{border-color:rgba(194,65,12,0.35);box-shadow:0 2px 12px rgba(194,65,12,0.12);}
   .sah-card-thumb{position:relative;height:165px;overflow:hidden;background:var(--accent-light);flex-shrink:0;}
   .sah-card-thumb img{width:100%;height:100%;object-fit:cover;transition:transform 0.35s;}
   .sah-provider-card:hover .sah-card-thumb img{transform:scale(1.04);}
-  .sah-card-thumb-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:2.8rem;color:var(--accent);background:linear-gradient(135deg,#f0e8df,#f5e0cc);}
+  .sah-card-thumb-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:2.8rem;color:var(--accent);background:linear-gradient(135deg,#f0e8df,#ffedd5);}
   .sah-card-badges{position:absolute;top:9px;left:9px;display:flex;gap:4px;}
   .sah-cbadge{padding:3px 9px;border-radius:3px;font-size:0.67rem;font-weight:700;text-transform:uppercase;letter-spacing:0.3px;}
   .sah-cbadge-featured{background:var(--red);color:#fff;}
@@ -220,7 +221,7 @@ const CSS = `
 
   /* SECTION LABEL DIVIDER */
   .sah-section-label{display:flex;align-items:center;gap:12px;margin:0 0 16px;font-size:0.72rem;font-weight:800;text-transform:uppercase;letter-spacing:1.8px;color:var(--accent);}
-  .sah-section-label::after{content:'';flex:1;height:1px;background:rgba(201,98,26,0.2);}
+  .sah-section-label::after{content:'';flex:1;height:1px;background:rgba(194,65,12,0.2);}
 
   /* HOW IT WORKS */
   .sah-how-section{padding:76px 0;background:var(--white);}
@@ -285,7 +286,7 @@ const CSS = `
   /* LOGIN REQUIRED MODAL */
   .sah-login-modal-icon{
     width:56px;height:56px;border-radius:50%;
-    background:rgba(201,98,26,0.12);
+    background:rgba(194,65,12,0.12);
     display:flex;align-items:center;justify-content:center;
     margin:0 auto 16px;
     font-size:1.4rem;color:var(--accent);
@@ -833,11 +834,7 @@ export default function HomePage() {
       <header className="sah-header">
         <div className="sah-container sah-nav-inner">
           <Link to="/" className="sah-brand">
-            <div className="sah-brand-divider" />
-            <div className="sah-brand-text">
-              <span className="sah-brand-name">SA Homeschooling</span>
-              <span className="sah-brand-tag">Education Services</span>
-            </div>
+            <img src="/logo.2.png" alt="Parentals" className="sah-brand-logo" style={{ height: '95px', width: 'auto', minWidth: '160px', display: 'block', objectFit: 'contain' }} />
           </Link>
           <nav className="sah-nav-links">
             <a href="#sah-providers">Find Services</a>
@@ -1039,7 +1036,7 @@ export default function HomePage() {
         <div className="sah-container">
           <div className="sah-footer-grid">
             <div className="sah-footer-brand">
-              <span className="sah-footer-logo">SA Homeschooling Directory</span>
+              <span className="sah-footer-logo">Parentals</span>
               <p>South Africa's dedicated directory connecting homeschooling families with trusted tutors, therapists, curriculum providers and education specialists.</p>
               <div className="sah-footer-newsletter">
                 <div className="sah-footer-newsletter-row">
@@ -1066,7 +1063,7 @@ export default function HomePage() {
               <li><Link to="/login">Provider Login</Link></li>
               <li><a href="#sah-how">Verification Process</a></li>
             </ul></div>
-            <div className="sah-footer-col"><h4>SA Homeschooling</h4><ul>
+            <div className="sah-footer-col"><h4>Parentals</h4><ul>
               <li><a href="https://sahomeschooling.com" target="_blank" rel="noreferrer">Magazine</a></li>
               <li><Link to="/about">About the Directory</Link></li>
               <li><Link to="/contact">Contact Us</Link></li>
@@ -1092,7 +1089,7 @@ export default function HomePage() {
             </div>
           </div>
           <div className="sah-footer-bottom">
-            <p>&copy; 2025 SA Homeschooling Directory. All rights reserved.</p>
+            <p>&copy; 2025 Parentals. All rights reserved.</p>
             <div className="sah-footer-bottom-links">
               <a href="https://sahomeschooling.com/privacy-policy-for-sa-homeschooling-beyond/" target="_blank" rel="noreferrer">Privacy</a>
               {["Terms","Cookies","Sitemap"].map(l => <Link key={l} to={`/${l.toLowerCase()}`}>{l}</Link>)}

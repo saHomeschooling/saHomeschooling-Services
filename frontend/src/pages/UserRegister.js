@@ -18,7 +18,7 @@ const injectHead = () => {
 
 const CSS = `
   :root {
-    --acc:#c9621a; --acc-d:#a84e12; --acc-l:#f0dcc8;
+    --acc:#f97316; --acc-d:#ea580c; --acc-l:#f0dcc8;
     --dark:#3a3a3a; --mid:#555; --muted:#888;
     --card:#ede9e3; --white:#fff;
     --border:rgba(0,0,0,0.10);
@@ -57,7 +57,7 @@ const CSS = `
   .ur-field label { font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.6px; color:var(--mid); display:flex; align-items:center; gap:5px; }
   .ur-field label i { color:var(--acc); font-size:0.65rem; }
   .ur-field input { padding:11px 14px; border:1.5px solid var(--border); border-radius:var(--r); font-family:'DM Sans',sans-serif; font-size:0.92rem; color:var(--dark); outline:none; background:var(--card); transition:border-color 0.15s,box-shadow 0.15s; width:100%; }
-  .ur-field input:focus { border-color:var(--acc); box-shadow:0 0 0 3px rgba(201,98,26,0.14); }
+  .ur-field input:focus { border-color:var(--acc); box-shadow:0 0 0 3px rgba(249,115,22,0.14); }
   .ur-field input.err { border-color:#dc2626; background:#fff8f8; }
   .ur-field-err { color:#dc2626; font-size:0.74rem; font-weight:600; padding:4px 9px; background:#fff0f0; border-radius:5px; border-left:3px solid #dc2626; display:flex; align-items:center; gap:5px; }
   .ur-field-hint { font-size:0.73rem; color:var(--muted); display:flex; align-items:center; gap:4px; margin-top:2px; }
@@ -68,7 +68,7 @@ const CSS = `
   .ur-pw-eye { position:absolute; right:11px; top:50%; transform:translateY(-50%); background:none; border:none; color:var(--muted); cursor:pointer; font-size:0.88rem; padding:3px; }
   .ur-pw-eye:hover { color:var(--acc); }
 
-  .ur-perks { display:flex; flex-direction:column; gap:10px; background:rgba(201,98,26,0.06); border:1px solid rgba(201,98,26,0.18); border-radius:var(--r); padding:16px 18px; margin-bottom:18px; }
+  .ur-perks { display:flex; flex-direction:column; gap:10px; background:rgba(249,115,22,0.06); border:1px solid rgba(249,115,22,0.18); border-radius:var(--r); padding:16px 18px; margin-bottom:18px; }
   .ur-perks-title { font-family:'Playfair Display',serif; font-size:0.95rem; font-weight:800; color:var(--dark); margin-bottom:2px; }
   .ur-perk { display:flex; align-items:center; gap:9px; font-size:0.84rem; color:var(--mid); }
   .ur-perk i { color:var(--acc); font-size:0.76rem; width:14px; text-align:center; flex-shrink:0; }
@@ -283,7 +283,7 @@ const UserRegister = () => {
           <i className="fas fa-arrow-left" /> Back to Directory
         </button>
         <div className="ur-hdr-div" />
-        <Link to="/" className="ur-hdr-brand">SA Homeschooling</Link>
+        <Link to="/" className="ur-hdr-brand">Parentals</Link>
       </header>
 
       <div className="ur-hero">

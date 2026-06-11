@@ -1,9 +1,9 @@
 /* dashboard.css - Shared dashboard styles with homepage color scheme */
 
 :root {
-  --accent: #c9621a;
-  --accent-dark: #a84e12;
-  --accent-light: #f5e0cc;
+  --accent: #f97316;
+  --accent-dark: #ea580c;
+  --accent-light: #ffedd5;
   --red: #c0234a;
   --red-dark: #96183a;
   --red-light: #f5d0d8;
@@ -857,7 +857,7 @@ hr {
 .profile-value:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(201,98,26,0.1);
+  box-shadow: 0 0 0 3px rgba(249,115,22,0.1);
 }
 
 textarea.profile-value {
