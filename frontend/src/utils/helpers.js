@@ -1,4 +1,6 @@
 // frontend/src/utils/helpers.js
+import { PLAN_LIMITS } from './constants';
+
 export const getMultiSelectValues = (select) => {
   return Array.from(select.options).filter(o => o.selected).map(o => o.value);
 };
@@ -21,26 +23,16 @@ export const escapeHtml = (str) => {
 };
 
 export const getPlanLimits = (plan) => {
-  const limits = {
-    free: { maxServices: 1, maxTags: 10 },
-    pro: { maxServices: 5, maxTags: 20 },
-    featured: { maxServices: 10, maxTags: 30 }
-  };
-  return limits[plan] || limits.free;
+  return PLAN_LIMITS[plan] || PLAN_LIMITS.free;
 };
 
 export const formatPrice = (price, plan) => {
-  if (plan === 'free') return 'R0';
-  if (plan === 'pro') return 'R149';
-  if (plan === 'featured') return 'R399';
-  return price;
+  const limits = PLAN_LIMITS[plan] || PLAN_LIMITS.free;
+  if (limits.price === 0) return 'R0';
+  return `R${limits.price}`;
 };
 
 export const getPlanName = (plan) => {
-  const names = {
-    free: 'Community Member',
-    pro: 'Trusted Provider',
-    featured: 'Featured Partner'
-  };
-  return names[plan] || 'Community Member';
+  const limits = PLAN_LIMITS[plan] || PLAN_LIMITS.free;
+  return limits.name || 'Free Listing';
 };

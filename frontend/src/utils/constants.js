@@ -1,7 +1,41 @@
 // frontend/src/utils/constants.js
 export const PLAN_LIMITS = {
-  free: { maxServices: 1, price: 0, name: 'Free Listing' },
-  pro: { maxServices: 5, price: 149, name: 'Parental Plus+' },
+  free: {
+    maxServices: 1,
+    maxTags: 10,
+    price: 0,
+    name: 'Free Listing',
+    showReviews: false,
+    showRating: false,
+    showVerifiedBadge: false,
+    showContactDetails: false,
+    showQualifications: false,
+    showFeaturedBadge: false,
+  },
+  pro: {
+    maxServices: 5,
+    maxTags: 20,
+    price: 149,
+    name: 'Parental Plus+',
+    showReviews: true,
+    showRating: true,
+    showVerifiedBadge: true,
+    showContactDetails: true,
+    showQualifications: true,
+    showFeaturedBadge: false,
+  },
+  featured: {
+    maxServices: 10,
+    maxTags: 30,
+    price: 399,
+    name: 'Featured Partner',
+    showReviews: true,
+    showRating: true,
+    showVerifiedBadge: true,
+    showContactDetails: true,
+    showQualifications: true,
+    showFeaturedBadge: true,
+  },
 };
 
 export const LANGUAGES = [

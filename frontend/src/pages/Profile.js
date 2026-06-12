@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import Header from '../components/common/Header';
 import Footer from '../components/common/Footer';
+import { PLAN_LIMITS } from '../utils/constants';
 import '../assets/css/profile.css';
 
 const SEED_PROVIDERS = [
@@ -796,7 +797,7 @@ const Profile = () => {
   }
 
   const tier = profile.listingPlan || profile.tier || 'free';
-  const isPaid = tier === 'pro' || tier === 'featured';
+  const planFeatures = PLAN_LIMITS[tier] || PLAN_LIMITS.free;
 
   const ratingStars = (r) => {
     if (!r) return '';
@@ -859,8 +860,8 @@ const Profile = () => {
                     ? <img src={profile.image || profile.photo} alt={profile.name} className="pv2-avatar" />
                     : <div className="pv2-avatar-placeholder"><i className="fas fa-user" /></div>}
                   <div className="pv2-badges">
-                    {tier === 'featured' && <span className="pv2-badge-featured"><i className="fas fa-star" /> Featured Partner</span>}
-                    {isPaid && <span className="pv2-badge-verified"><i className="fas fa-check" /> Verified</span>}
+                    {planFeatures.showFeaturedBadge && <span className="pv2-badge-featured"><i className="fas fa-star" /> Featured Partner</span>}
+                    {planFeatures.showVerifiedBadge && <span className="pv2-badge-verified"><i className="fas fa-check" /> Verified</span>}
                   </div>
                 </div>
 
@@ -896,7 +897,7 @@ const Profile = () => {
                   </div>
 
                   {/* Bottom: rating */}
-                  {isPaid && profile.reviews?.average > 0 && (
+                  {planFeatures.showRating && profile.reviews?.average > 0 && (
                     <div className="pv2-rating-bar">
                       <div className="pv2-rating-num">{profile.reviews.average}</div>
                       <div>
@@ -913,7 +914,7 @@ const Profile = () => {
                     <i className="fas fa-share-alt" /> Share Profile
                   </button>
 
-                  {isPaid ? (
+                  {planFeatures.showContactDetails ? (
                     <button
                       className="pv2-contact-toggle"
                       onClick={() => document.getElementById('pv2-get-in-touch')?.scrollIntoView({ behavior: 'smooth' })}
@@ -1008,20 +1009,22 @@ const Profile = () => {
           </div>
 
           {/* ── MIDDLE: Credentials + Availability ── */}
-          <div className="pv2-mid-row">
-            <div className="pv2-card">
-              <span className="pv2-eyebrow">Credentials</span>
-              <h3 className="pv2-heading pv2-heading-sm">Qualifications</h3>
-              <ul className="pv2-qual-list">
-                {profile.degrees        && <li><i className="fas fa-graduation-cap" />{profile.degrees}</li>}
-                {profile.certifications && <li><i className="fas fa-certificate" />{profile.certifications}</li>}
-                {profile.memberships    && <li><i className="fas fa-check-circle" />{profile.memberships}</li>}
-                {profile.clearance      && <li><i className="fas fa-shield-alt" />{profile.clearance}</li>}
-                {!profile.degrees && !profile.certifications && !profile.memberships && !profile.clearance && (
-                  <li style={{ color: '#aaa', fontStyle: 'italic' }}>No qualifications listed yet.</li>
-                )}
-              </ul>
-            </div>
+          <div className="pv2-mid-row" style={!planFeatures.showQualifications ? { gridTemplateColumns: '1fr' } : undefined}>
+            {planFeatures.showQualifications && (
+              <div className="pv2-card">
+                <span className="pv2-eyebrow">Credentials</span>
+                <h3 className="pv2-heading pv2-heading-sm">Qualifications</h3>
+                <ul className="pv2-qual-list">
+                  {profile.degrees        && <li><i className="fas fa-graduation-cap" />{profile.degrees}</li>}
+                  {profile.certifications && <li><i className="fas fa-certificate" />{profile.certifications}</li>}
+                  {profile.memberships    && <li><i className="fas fa-check-circle" />{profile.memberships}</li>}
+                  {profile.clearance      && <li><i className="fas fa-shield-alt" />{profile.clearance}</li>}
+                  {!profile.degrees && !profile.certifications && !profile.memberships && !profile.clearance && (
+                    <li style={{ color: '#aaa', fontStyle: 'italic' }}>No qualifications listed yet.</li>
+                  )}
+                </ul>
+              </div>
+            )}
             <div className="pv2-card">
               <span className="pv2-eyebrow">Schedule</span>
               <h3 className="pv2-heading pv2-heading-sm">Availability</h3>
@@ -1042,7 +1045,7 @@ const Profile = () => {
           </div>
 
           {/* ── Reviews ── */}
-          {isPaid && profile.reviews?.items?.length > 0 && (
+          {planFeatures.showReviews && profile.reviews?.items?.length > 0 && (
             <div className="pv2-card pv2-card-gray pv2-reviews">
               <span className="pv2-eyebrow">Testimonials</span>
               <h3 className="pv2-heading pv2-heading-sm">Parent Reviews</h3>

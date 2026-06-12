@@ -2,7 +2,7 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 
 const AuthContext = createContext();
-const API_URL = 'https://sahomeschooling-services-4.onrender.com';
+const API_URL = import.meta.env.VITE_API_URL || 'https://sah-backend.onrender.com';
 
 export const useAuth = () => {
   const context = useContext(AuthContext);

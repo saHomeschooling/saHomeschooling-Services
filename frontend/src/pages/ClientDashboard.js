@@ -9,20 +9,34 @@ import TagsInput from '../components/client/TagsInput';
 import { DAYS_OF_WEEK, PRICING_MODELS, PROVINCES } from '../utils/constants';
 import { getPlanLimits } from '../utils/helpers';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_URL = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api` : 'https://sah-backend.onrender.com/api';
 
 // ── Paystack helpers ──────────────────────────────────────────────────────────
-const loadPaystackScript = () => new Promise((resolve) => {
+const loadPaystackScript = () => new Promise((resolve, reject) => {
   if (window.PaystackPop) return resolve();
-  const s = document.createElement('script');
-  s.src = 'https://js.paystack.co/v1/inline.js';
-  s.onload = resolve;
-  document.head.appendChild(s);
+  const existing = document.querySelector('script[src="https://js.paystack.co/v1/inline.js"]');
+  if (existing) {
+    if (window.PaystackPop) return resolve();
+    existing.addEventListener('load', () => resolve());
+    existing.addEventListener('error', () => reject(new Error('Failed to load Paystack script')));
+  } else {
+    const s = document.createElement('script');
+    s.src = 'https://js.paystack.co/v1/inline.js';
+    s.onload = () => resolve();
+    s.onerror = () => reject(new Error('Failed to load Paystack script'));
+    document.head.appendChild(s);
+  }
+  setTimeout(() => {
+    if (!window.PaystackPop) reject(new Error('Paystack script load timed out'));
+  }, 10000);
 });
 
 const PAYSTACK_PUBLIC_KEY = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || '';
 
 const triggerPaystackPayment = async ({ email, amount, planName, onSuccess, onCancel }) => {
+  if (!PAYSTACK_PUBLIC_KEY) {
+    throw new Error('Payment is not configured (missing Paystack public key).');
+  }
   await loadPaystackScript();
   const handler = window.PaystackPop.setup({
     key: PAYSTACK_PUBLIC_KEY,
@@ -451,8 +465,9 @@ const ClientDashboard = () => {
   const maxServices = (getPlanLimits && getPlanLimits(profileData.plan)?.maxServices)
     || (profileData.plan === 'pro' ? 5 : 1);
   const svcCount    = profileData.services?.length || 1;
-  const isPaidPlan  = profileData.plan === 'pro';
-  const planOrder   = { free: 0, pro: 1 };
+  const isPaidPlan  = profileData.plan === 'pro' || profileData.plan === 'featured';
+  const planFeatures = getPlanLimits(profileData.plan);
+  const planOrder   = { free: 0, pro: 1, featured: 2 };
   const days        = DAYS_OF_WEEK || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
   /* ─── edit helpers ─── */
@@ -994,6 +1009,17 @@ const ClientDashboard = () => {
             </button>
           </div>
           <div className="cd-card-body">
+            {!planFeatures.showQualifications && (
+              <div style={{
+                marginBottom: 14, padding: '10px 14px', borderRadius: 8,
+                background: '#fff7ed', border: '1px solid #fed7aa',
+                color: '#9a3412', fontSize: '0.85rem', display: 'flex',
+                alignItems: 'center', gap: 8,
+              }}>
+                <i className="fas fa-lock"></i>
+                Qualifications are saved here but only shown on your public profile on a paid plan. Upgrade to display them.
+              </div>
+            )}
             <div className="cd-row">
               <div className="cd-field">
                 <label className="cd-label">Degrees / Diplomas</label>

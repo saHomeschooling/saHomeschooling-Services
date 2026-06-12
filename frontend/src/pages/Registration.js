@@ -249,7 +249,7 @@ const triggerPaystackPayment = async ({ email, amount, planName, onSuccess, onCa
 
 
 // ── Config ────────────────────────────────────────────────────────────────────
-const API_URL = 'http://localhost:5000/api';
+const API_URL = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api` : 'https://sah-backend.onrender.com/api';
 const MAX_TOTAL_UPLOAD_MB = 100;
 const MAX_TOTAL_UPLOAD_BYTES = MAX_TOTAL_UPLOAD_MB * 1024 * 1024;
 
