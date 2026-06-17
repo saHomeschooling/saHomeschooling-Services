@@ -12,39 +12,65 @@ import { getPlanLimits } from '../utils/helpers';
 const API_URL = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api` : 'https://sah-backend.onrender.com/api';
 
 // ── Paystack helpers ──────────────────────────────────────────────────────────
+// Preload the Paystack script eagerly (called at component mount) so it is
+// already available when the user clicks "Upgrade" — eliminates the ~30s wait.
 const loadPaystackScript = () => new Promise((resolve, reject) => {
   if (window.PaystackPop) return resolve();
   const existing = document.querySelector('script[src="https://js.paystack.co/v1/inline.js"]');
   if (existing) {
-    if (window.PaystackPop) return resolve();
-    existing.addEventListener('load', () => resolve());
-    existing.addEventListener('error', () => reject(new Error('Failed to load Paystack script')));
-  } else {
-    const s = document.createElement('script');
-    s.src = 'https://js.paystack.co/v1/inline.js';
-    s.onload = () => resolve();
-    s.onerror = () => reject(new Error('Failed to load Paystack script'));
-    document.head.appendChild(s);
+    // Script tag already injected — wait for it if not yet ready
+    const poll = setInterval(() => {
+      if (window.PaystackPop) { clearInterval(poll); resolve(); }
+    }, 100);
+    setTimeout(() => { clearInterval(poll); reject(new Error('Paystack script timed out')); }, 15000);
+    return;
   }
-  setTimeout(() => {
-    if (!window.PaystackPop) reject(new Error('Paystack script load timed out'));
-  }, 10000);
+  const s = document.createElement('script');
+  s.src = 'https://js.paystack.co/v1/inline.js';
+  s.async = true;
+  s.onload = () => resolve();
+  s.onerror = () => reject(new Error('Failed to load Paystack script'));
+  document.head.appendChild(s);
 });
 
 const PAYSTACK_PUBLIC_KEY = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || '';
 
-const triggerPaystackPayment = async ({ email, amount, planName, onSuccess, onCancel }) => {
+// Uses the backend to initialise the transaction so the reference + metadata
+// are server-generated (consistent with registration flow), then opens the
+// Paystack popup with the access_code returned by the backend.
+const triggerPaystackPayment = async ({ email, token, plan, planName, onSuccess, onCancel }) => {
   if (!PAYSTACK_PUBLIC_KEY) {
     throw new Error('Payment is not configured (missing Paystack public key).');
   }
+
+  // 1. Get a server-side reference & access_code
+  const initRes = await fetch(`${API_URL}/payments/initialize`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify({ plan }),
+  });
+  if (!initRes.ok) {
+    const err = await initRes.json().catch(() => ({}));
+    throw new Error(err.error || 'Could not initialise payment');
+  }
+  const { access_code, reference } = await initRes.json();
+
+  // 2. Make sure the inline script is ready
   await loadPaystackScript();
+
+  // 3. Open the popup using the server-issued access_code (instant — no
+  //    network round-trip needed at this point)
   const handler = window.PaystackPop.setup({
     key: PAYSTACK_PUBLIC_KEY,
     email,
-    amount,
+    amount: 0,           // amount is already set server-side via access_code
     currency: 'ZAR',
-    ref: 'SAH-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9),
-    metadata: { plan: planName },
+    access_code,
+    ref: reference,
+    metadata: { plan, custom_fields: [{ display_name: 'Plan', variable_name: 'plan', value: planName }] },
     callback: (response) => onSuccess(response),
     onClose: onCancel,
   });
@@ -394,7 +420,7 @@ const ClientDashboard = () => {
   const [qualFileName,     setQualFileName]     = useState('');
   const [clearanceFileName, setClearanceFileName] = useState('');
 
-  /* inject CSS once */
+  /* inject CSS once + eagerly preload Paystack so it's ready before the user clicks Upgrade */
   useEffect(() => {
     if (!document.getElementById('cd-styles')) {
       const s = document.createElement('style');
@@ -407,6 +433,8 @@ const ClientDashboard = () => {
       l.href = 'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700&family=DM+Sans:wght@400;500;600;700&display=swap';
       document.head.appendChild(l);
     }
+    // Pre-warm Paystack inline script so it's available instantly when needed
+    loadPaystackScript().catch(() => {/* silently ignore — will retry on demand */});
   }, []);
 
   /* ── load profile: try API first, fall back to localStorage ── */
@@ -662,36 +690,95 @@ const ClientDashboard = () => {
   /* ─── plan change ─── */
   const handlePlanChange = async (p) => {
     const names = { free: 'Free Listing', pro: 'Parental Plus+' };
+
+    // ── Helper: persist plan everywhere so Profile.js always reads the right value ──
+    const persistPlan = (newPlan) => {
+      // 1. React state
+      upd({ plan: newPlan, listingPlan: newPlan, tier: newPlan });
+
+      // 2. sah_providers (what Profile.js reads)
+      try {
+        const all = JSON.parse(localStorage.getItem('sah_providers') || '[]');
+        const idx = all.findIndex(
+          pr => pr.id === profileData.id || pr.id === profileData.userId ||
+                pr.userId === profileData.id || pr.userId === profileData.userId
+        );
+        if (idx !== -1) {
+          all[idx] = { ...all[idx], listingPlan: newPlan, plan: newPlan, tier: newPlan };
+        } else {
+          all.push({ id: profileData.id || profileData.userId, listingPlan: newPlan, plan: newPlan, tier: newPlan });
+        }
+        localStorage.setItem('sah_providers', JSON.stringify(all));
+      } catch (_e) {}
+
+      // 3. sah_current_user session
+      try {
+        const cu = getCurrentUser();
+        if (cu) {
+          const updated = { ...cu, plan: newPlan, listingPlan: newPlan };
+          localStorage.setItem('sah_current_user', JSON.stringify(updated));
+          localStorage.setItem('sah_user', JSON.stringify(updated));
+        }
+      } catch (_e) {}
+
+      // 4. Backend DB — fire and forget (webhook will also update, but this is instant)
+      const token = localStorage.getItem('sah_token');
+      if (token && profileData.userId && !String(token).startsWith('local_')) {
+        fetch(`${API_URL}/providers/${profileData.userId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ listingPlan: newPlan }),
+        }).catch(() => {/* non-critical */});
+      }
+    };
+
+    // ── Downgrade to free (no payment needed) ──
     if (p === 'free') {
-      upd({ plan: p });
+      persistPlan(p);
       if (updateUserPlan) updateUserPlan(p);
       showNotification(`Plan changed to ${names[p]}`, 'success');
       return;
     }
-    const planAmounts = { pro: 14900 };
-    const amount = planAmounts[p];
-    if (!amount) return;
-    const email = profileData.inquiryEmail || user?.email;
+
+    // ── Upgrade (payment required) ──
+    const email = profileData.contactEmail || profileData.inquiryEmail || user?.email;
     if (!email) {
       showNotification('Please add a contact email to your profile before upgrading.', 'error');
       return;
     }
+    const token = localStorage.getItem('sah_token');
     try {
       await triggerPaystackPayment({
         email,
-        amount,
+        token,
+        plan: p,
         planName: names[p],
-        onSuccess: (res) => {
-          upd({ plan: p });
-          if (updateUserPlan) updateUserPlan(p);
-          showNotification(`✅ Upgraded to ${names[p]}! Ref: ${res.reference}`, 'success');
+        onSuccess: async (res) => {
+          // Verify server-side before updating plan
+          try {
+            const vRes = await fetch(`${API_URL}/payments/verify/${res.reference}`, {
+              headers: token ? { Authorization: `Bearer ${token}` } : {},
+            });
+            if (vRes.ok) {
+              persistPlan(p);
+              if (updateUserPlan) updateUserPlan(p);
+              showNotification(`✅ Upgraded to ${names[p]}! Ref: ${res.reference}`, 'success');
+            } else {
+              showNotification('Payment received but verification failed — contact support.', 'error');
+            }
+          } catch (_e) {
+            // If verify call fails (network), still apply locally — webhook will reconcile
+            persistPlan(p);
+            if (updateUserPlan) updateUserPlan(p);
+            showNotification(`✅ Upgraded to ${names[p]}! Ref: ${res.reference}`, 'success');
+          }
         },
         onCancel: () => {
           showNotification('Payment cancelled — plan not changed.', 'info');
         },
       });
     } catch (err) {
-      showNotification('Payment could not be loaded. Please try again.', 'error');
+      showNotification(err.message || 'Payment could not be loaded. Please try again.', 'error');
     }
   };
 
