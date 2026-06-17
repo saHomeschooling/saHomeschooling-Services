@@ -34,47 +34,55 @@ const loadPaystackScript = () => new Promise((resolve, reject) => {
 });
 
 const PAYSTACK_PUBLIC_KEY = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || '';
+const PLAN_AMOUNTS = { pro: 14900 };
 
-// Uses the backend to initialise the transaction so the reference + metadata
-// are server-generated (consistent with registration flow), then opens the
-// Paystack popup with the access_code returned by the backend.
+// For real API users: get a server-side access_code then open the popup.
+// For local/offline users (token starts with 'local_' or is absent): fall
+// back to the frontend-only flow so they are never blocked by a 401.
 const triggerPaystackPayment = async ({ email, token, plan, planName, onSuccess, onCancel }) => {
   if (!PAYSTACK_PUBLIC_KEY) {
     throw new Error('Payment is not configured (missing Paystack public key).');
   }
 
-  // 1. Get a server-side reference & access_code
-  const initRes = await fetch(`${API_URL}/payments/initialize`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-    body: JSON.stringify({ plan }),
-  });
-  if (!initRes.ok) {
-    const err = await initRes.json().catch(() => ({}));
-    throw new Error(err.error || 'Could not initialise payment');
-  }
-  const { access_code, reference } = await initRes.json();
-
-  // 2. Make sure the inline script is ready
   await loadPaystackScript();
 
-  // 3. Open the popup using the server-issued access_code (instant — no
-  //    network round-trip needed at this point)
-  const handler = window.PaystackPop.setup({
-    key: PAYSTACK_PUBLIC_KEY,
+  const isRealToken = token && !String(token).startsWith('local_');
+  const fallbackRef = 'SAH-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+  const fallbackAmount = PLAN_AMOUNTS[plan] || 0;
+
+  let popupConfig = {
+    key:      PAYSTACK_PUBLIC_KEY,
     email,
-    amount: 0,           // amount is already set server-side via access_code
     currency: 'ZAR',
-    access_code,
-    ref: reference,
     metadata: { plan, custom_fields: [{ display_name: 'Plan', variable_name: 'plan', value: planName }] },
     callback: (response) => onSuccess(response),
-    onClose: onCancel,
-  });
-  handler.openIframe();
+    onClose:  onCancel,
+  };
+
+  if (isRealToken) {
+    // Backend-initialize path: server generates the reference + sets amount
+    try {
+      const initRes = await fetch(`${API_URL}/payments/initialize`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ plan }),
+      });
+      if (initRes.ok) {
+        const { access_code, reference } = await initRes.json();
+        popupConfig = { ...popupConfig, access_code, ref: reference, amount: 0 };
+      } else {
+        // Backend rejected (e.g. expired token) — fall through to frontend-only
+        popupConfig = { ...popupConfig, amount: fallbackAmount, ref: fallbackRef };
+      }
+    } catch (_e) {
+      popupConfig = { ...popupConfig, amount: fallbackAmount, ref: fallbackRef };
+    }
+  } else {
+    // Local/offline user — frontend-only, no backend call
+    popupConfig = { ...popupConfig, amount: fallbackAmount, ref: fallbackRef };
+  }
+
+  window.PaystackPop.setup(popupConfig).openIframe();
 };
 
 /* ─────────────── localStorage helpers ─────────────── */
@@ -753,6 +761,7 @@ const ClientDashboard = () => {
         token,
         plan: p,
         planName: names[p],
+        amount: { pro: 14900 }[p] || 0,
         onSuccess: async (res) => {
           // Verify server-side before updating plan
           try {

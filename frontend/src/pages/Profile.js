@@ -735,7 +735,9 @@ const Profile = () => {
     }
   }, []);
 
-  useEffect(() => {
+  // Loads (or re-loads) profile from localStorage and merges the latest plan
+  // from sah_current_user so upgrades/downgrades show immediately.
+  const loadProfile = () => {
     injectStyles();
     const id = searchParams.get('id');
     const email = searchParams.get('email');
@@ -747,9 +749,36 @@ const Profile = () => {
       } catch {}
     }
     if (!found) found = SEED_PROVIDERS.find(p => p.id === 'khan');
+
+    // Always merge the current session plan so plan changes reflect instantly
+    // without needing a full page reload.
+    if (found) {
+      try {
+        const cu = JSON.parse(localStorage.getItem('sah_current_user') || 'null');
+        if (cu?.plan) {
+          found = { ...found, listingPlan: cu.plan, tier: cu.plan, plan: cu.plan };
+        }
+      } catch {}
+    }
+
     setProfile(found);
     setLoading(false);
-  }, [searchParams]);
+  };
+
+  useEffect(() => {
+    loadProfile();
+  }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Re-read when localStorage changes (e.g. plan changed in dashboard tab)
+  useEffect(() => {
+    const onStorage = (e) => {
+      if (e.key === 'sah_providers' || e.key === 'sah_current_user') {
+        loadProfile();
+      }
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const shareProfile = () => {
     if (navigator.share) {
